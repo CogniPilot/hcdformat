@@ -1,13 +1,114 @@
 <?xml version='1.0'?>
 <hcdf version="1.1">
+	<!--Computational and controller examples-->
 	<mcu name="">
-		<pose></pose>
+		<pose_cg></pose_cg>
+		<mass></mass>
 		<board></board>
-		<software>
+		<software name="">
 			<version></version>
+			<params>
+				<!--Highly software specific params that cannot be inferred from hardware config model-->
+			</params>
 		</software>
-		<sensors>
 	</mcu>
-	<motor>
+	<comp name="">
+		<pose_cg></pose_cg>
+		<mass></mass>
+		<board></board>
+		<software name="">
+			<version></version>
+			<params>
+				<!--Highly software specific params that cannot be inferred from hardware config model-->
+			</params>
+		</software>
+	</comp>
+
+	<!--Digital and physical linkage examples-->
+	<link name="">
+		<digital name="">
+			<wired name="">	
+			</wired>
+			<wireless name="">
+			</wireless>
+		</digital>
+		<physical name="">
+			<fixed name="">
+			</fixed>
+			<rotational name="">
+			</rotational>
+			<translational name="">
+			</translational>
+		</physical>
+	</link>
+
+	<!--Sensor examples-->
+	<sensor name="">
+		<optical>
+		</optical>
+		<inertial>
+		</inertial>
+		<rf>
+		</rf>
+		<chemical>
+		</chemical>
+		<force>
+		</force>
+	</sensor>
+
+	<!--Actuator examples-->
+	<motor name="">
+		<servo name="">
+		</servo>
+		<brushless name="">
+		</brushless>
+		<brushed name="">
+		</brushed>
+		<gas name="">
+		</gas>
+		<pneumatic name="">
+		</pneumatic>
+		<hydraulic name="">
+		</hydraulic>
+		<soft name="">
+		</soft>
 	</motor>
+
+	<!--Dynamic surface examples-->
+	<surface name="">
+		<prop name="">
+		</prop>
+		<hydrofoil name="">
+		</hydrofoil>
+		<aerofoil name="">
+		</aerofoil>
+		<aileron name="">
+		</aileron>
+		<elevon name="">
+		</elevon>
+		<rudder name="">
+		</rudder>
+		<wheel>
+		</wheel>
+		<track>
+		</track>
+	</surface>
+
+	<!--Structural element examples-->
+	<struct name="">
+		<fuselodge name="">
+		</fuselodge>
+		<frame name="">
+		</frame>
+		<arm name="">
+		</arm>
+	</struct>
+
+	<!--Fuel system examples-->
+	<power name="">
+		<battery name="">
+		</battery>
+		<tank name="">
+		</tank>
+	</power>
 </hcdf>
