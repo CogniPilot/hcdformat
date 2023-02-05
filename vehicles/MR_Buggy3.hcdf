@@ -2,7 +2,7 @@
 <hcdf version="0.1">
   <vehicle>
     <name>MR_Buggy3</name>
-    <type>ackermann</type>
+    <type>rover</type>
     <ackermann>
       <wheel_base>0.2255</wheel_base>
       <wheel_radius>0.0365</wheel_radius>
