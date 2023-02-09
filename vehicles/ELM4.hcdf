@@ -2,7 +2,7 @@
 <hcdf version="0.1">
   <vehicle>
     <name>ELM4_Chassis</name>
-    <type>differential</type>
+    <type>rover</type>
     <differential>
       <wheel_separation>0.667</wheel_separation>
       <wheel_radius>0.108</wheel_radius>
