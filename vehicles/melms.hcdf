@@ -24,8 +24,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
-            <min_rps>-104.8</min_rps>
+            <max_rps>30</max_rps>
+            <min_rps>-30</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -37,8 +37,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
-            <min_rps>-104.8</min_rps>
+            <max_rps>30</max_rps>
+            <min_rps>-30</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -50,8 +50,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
-            <min_rps>-104.8</min_rps>
+            <max_rps>30</max_rps>
+            <min_rps>-30</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -63,8 +63,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
-            <min_rps>-104.8</min_rps>
+            <max_rps>30</max_rps>
+            <min_rps>-30</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
         </escs>
@@ -79,11 +79,11 @@
           <topic>/joy</topic>
           <axes>
             <yaw>3</yaw>
-            <thrust>2</thrust>
+            <thrust>1</thrust>
           </axes>
           <buttons>
-            <arm>6</arm>
-            <disarm>7</disarm>
+            <arm>0</arm>
+            <disarm>1</disarm>
             <mode>4</mode>
           </buttons>
           <thrust_center>0</thrust_center>

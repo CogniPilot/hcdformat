@@ -79,11 +79,11 @@
           <topic>/joy</topic>
           <axes>
             <yaw>3</yaw>
-            <thrust>2</thrust>
+            <thrust>1</thrust>
           </axes>
           <buttons>
-            <arm>6</arm>
-            <disarm>7</disarm>
+            <arm>0</arm>
+            <disarm>1</disarm>
             <mode>4</mode>
           </buttons>
           <thrust_center>0</thrust_center>
