@@ -1,14 +1,14 @@
 <?xml version='1.0'?>
 <hcdf version="0.1">
   <vehicle>
-    <name>MiniMando</name>
-    <type>differential</type>
+    <name>melms</name>
+    <type>rover</type>
     <differential>
       <wheel_separation>0.42</wheel_separation>
       <wheel_radius>0.108</wheel_radius>
     </differential>
     <simulation>
-      <model_name>MiniMando</model_name>
+      <model_name>melms</model_name>
       <world_name>default</world_name>
     </simulation>
     <mcu>
