@@ -24,8 +24,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
-            <min_rps>-104.8</min_rps>
+            <max_rps>524.0</max_rps> <!--5000[RPM] * (2*PI/60) to [rps]-->
+            <min_rps>-524.0</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
         </escs>
