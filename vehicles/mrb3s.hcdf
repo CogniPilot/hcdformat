@@ -3,10 +3,40 @@
   <vehicle>
     <name>mrb3s</name>
     <type>rover</type>
-    <ackermann>
-      <wheel_base>0.2255</wheel_base>
-      <wheel_radius>0.0365</wheel_radius>
-    </ackermann>
+    <control>
+      <type>ackermann</type>
+      <gains>
+        <heading>0.5</heading>
+        <cross_track>0.4</cross_track>
+        <along_track>1.0</along_track>
+      </gains>
+      <parameters>
+        <wheel_base>0.2255</wheel_base>
+        <wheel_radius>0.0365</wheel_radius>
+      </parameters>
+      <mixer>
+        <thrust>1, 0</thrust>
+        <yaw>0, 1</yaw>
+      </mixer>
+      <inputs>
+        <manual name = 'default'>
+          <topic>/joy</topic>
+          <axes>
+            <yaw>3</yaw>
+            <thrust>1</thrust>
+          </axes>
+          <buttons>
+            <arm>0</arm>
+            <disarm>1</disarm>
+            <mode>4</mode>
+          </buttons>
+          <thrust_center>0</thrust_center>
+        </manual>
+        <trajectory>
+          <topic>/traj</topic>
+        </trajectory>
+      </inputs>
+    </control>
     <simulation>
       <model_name>mrb3s</model_name>
       <world_name>default</world_name>
@@ -44,30 +74,7 @@
             <center>0.0</center>
           </servo>
         </servos>
-        <mixer>
-          <type>ackermann</type>
-          <thrust>1, 0</thrust>
-          <yaw>0, 1</yaw>
-        </mixer>
       </actuators>
-      <inputs>
-        <manual name = 'logitech'>
-          <topic>/joy</topic>
-          <axes>
-            <yaw>3</yaw>
-            <thrust>1</thrust>
-          </axes>
-          <buttons>
-            <arm>0</arm>
-            <disarm>1</disarm>
-            <mode>4</mode>
-          </buttons>
-          <thrust_center>0</thrust_center>
-        </manual>
-        <trajectory>
-          <topic>/traj</topic>
-        </trajectory>
-      </inputs>
     </mcu>
   </vehicle>
 </hcdf>

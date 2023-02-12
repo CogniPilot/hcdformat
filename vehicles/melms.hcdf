@@ -3,10 +3,41 @@
   <vehicle>
     <name>melms</name>
     <type>rover</type>
-    <differential>
-      <wheel_separation>0.42</wheel_separation>
-      <wheel_radius>0.108</wheel_radius>
-    </differential>
+    <control>
+      <type>differential</type>
+      <gains>
+        <heading>0.8</heading>
+        <cross_track>1.0</cross_track>
+        <along_track>1.0</along_track>
+      </gains>
+      <parameters>
+        <wheel_base>0.42</wheel_base>
+        <wheel_separation>0.42</wheel_separation>
+        <wheel_radius>0.108</wheel_radius>
+      </parameters>
+      <mixer>
+        <yaw>1.0, 1.0, 1.0, 1.0</yaw>
+        <thrust>-1.0, 1.0, 1.0, -1.0</thrust>
+      </mixer>
+      <inputs>
+        <manual name = 'default'>
+          <topic>/joy</topic>
+          <axes>
+            <yaw>3</yaw>
+            <thrust>1</thrust>
+          </axes>
+          <buttons>
+            <arm>0</arm>
+            <disarm>1</disarm>
+            <mode>4</mode>
+          </buttons>
+          <thrust_center>0</thrust_center>
+        </manual>
+        <trajectory>
+          <topic>/traj</topic>
+        </trajectory>
+      </inputs>
+    </control>
     <simulation>
       <model_name>melms</model_name>
       <world_name>default</world_name>
@@ -68,30 +99,7 @@
             <armed_rps>0</armed_rps>
           </esc>
         </escs>
-        <mixer>
-          <type>differential</type>
-          <yaw>1.0, 1.0, 1.0, 1.0</yaw>
-          <thrust>-1.0, 1.0, 1.0, -1.0</thrust>
-        </mixer>
       </actuators>
-      <inputs>
-        <manual name = 'fsi6s'>
-          <topic>/joy</topic>
-          <axes>
-            <yaw>3</yaw>
-            <thrust>1</thrust>
-          </axes>
-          <buttons>
-            <arm>0</arm>
-            <disarm>1</disarm>
-            <mode>4</mode>
-          </buttons>
-          <thrust_center>0</thrust_center>
-        </manual>
-        <trajectory>
-          <topic>/traj</topic>
-        </trajectory>
-      </inputs>
     </mcu>
   </vehicle>
 </hcdf>
