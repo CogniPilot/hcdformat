@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <hcdf version="0.1">
   <vehicle>
-    <name>mrb3s</name>
+    <name>mrbuggy3</name>
     <type>rover</type>
     <control>
       <type>ackermann</type>
@@ -38,7 +38,7 @@
       </inputs>
     </control>
     <simulation>
-      <model_name>mrb3s</model_name>
+      <model_name>mrbuggy3</model_name>
       <world_name>default</world_name>
     </simulation>
     <mcu>
