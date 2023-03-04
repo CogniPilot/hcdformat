@@ -39,7 +39,7 @@
     </control>
     <simulation>
       <model_name>mrbuggy3</model_name>
-      <world_name>default</world_name>
+      <world_name>depot</world_name>
     </simulation>
     <mcu>
       <board>posix_simulation</board>
