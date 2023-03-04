@@ -26,9 +26,11 @@
             <thrust>1</thrust>
           </axes>
           <buttons>
-            <arm>0</arm>
-            <disarm>1</disarm>
-            <mode>4</mode>
+            <arm>7</arm>
+            <disarm>6</disarm>
+            <mode_manual>0</mode_manual>
+            <mode_auto>1</mode_auto>
+            <mode_cmd_vel>2</mode_cmd_vel>
           </buttons>
           <thrust_center>0</thrust_center>
         </manual>
