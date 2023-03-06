@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <hcdf version="0.1">
   <vehicle>
-    <name>melms</name>
+    <name>melm</name>
     <type>rover</type>
     <control>
       <type>differential</type>
@@ -27,9 +27,11 @@
             <thrust>1</thrust>
           </axes>
           <buttons>
-            <arm>0</arm>
-            <disarm>1</disarm>
-            <mode>4</mode>
+            <arm>7</arm>
+            <disarm>6</disarm>
+            <mode_manual>0</mode_manual>
+            <mode_auto>1</mode_auto>
+            <mode_cmd_vel>2</mode_cmd_vel>
           </buttons>
           <thrust_center>0</thrust_center>
         </manual>
@@ -39,8 +41,8 @@
       </inputs>
     </control>
     <simulation>
-      <model_name>melms</model_name>
-      <world_name>default</world_name>
+      <model_name>melm</model_name>
+      <world_name>depot</world_name>
     </simulation>
     <mcu>
       <board>posix_simulation</board>
@@ -55,8 +57,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>30</max_rps>
-            <min_rps>-30</min_rps>
+            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
+            <min_rps>-104.8</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -68,8 +70,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>30</max_rps>
-            <min_rps>-30</min_rps>
+            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
+            <min_rps>-104.8</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -81,8 +83,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>30</max_rps>
-            <min_rps>-30</min_rps>
+            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
+            <min_rps>-104.8</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
           <esc>
@@ -94,8 +96,8 @@
               <max_us>2000</max_us>
               <pwm_rps_coeffs>[]</pwm_rps_coeffs>
             </pwm>
-            <max_rps>30</max_rps>
-            <min_rps>-30</min_rps>
+            <max_rps>104.8</max_rps> <!--1000[RPM] * (2*PI/60) to [rps]-->
+            <min_rps>-104.8</min_rps>
             <armed_rps>0</armed_rps>
           </esc>
         </escs>
