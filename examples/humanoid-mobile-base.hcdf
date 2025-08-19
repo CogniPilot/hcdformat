@@ -1,0 +1,2296 @@
+<?xml version="1.0"?>
+<!--
+  HCDF 1.0 Humanoid Mobile Base
+  19-device system: S32N79 + E810 + AGX Thor, dual 802.3dm arms (MCN1-4 + camera),
+  S32J100 base zone controller, i.MX95 head, SPAD lidars, Cubtek radar,
+  ZLAC8015D wheel drive (1722+CAN), MR-BMS771.
+
+  5 separate networks: backbone, left-arm, right-arm, base, power
+-->
+<hcdf version="1.0">
+
+  <!-- ================================================================ -->
+  <!-- COMPONENTS                                                       -->
+  <!-- ================================================================ -->
+
+  <!-- AGX Thor: perception, planning, ML inference -->
+  <comp name="agx-thor" role="compute">
+    <description>NVIDIA AGX Thor SoC — perception, planning, ML inference. 2x 25G MGBE uplinks to S32N79.</description>
+    <board>nvidia-agx-thor</board>
+    <inertial>
+      <mass>1.5</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="mgbe0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">25000</speed>
+        <standard>25GBASE-SR</standard>
+        <tsn>
+          <gptp hw-timestamping="true" gm-capable="false"/>
+          <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="256"/>
+          <preemption min-fragment-size="64"/>
+        </tsn>
+        <connector>SFP28</connector>
+      </capabilities>
+    </port>
+    <port name="mgbe1" iface="eth1" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">25000</speed>
+        <standard>25GBASE-SR</standard>
+        <tsn>
+          <gptp hw-timestamping="true" gm-capable="false"/>
+          <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="256"/>
+          <preemption min-fragment-size="64"/>
+        </tsn>
+        <connector>SFP28</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="12.5">10</current>
+        <power unit="W" max="300">200</power>
+        <typical-power unit="W">150</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- S32N79: central motion control + CNC agent + integrated TSN switch + E810 PCIe -->
+  <comp name="s32n79" role="compute">
+    <description>NXP S32N79 — central motion control, CNC agent, integrated TSN switch. Intel E810 on PCIe for 25G uplink to AGX Thor.</description>
+    <board>nxp-s32n79-evb</board>
+    <inertial>
+      <mass>0.8</mass>
+      <com>0 0 0</com>
+    </inertial>
+
+    <!-- Integrated TSN switch fabric: XFI + QXGMII ports are bridged -->
+    <switch chip="s32n79-integrated">
+      <port name="xfi_left" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="true"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="512"/>
+            <cbs/>
+            <preemption min-fragment-size="64"/>
+            <psfp max-filters="256" max-gates="256" max-meters="128"/>
+            <frer seq-encoding="r-tag"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="xfi_right" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="true"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="512"/>
+            <cbs/>
+            <preemption min-fragment-size="64"/>
+            <psfp max-filters="256" max-gates="256" max-meters="128"/>
+            <frer seq-encoding="r-tag"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="qxgmii_p0" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="true"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="256"/>
+            <cbs/>
+            <preemption min-fragment-size="64"/>
+            <psfp max-filters="128" max-gates="128" max-meters="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="qxgmii_p1" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <tsn><gptp hw-timestamping="true" gm-capable="true"/></tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="qxgmii_p2" iface="swp4" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <tsn><gptp hw-timestamping="true" gm-capable="true"/></tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="qxgmii_p3" iface="swp5" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <tsn><gptp hw-timestamping="true" gm-capable="true"/></tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <tsn>
+        <qbv max-gcl-entries="2048"/>
+        <cbs/>
+        <psfp max-filters="1024" max-gates="1024"/>
+        <frer seq-encoding="r-tag"/>
+        <preemption min-fragment-size="64"/>
+      </tsn>
+      <macsec>
+        <cipher>gcm-aes-128</cipher>
+        <cipher>gcm-aes-256</cipher>
+      </macsec>
+    </switch>
+
+    <!-- E810 25G uplinks — independent ports (NOT on the integrated switch) -->
+    <port name="e810_p0" iface="enp1s0f0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">25000</speed>
+        <standard>25GBASE-SR</standard>
+        <tsn>
+          <gptp hw-timestamping="true" gm-capable="true"/>
+          <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="512"/>
+          <cbs/>
+          <preemption min-fragment-size="64"/>
+        </tsn>
+        <macsec><cipher>gcm-aes-256</cipher></macsec>
+        <connector>SFP28</connector>
+      </capabilities>
+    </port>
+    <port name="e810_p1" iface="enp1s0f1" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">25000</speed>
+        <standard>25GBASE-SR</standard>
+        <tsn>
+          <gptp hw-timestamping="true" gm-capable="true"/>
+          <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="512"/>
+          <cbs/>
+          <preemption min-fragment-size="64"/>
+        </tsn>
+        <macsec><cipher>gcm-aes-256</cipher></macsec>
+        <connector>SFP28</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="3">2</current>
+        <power unit="W" max="72">48</power>
+        <typical-power unit="W">35</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- S32J100: base zone controller — bridges Ethernet to CAN-FD + peripherals -->
+  <comp name="s32j100" role="compute">
+    <description>NXP S32J100 — base zone controller. Bridges Ethernet to CAN-FD (wheels, BMS) and base peripherals (lidars, radar, head). Decapsulates 1722+CAN from S32N79.</description>
+    <board>nxp-s32j100-rdb</board>
+    <inertial>
+      <mass>0.3</mass>
+      <com>0 0 0</com>
+    </inertial>
+
+    <switch chip="s32j100-integrated">
+      <port name="eth_up0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth_up1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth_up2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth_up3" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">2500</speed>
+          <standard>2.5GBASE-T1</standard>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth_head" iface="swp4" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>1000BASE-T1</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth_lidar_front" iface="swp5" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>1000BASE-T1</standard>
+          <phy role="master"/>
+        </capabilities>
+      </port>
+      <port name="eth_lidar_rear" iface="swp6" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>1000BASE-T1</standard>
+          <phy role="master"/>
+        </capabilities>
+      </port>
+      <port name="eth_radar" iface="swp7" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>1000BASE-T1</standard>
+          <phy role="master"/>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="can0" iface="can0" type="CAN">
+      <capabilities>
+        <bitrate unit="bps">5000000</bitrate>
+        <protocol>CAN-FD</protocol>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="1.5">1</current>
+        <power unit="W" max="36">24</power>
+        <typical-power unit="W">18</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- i.MX95 head: display + microphones -->
+  <comp name="head" role="compute">
+    <description>i.MX95 head unit — display, microphones, user interaction</description>
+    <board>nxp-imx95-evk</board>
+    <inertial>
+      <mass>0.6</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">1000</speed>
+        <standard>1000BASE-T1</standard>
+        <phy role="slave"/>
+        <eee supported="true"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="1">0.5</current>
+        <power unit="W" max="24">12</power>
+        <typical-power unit="W">8</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="mic_array">
+      <force type="pressure">
+        <range unit="dB">120</range>
+      </force>
+    </sensor>
+  </comp>
+
+  <!-- NXP SPAD front base lidar -->
+  <comp name="lidar-front" role="sensor">
+    <description>NXP SPAD front base lidar — solid-state, 200m range</description>
+    <inertial>
+      <mass>0.4</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">1000</speed>
+        <standard>1000BASE-T1</standard>
+        <phy role="slave"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="1">0.6</current>
+        <power unit="W" max="24">15</power>
+        <typical-power unit="W">12</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="lidar_front_sensor" update-rate="20">
+      <optical type="lidar">
+        <fov name="scan" color="#00ff00">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.5</near>
+              <far>200.0</far>
+              <hfov>2.094</hfov>
+              <vfov>0.436</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">400</bandwidth>
+        </data-output>
+        <lidar-params>
+          <scan-type>solid-state</scan-type>
+          <channels>64</channels>
+          <points-per-second>600000</points-per-second>
+          <scan-rate unit="Hz">20</scan-rate>
+          <returns>dual</returns>
+          <wavelength unit="nm">905</wavelength>
+          <horizontal-fov unit="deg">120</horizontal-fov>
+          <vertical-fov unit="deg" min="-12.5" max="12.5">25</vertical-fov>
+        </lidar-params>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- NXP SPAD rear base lidar -->
+  <comp name="lidar-rear" role="sensor">
+    <description>NXP SPAD rear base lidar — solid-state, 200m range</description>
+    <inertial>
+      <mass>0.4</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">1000</speed>
+        <standard>1000BASE-T1</standard>
+        <phy role="slave"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="1">0.6</current>
+        <power unit="W" max="24">15</power>
+        <typical-power unit="W">12</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="lidar_rear_sensor" update-rate="20">
+      <optical type="lidar">
+        <fov name="scan" color="#00ff00">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.5</near>
+              <far>200.0</far>
+              <hfov>2.094</hfov>
+              <vfov>0.436</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">400</bandwidth>
+        </data-output>
+        <lidar-params>
+          <scan-type>solid-state</scan-type>
+          <channels>64</channels>
+          <points-per-second>600000</points-per-second>
+          <scan-rate unit="Hz">20</scan-rate>
+          <returns>dual</returns>
+          <wavelength unit="nm">905</wavelength>
+          <horizontal-fov unit="deg">120</horizontal-fov>
+          <vertical-fov unit="deg" min="-12.5" max="12.5">25</vertical-fov>
+        </lidar-params>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- Cubtek 4D imaging radar -->
+  <comp name="radar-4d" role="sensor">
+    <description>Cubtek 4D imaging radar — 77GHz FMCW, 120-degree FOV</description>
+    <inertial>
+      <mass>0.3</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">1000</speed>
+        <standard>1000BASE-T1</standard>
+        <phy role="slave"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="0.8">0.5</current>
+        <power unit="W" max="20">12</power>
+        <typical-power unit="W">10</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="radar_4d_sensor" update-rate="20">
+      <rf type="radar">
+        <range unit="m">200</range>
+        <data-output>
+          <bandwidth unit="Mbps">100</bandwidth>
+        </data-output>
+        <radar-params>
+          <frequency unit="GHz">77</frequency>
+          <modulation>fmcw</modulation>
+          <azimuth-fov unit="deg">120</azimuth-fov>
+          <elevation-fov unit="deg">30</elevation-fov>
+          <azimuth-resolution unit="deg">1.0</azimuth-resolution>
+          <elevation-resolution unit="deg">2.0</elevation-resolution>
+          <range-resolution unit="m">0.1</range-resolution>
+          <velocity-range unit="m/s" min="-60" max="60">60</velocity-range>
+          <velocity-resolution unit="m/s">0.1</velocity-resolution>
+          <max-detections>512</max-detections>
+          <mimo>3tx4rx</mimo>
+        </radar-params>
+      </rf>
+    </sensor>
+  </comp>
+
+  <!-- ZLAC8015D: dual-channel servo controller (separate from hub motors) -->
+  <comp name="zlac8015d" role="actuator">
+    <description>ZLTECH ZLAC8015D v4.0 dual-channel servo controller. Drives 2x ZLLG65ASM250-L hub motors via SIGNAL connectors. CANopen on CAN-FD bus.</description>
+    <inertial>
+      <mass>0.8</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="can0" iface="can0" type="CAN">
+      <capabilities>
+        <bitrate unit="bps">1000000</bitrate>
+        <protocol>CANopen</protocol>
+      </capabilities>
+    </port>
+    <port name="sig_left" type="SIGNAL">
+      <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
+    </port>
+    <port name="sig_right" type="SIGNAL">
+      <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
+    </port>
+    <port name="phase_left" type="SIGNAL">
+      <capabilities><connector>3-pin: BLDC phase U/V/W</connector></capabilities>
+    </port>
+    <port name="phase_right" type="SIGNAL">
+      <capabilities><connector>3-pin: BLDC phase U/V/W</connector></capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="40">10</current>
+        <power unit="W" max="960">240</power>
+        <typical-power unit="W">70</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- Left hub motor: ZLLG65ASM250-L -->
+  <comp name="wheel-left" role="actuator">
+    <description>ZLLG65ASM250-L 24V BLDC hub motor (left). 170mm diameter, 2.92 kg, 250W rated.</description>
+    <inertial>
+      <mass>2.92</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="sig0" type="SIGNAL">
+      <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
+    </port>
+    <port name="phase0" type="SIGNAL">
+      <capabilities><connector>3-pin: BLDC phase U/V/W</connector></capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="19">6.5</current>
+        <power unit="W" max="456">156</power>
+      </capabilities>
+    </port>
+    <sensor name="encoder_left">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <sensor name="hall_left">
+      <em type="mag">
+        <range unit="mT">100</range>
+      </em>
+    </sensor>
+    <sensor name="temp_left">
+      <temperature type="thermistor">
+        <range unit="degC">150</range>
+      </temperature>
+    </sensor>
+    <motor name="left_wheel_motor" type="bldc" encoder="encoder_left" hall="hall_left" thermistor="temp_left">
+      <voltage unit="V" nominal="24" max="28"/>
+      <current unit="A" continuous="6.5" peak="19"/>
+      <resistance unit="ohm">0.5</resistance>
+      <torque-constant unit="Nm/A">0.29</torque-constant>
+      <velocity-constant unit="V/RPM">0.109</velocity-constant>
+      <max-speed unit="rpm">260</max-speed>
+      <stall-torque unit="Nm">19.76</stall-torque>
+      <no-load-speed unit="rpm">257.9</no-load-speed>
+      <no-load-current unit="A">0.974</no-load-current>
+      <max-power-out unit="W">158.8</max-power-out>
+      <max-efficiency unit="percent">68.4</max-efficiency>
+      <control-modes>
+        <mode>velocity</mode>
+        <mode>position</mode>
+        <mode>torque</mode>
+      </control-modes>
+    </motor>
+    <surface name="left-wheel">
+      <wheel type="driven">
+        <radius unit="m">0.085</radius>
+        <width unit="m">0.041</width>
+        <friction static="0.9" dynamic="0.7"/>
+      </wheel>
+    </surface>
+  </comp>
+
+  <!-- Right hub motor: ZLLG65ASM250-L -->
+  <comp name="wheel-right" role="actuator">
+    <description>ZLLG65ASM250-L 24V BLDC hub motor (right). 170mm diameter, 2.92 kg, 250W rated.</description>
+    <inertial>
+      <mass>2.92</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="sig0" type="SIGNAL">
+      <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
+    </port>
+    <port name="phase0" type="SIGNAL">
+      <capabilities><connector>3-pin: BLDC phase U/V/W</connector></capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="19">6.5</current>
+        <power unit="W" max="456">156</power>
+      </capabilities>
+    </port>
+    <sensor name="encoder_right">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <sensor name="hall_right">
+      <em type="mag">
+        <range unit="mT">100</range>
+      </em>
+    </sensor>
+    <sensor name="temp_right">
+      <temperature type="thermistor">
+        <range unit="degC">150</range>
+      </temperature>
+    </sensor>
+    <motor name="right_wheel_motor" type="bldc" encoder="encoder_right" hall="hall_right" thermistor="temp_right">
+      <voltage unit="V" nominal="24" max="28"/>
+      <current unit="A" continuous="6.5" peak="19"/>
+      <resistance unit="ohm">0.5</resistance>
+      <torque-constant unit="Nm/A">0.29</torque-constant>
+      <velocity-constant unit="V/RPM">0.109</velocity-constant>
+      <max-speed unit="rpm">260</max-speed>
+      <stall-torque unit="Nm">19.76</stall-torque>
+      <no-load-speed unit="rpm">257.9</no-load-speed>
+      <no-load-current unit="A">0.974</no-load-current>
+      <max-power-out unit="W">158.8</max-power-out>
+      <max-efficiency unit="percent">68.4</max-efficiency>
+      <control-modes>
+        <mode>velocity</mode>
+        <mode>position</mode>
+        <mode>torque</mode>
+      </control-modes>
+    </motor>
+    <surface name="right-wheel">
+      <wheel type="driven">
+        <radius unit="m">0.085</radius>
+        <width unit="m">0.041</width>
+        <friction static="0.9" dynamic="0.7"/>
+      </wheel>
+    </surface>
+  </comp>
+
+  <!-- Omni caster front-left -->
+  <comp name="caster-fl" role="parent">
+    <description>Front-left passive omni caster wheel</description>
+    <inertial>
+      <mass>0.15</mass>
+      <com>0 0 -0.015</com>
+    </inertial>
+    <surface name="caster">
+      <wheel type="omni">
+        <radius unit="m">0.025</radius>
+        <width unit="m">0.02</width>
+        <friction static="0.6" dynamic="0.4"/>
+      </wheel>
+    </surface>
+  </comp>
+
+  <!-- Omni caster front-right -->
+  <comp name="caster-fr" role="parent">
+    <description>Front-right passive omni caster wheel</description>
+    <inertial>
+      <mass>0.15</mass>
+      <com>0 0 -0.015</com>
+    </inertial>
+    <surface name="caster">
+      <wheel type="omni">
+        <radius unit="m">0.025</radius>
+        <width unit="m">0.02</width>
+        <friction static="0.6" dynamic="0.4"/>
+      </wheel>
+    </surface>
+  </comp>
+
+  <!-- MR-BMS771: 8S LiFePO4 battery management system -->
+  <comp name="bms" role="sensor">
+    <description>CogniPilot MR-BMS771 — 8S LiFePO4 (~25.6V nominal). CAN-FD. Battery management + power distribution.</description>
+    <inertial>
+      <mass>3.0</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="can0" iface="can0" type="CAN">
+      <capabilities>
+        <bitrate unit="bps">5000000</bitrate>
+        <protocol>CAN-FD</protocol>
+      </capabilities>
+    </port>
+    <port name="bat_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">25.6</voltage>
+        <current unit="A" max="36">20</current>
+        <power unit="W" max="922">512</power>
+      </capabilities>
+    </port>
+    <power-source name="main_battery">
+      <battery>
+        <chemistry>LiFePO4</chemistry>
+        <cells-series>8</cells-series>
+        <nominal-voltage unit="V">25.6</nominal-voltage>
+        <capacity unit="Ah">12</capacity>
+        <energy unit="Wh">307</energy>
+        <max-discharge unit="C">3</max-discharge>
+        <min-voltage unit="V">20.0</min-voltage>
+        <max-voltage unit="V">29.2</max-voltage>
+      </battery>
+    </power-source>
+  </comp>
+
+  <!-- Chassis (root of kinematic tree) -->
+  <comp name="chassis" role="parent" struct-type="chassis">
+    <description>Mobile base chassis frame — structural root of kinematic tree</description>
+    <inertial>
+      <mass>45.0</mass>
+      <com>0 0 0.15</com>
+      <inertia>1.35 0 0 0.6 0 1.68</inertia>
+    </inertial>
+    <collision name="chassis_box">
+      <geometry><box><size>0.6 0.4 0.3</size></box></geometry>
+      <surface>
+        <friction static="0.6" dynamic="0.4"/>
+        <restitution>0.1</restitution>
+      </surface>
+    </collision>
+  </comp>
+
+  <!-- Torso (connects chassis to arms) -->
+  <comp name="torso" struct-type="frame">
+    <description>Upper body torso structure — mounts both arm chains</description>
+    <inertial>
+      <mass>8.0</mass>
+      <com>0 0 0.2</com>
+      <inertia>0.16 0 0 0.08 0 0.12</inertia>
+    </inertial>
+    <collision name="torso_box">
+      <geometry><box><size>0.35 0.4 0.45</size></box></geometry>
+      <surface>
+        <friction static="0.5" dynamic="0.3"/>
+      </surface>
+    </collision>
+  </comp>
+
+  <!-- ===== LEFT ARM MCNs ===== -->
+
+  <!-- MCN1-L: Left shoulder — 3 motors, 802.3dm switch bridge -->
+  <comp name="mcn1-l" role="actuator">
+    <description>Left Motor Control Node 1: Shoulder (3 BLDC motors — yaw, pitch, roll). 802.3dm bridging switch.</description>
+    <inertial>
+      <mass>1.2</mass>
+      <com>0 0 -0.05</com>
+    </inertial>
+    <collision name="mcn1l_col">
+      <geometry><cylinder><radius>0.04</radius><length>0.12</length></cylinder></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="6">3</current>
+        <power unit="W" max="144">72</power>
+        <typical-power unit="W">25</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="shoulder_l_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="shoulder_yaw_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+    <motor name="shoulder_pitch_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.15</torque-constant>
+      <max-speed unit="rpm">4000</max-speed>
+    </motor>
+    <motor name="shoulder_roll_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.10</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN2-L: Left elbow — 1 motor -->
+  <comp name="mcn2-l" role="actuator">
+    <description>Left Motor Control Node 2: Elbow (1 BLDC motor)</description>
+    <inertial>
+      <mass>0.8</mass>
+      <com>0 0 -0.04</com>
+    </inertial>
+    <collision name="mcn2l_col">
+      <geometry><cylinder><radius>0.035</radius><length>0.1</length></cylinder></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="4">2</current>
+        <power unit="W" max="96">48</power>
+        <typical-power unit="W">15</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="elbow_l_encoder">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="elbow_l_motor" type="bldc" encoder="elbow_l_encoder">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN3-L: Left wrist — 2 motors + camera port + TCP frame -->
+  <comp name="mcn3-l" role="actuator">
+    <description>Left Motor Control Node 3: Wrist (2 BLDC motors — pitch, roll) + camera spur port</description>
+    <inertial>
+      <mass>0.6</mass>
+      <com>0 0 -0.03</com>
+    </inertial>
+    <collision name="mcn3l_col">
+      <geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry>
+    </collision>
+
+    <frame name="tcp_left" type="tcp">
+      <description>Left arm tool center point for end-effector control</description>
+      <pose>0 0 -0.12 0 0 0</pose>
+    </frame>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+          </tsn>
+          <eee supported="false"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="3">1.5</current>
+        <power unit="W" max="72">36</power>
+        <typical-power unit="W">12</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="wrist_l_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="wrist_pitch_l_motor" type="bldc" encoder="wrist_l_encoders">
+      <torque-constant unit="Nm/A">0.08</torque-constant>
+      <max-speed unit="rpm">6000</max-speed>
+    </motor>
+    <motor name="wrist_roll_l_motor" type="bldc" encoder="wrist_l_encoders">
+      <torque-constant unit="Nm/A">0.06</torque-constant>
+      <max-speed unit="rpm">8000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN4-L: Left dextrous hand -->
+  <comp name="mcn4-l" role="actuator">
+    <description>Left Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
+    <inertial>
+      <mass>0.4</mass>
+      <com>0 0 -0.02</com>
+    </inertial>
+    <collision name="mcn4l_col">
+      <geometry><box><size>0.08 0.06 0.04</size></box></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">1000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="3">1</current>
+        <power unit="W" max="72">24</power>
+        <typical-power unit="W">10</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- Left wrist stereo camera -->
+  <comp name="cam-l" role="sensor">
+    <description>Left wrist stereo camera — ~7 Gbps raw via 802.3dm upstream to S32N79</description>
+    <inertial>
+      <mass>0.05</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed-tx unit="Mbps">10000</speed-tx>
+        <speed-rx unit="Mbps">100</speed-rx>
+        <standard>802.3dm</standard>
+        <phy role="slave"/>
+        <tsn><gptp hw-timestamping="true" gm-capable="false"/></tsn>
+        <eee supported="false"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="0.3">0.2</current>
+        <power unit="W" max="7">5</power>
+        <typical-power unit="W">4</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="stereo_cam_l" update-rate="30">
+      <optical type="camera">
+        <fov name="left_eye" color="#44ff44">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>960</fx>
+            <fy>960</fy>
+            <cx>960</cx>
+            <cy>540</cy>
+          </intrinsics>
+        </fov>
+        <fov name="right_eye" color="#4444ff">
+          <pose>-0.06 0 0 0 0 0</pose>
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">7000</bandwidth>
+          <frame-size unit="bytes">6220800</frame-size>
+        </data-output>
+        <camera-params>
+          <shutter>global</shutter>
+          <hdr>true</hdr>
+          <compression>raw</compression>
+          <trigger>hardware</trigger>
+        </camera-params>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- ===== RIGHT ARM MCNs (mirror of left) ===== -->
+
+  <!-- MCN1-R: Right shoulder — 3 motors -->
+  <comp name="mcn1-r" role="actuator">
+    <description>Right Motor Control Node 1: Shoulder (3 BLDC motors — yaw, pitch, roll)</description>
+    <inertial>
+      <mass>1.2</mass>
+      <com>0 0 -0.05</com>
+    </inertial>
+    <collision name="mcn1r_col">
+      <geometry><cylinder><radius>0.04</radius><length>0.12</length></cylinder></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="6">3</current>
+        <power unit="W" max="144">72</power>
+        <typical-power unit="W">25</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="shoulder_r_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="shoulder_yaw_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+    <motor name="shoulder_pitch_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.15</torque-constant>
+      <max-speed unit="rpm">4000</max-speed>
+    </motor>
+    <motor name="shoulder_roll_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.10</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN2-R: Right elbow — 1 motor -->
+  <comp name="mcn2-r" role="actuator">
+    <description>Right Motor Control Node 2: Elbow (1 BLDC motor)</description>
+    <inertial>
+      <mass>0.8</mass>
+      <com>0 0 -0.04</com>
+    </inertial>
+    <collision name="mcn2r_col">
+      <geometry><cylinder><radius>0.035</radius><length>0.1</length></cylinder></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="4">2</current>
+        <power unit="W" max="96">48</power>
+        <typical-power unit="W">15</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="elbow_r_encoder">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="elbow_r_motor" type="bldc" encoder="elbow_r_encoder">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN3-R: Right wrist — 2 motors + camera port + TCP frame -->
+  <comp name="mcn3-r" role="actuator">
+    <description>Right Motor Control Node 3: Wrist (2 BLDC motors — pitch, roll) + camera spur port</description>
+    <inertial>
+      <mass>0.6</mass>
+      <com>0 0 -0.03</com>
+    </inertial>
+    <collision name="mcn3r_col">
+      <geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry>
+    </collision>
+
+    <frame name="tcp_right" type="tcp">
+      <description>Right arm tool center point for end-effector control</description>
+      <pose>0 0 -0.12 0 0 0</pose>
+    </frame>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">10000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="8" max-gcl-entries="128"/>
+          </tsn>
+          <eee supported="false"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="3">1.5</current>
+        <power unit="W" max="72">36</power>
+        <typical-power unit="W">12</typical-power>
+      </capabilities>
+    </port>
+
+    <sensor name="wrist_r_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="wrist_pitch_r_motor" type="bldc" encoder="wrist_r_encoders">
+      <torque-constant unit="Nm/A">0.08</torque-constant>
+      <max-speed unit="rpm">6000</max-speed>
+    </motor>
+    <motor name="wrist_roll_r_motor" type="bldc" encoder="wrist_r_encoders">
+      <torque-constant unit="Nm/A">0.06</torque-constant>
+      <max-speed unit="rpm">8000</max-speed>
+    </motor>
+  </comp>
+
+  <!-- MCN4-R: Right dextrous hand -->
+  <comp name="mcn4-r" role="actuator">
+    <description>Right Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
+    <inertial>
+      <mass>0.4</mass>
+      <com>0 0 -0.02</com>
+    </inertial>
+    <collision name="mcn4r_col">
+      <geometry><box><size>0.08 0.06 0.04</size></box></geometry>
+    </collision>
+
+    <switch>
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">1000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="slave"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="false"/>
+            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="eth2" iface="swp2" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">100</speed-tx>
+          <speed-rx unit="Mbps">1000</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <eee supported="true"/>
+        </capabilities>
+      </port>
+      <port name="sgmii0" iface="swp3" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>SGMII</standard>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="3">1</current>
+        <power unit="W" max="72">24</power>
+        <typical-power unit="W">10</typical-power>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- Right wrist stereo camera -->
+  <comp name="cam-r" role="sensor">
+    <description>Right wrist stereo camera — ~7 Gbps raw via 802.3dm upstream to S32N79</description>
+    <inertial>
+      <mass>0.05</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <port name="eth0" iface="eth0" type="ethernet">
+      <capabilities>
+        <speed-tx unit="Mbps">10000</speed-tx>
+        <speed-rx unit="Mbps">100</speed-rx>
+        <standard>802.3dm</standard>
+        <phy role="slave"/>
+        <tsn><gptp hw-timestamping="true" gm-capable="false"/></tsn>
+        <eee supported="false"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="0.3">0.2</current>
+        <power unit="W" max="7">5</power>
+        <typical-power unit="W">4</typical-power>
+      </capabilities>
+    </port>
+    <sensor name="stereo_cam_r" update-rate="30">
+      <optical type="camera">
+        <fov name="left_eye" color="#44ff44">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>960</fx>
+            <fy>960</fy>
+            <cx>960</cx>
+            <cy>540</cy>
+          </intrinsics>
+        </fov>
+        <fov name="right_eye" color="#4444ff">
+          <pose>-0.06 0 0 0 0 0</pose>
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">7000</bandwidth>
+          <frame-size unit="bytes">6220800</frame-size>
+        </data-output>
+        <camera-params>
+          <shutter>global</shutter>
+          <hdr>true</hdr>
+          <compression>raw</compression>
+          <trigger>hardware</trigger>
+        </camera-params>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- ================================================================ -->
+  <!-- JOINTS (kinematic tree)                                          -->
+  <!-- ================================================================ -->
+
+  <!-- Base structure -->
+  <joint name="chassis_to_torso" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="torso"/>
+    <origin xyz="0 0 0.35"/>
+  </joint>
+
+  <joint name="chassis_to_s32n79" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="s32n79"/>
+    <origin xyz="0.1 0 0.05"/>
+  </joint>
+
+  <joint name="chassis_to_agx_thor" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="agx-thor"/>
+    <origin xyz="-0.1 0 0.05"/>
+  </joint>
+
+  <joint name="chassis_to_s32j100" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="s32j100"/>
+    <origin xyz="0 0 0.02"/>
+  </joint>
+
+  <joint name="chassis_to_zlac8015d" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="zlac8015d"/>
+    <origin xyz="0 0 -0.05"/>
+  </joint>
+
+  <joint name="chassis_to_wheel_left" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="wheel-left"/>
+    <origin xyz="-0.15 0.18 -0.1"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint name="chassis_to_wheel_right" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="wheel-right"/>
+    <origin xyz="-0.15 -0.18 -0.1"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint name="chassis_to_bms" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="bms"/>
+    <origin xyz="0 0 0.1"/>
+  </joint>
+
+  <joint name="chassis_to_caster_fl" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="caster-fl"/>
+    <origin xyz="0.25 0.15 -0.15"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <joint name="chassis_to_caster_fr" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="caster-fr"/>
+    <origin xyz="0.25 -0.15 -0.15"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <joint name="torso_to_head" type="fixed">
+    <parent comp="torso"/>
+    <child comp="head"/>
+    <origin xyz="0 0 0.4"/>
+  </joint>
+
+  <joint name="chassis_to_lidar_front" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="lidar-front"/>
+    <origin xyz="0.3 0 0.15" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="chassis_to_lidar_rear" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="lidar-rear"/>
+    <origin xyz="-0.3 0 0.15" rpy="0 0 3.14159"/>
+  </joint>
+
+  <joint name="chassis_to_radar" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="radar-4d"/>
+    <origin xyz="0.3 0 0.2" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Left arm joints -->
+  <joint name="l_shoulder_yaw" type="revolute">
+    <parent comp="torso"/>
+    <child comp="mcn1-l"/>
+    <origin xyz="0 0.18 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.96" upper="2.96" effort="50" velocity="3.14"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <joint name="l_elbow" type="revolute">
+    <parent comp="mcn1-l"/>
+    <child comp="mcn2-l"/>
+    <origin xyz="0 0 -0.3" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.5" effort="30" velocity="3.14"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+
+  <joint name="l_wrist_pitch" type="revolute">
+    <parent comp="mcn2-l"/>
+    <child comp="mcn3-l"/>
+    <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="6.28"/>
+    <dynamics damping="0.1" friction="0.02"/>
+  </joint>
+
+  <joint name="l_hand" type="fixed">
+    <parent comp="mcn3-l"/>
+    <child comp="mcn4-l"/>
+    <origin xyz="0 0 -0.1"/>
+  </joint>
+
+  <joint name="l_cam_mount" type="fixed">
+    <parent comp="mcn3-l"/>
+    <child comp="cam-l"/>
+    <origin xyz="0.03 0 -0.02" rpy="0 0.3 0"/>
+  </joint>
+
+  <!-- Right arm joints -->
+  <joint name="r_shoulder_yaw" type="revolute">
+    <parent comp="torso"/>
+    <child comp="mcn1-r"/>
+    <origin xyz="0 -0.18 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.96" upper="2.96" effort="50" velocity="3.14"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+
+  <joint name="r_elbow" type="revolute">
+    <parent comp="mcn1-r"/>
+    <child comp="mcn2-r"/>
+    <origin xyz="0 0 -0.3"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.5" effort="30" velocity="3.14"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+
+  <joint name="r_wrist_pitch" type="revolute">
+    <parent comp="mcn2-r"/>
+    <child comp="mcn3-r"/>
+    <origin xyz="0 0 -0.25"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="6.28"/>
+    <dynamics damping="0.1" friction="0.02"/>
+  </joint>
+
+  <joint name="r_hand" type="fixed">
+    <parent comp="mcn3-r"/>
+    <child comp="mcn4-r"/>
+    <origin xyz="0 0 -0.1"/>
+  </joint>
+
+  <joint name="r_cam_mount" type="fixed">
+    <parent comp="mcn3-r"/>
+    <child comp="cam-r"/>
+    <origin xyz="0.03 0 -0.02" rpy="0 0.3 0"/>
+  </joint>
+
+  <!-- ================================================================ -->
+  <!-- GROUPS                                                           -->
+  <!-- ================================================================ -->
+
+  <group name="left_arm" type="kinematic-chain">
+    <description>Left arm kinematic chain (shoulder to wrist)</description>
+    <joint ref="l_shoulder_yaw"/>
+    <joint ref="l_elbow"/>
+    <joint ref="l_wrist_pitch"/>
+  </group>
+
+  <group name="right_arm" type="kinematic-chain">
+    <description>Right arm kinematic chain (shoulder to wrist)</description>
+    <joint ref="r_shoulder_yaw"/>
+    <joint ref="r_elbow"/>
+    <joint ref="r_wrist_pitch"/>
+  </group>
+
+  <group name="left_hand" type="end-effector" tip-comp="mcn4-l">
+    <description>Left dextrous hand</description>
+    <joint ref="l_hand"/>
+  </group>
+
+  <group name="right_hand" type="end-effector" tip-comp="mcn4-r">
+    <description>Right dextrous hand</description>
+    <joint ref="r_hand"/>
+  </group>
+
+  <group name="left_manipulation">
+    <description>Left arm + hand for manipulation tasks</description>
+    <group ref="left_arm"/>
+    <group ref="left_hand"/>
+  </group>
+
+  <group name="right_manipulation">
+    <description>Right arm + hand for manipulation tasks</description>
+    <group ref="right_arm"/>
+    <group ref="right_hand"/>
+  </group>
+
+  <group name="locomotion" type="locomotion">
+    <description>Differential drive wheels + passive casters</description>
+    <joint ref="chassis_to_wheel_left"/>
+    <joint ref="chassis_to_wheel_right"/>
+    <joint ref="chassis_to_caster_fl"/>
+    <joint ref="chassis_to_caster_fr"/>
+  </group>
+
+  <group name="head_group">
+    <description>Head unit for display and microphone interaction</description>
+    <joint ref="torso_to_head"/>
+  </group>
+
+  <!-- ================================================================ -->
+  <!-- STATES (named kinematic configurations)                          -->
+  <!-- ================================================================ -->
+
+  <state name="home" default="true">
+    <description>Default home position — arms at sides, elbows slightly bent</description>
+    <joint-position joint="l_shoulder_yaw" value="0"/>
+    <joint-position joint="l_elbow" value="0.5"/>
+    <joint-position joint="l_wrist_pitch" value="0"/>
+    <joint-position joint="r_shoulder_yaw" value="0"/>
+    <joint-position joint="r_elbow" value="0.5"/>
+    <joint-position joint="r_wrist_pitch" value="0"/>
+  </state>
+
+  <state name="transport">
+    <description>Compact transport position — arms folded tight against torso</description>
+    <joint-position joint="l_shoulder_yaw" value="0"/>
+    <joint-position joint="l_elbow" value="2.4"/>
+    <joint-position joint="l_wrist_pitch" value="1.0"/>
+    <joint-position joint="r_shoulder_yaw" value="0"/>
+    <joint-position joint="r_elbow" value="2.4"/>
+    <joint-position joint="r_wrist_pitch" value="1.0"/>
+  </state>
+
+  <!-- ================================================================ -->
+  <!-- SELF-COLLISION DISABLE                                           -->
+  <!-- ================================================================ -->
+
+  <self-collision-disable>
+    <!-- Left arm adjacent pairs -->
+    <pair comp1="torso" comp2="mcn1-l" reason="adjacent"/>
+    <pair comp1="mcn1-l" comp2="mcn2-l" reason="adjacent"/>
+    <pair comp1="mcn2-l" comp2="mcn3-l" reason="adjacent"/>
+    <pair comp1="mcn3-l" comp2="mcn4-l" reason="adjacent"/>
+    <pair comp1="mcn3-l" comp2="cam-l" reason="mounted"/>
+    <!-- Right arm adjacent pairs -->
+    <pair comp1="torso" comp2="mcn1-r" reason="adjacent"/>
+    <pair comp1="mcn1-r" comp2="mcn2-r" reason="adjacent"/>
+    <pair comp1="mcn2-r" comp2="mcn3-r" reason="adjacent"/>
+    <pair comp1="mcn3-r" comp2="mcn4-r" reason="adjacent"/>
+    <pair comp1="mcn3-r" comp2="cam-r" reason="mounted"/>
+    <!-- Cross-body pairs that cannot collide -->
+    <pair comp1="mcn1-l" comp2="mcn1-r" reason="unreachable"/>
+    <pair comp1="mcn2-l" comp2="mcn2-r" reason="unreachable"/>
+    <!-- Chassis-mounted -->
+    <pair comp1="chassis" comp2="torso" reason="adjacent"/>
+    <pair comp1="chassis" comp2="s32n79" reason="mounted"/>
+    <pair comp1="chassis" comp2="agx-thor" reason="mounted"/>
+    <pair comp1="chassis" comp2="s32j100" reason="mounted"/>
+    <pair comp1="chassis" comp2="zlac8015d" reason="mounted"/>
+    <pair comp1="chassis" comp2="wheel-left" reason="adjacent"/>
+    <pair comp1="chassis" comp2="wheel-right" reason="adjacent"/>
+    <pair comp1="chassis" comp2="bms" reason="mounted"/>
+    <pair comp1="chassis" comp2="lidar-front" reason="mounted"/>
+    <pair comp1="chassis" comp2="lidar-rear" reason="mounted"/>
+    <pair comp1="chassis" comp2="radar-4d" reason="mounted"/>
+    <pair comp1="chassis" comp2="caster-fl" reason="adjacent"/>
+    <pair comp1="chassis" comp2="caster-fr" reason="adjacent"/>
+    <pair comp1="torso" comp2="head" reason="adjacent"/>
+  </self-collision-disable>
+
+  <!-- ================================================================ -->
+  <!-- NETWORKS                                                         -->
+  <!-- ================================================================ -->
+
+  <!-- Network 1: Backbone (S32N79 E810 <-> AGX Thor 25G) -->
+  <network name="backbone">
+    <description>25G backbone between S32N79 (E810 PCIe NIC) and AGX Thor. Dual redundant links.</description>
+
+    <link name="s32n79_to_thor_p0">
+      <wired standard="25gbase-sr">
+        <port>s32n79/e810_p0</port>
+        <port>agx-thor/mgbe0</port>
+        <vlan id="1"/>
+      </wired>
+    </link>
+    <link name="s32n79_to_thor_p1">
+      <wired standard="25gbase-sr">
+        <port>s32n79/e810_p1</port>
+        <port>agx-thor/mgbe1</port>
+        <vlan id="1"/>
+      </wired>
+    </link>
+
+    <gptp domain="0">
+      <clock device="s32n79" port="e810_p0" gm-capable="true" priority1="128" priority2="128"/>
+      <clock device="agx-thor" port="mgbe0" gm-capable="false" priority1="255" priority2="255"/>
+      <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-thresh-ns="800"/>
+    </gptp>
+
+    <traffic-classes count="8">
+      <class tc="7" pcp="7" name="ptp" preemption="express"/>
+      <class tc="6" pcp="6" name="safety" preemption="express"/>
+      <class tc="5" pcp="5" name="motion" preemption="express"/>
+      <class tc="4" pcp="4" name="sensor" preemption="express"/>
+      <class tc="3" pcp="3" name="camera" preemption="preemptable"/>
+      <class tc="2" pcp="2" name="lidar" preemption="preemptable"/>
+      <class tc="1" pcp="1" name="config" preemption="preemptable"/>
+      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
+    </traffic-classes>
+
+    <schedule name="uplink-1ms" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="10"/>
+      <gate tc-mask="0x60" duration-us="40"/>
+      <gate tc-mask="0x10" duration-us="30"/>
+      <gate tc-mask="0x0F" duration-us="920"/>
+    </schedule>
+
+    <schedule-assignment>
+      <assign schedule="uplink-1ms" ports="s32n79/e810_p0 s32n79/e810_p1 agx-thor/mgbe0 agx-thor/mgbe1"/>
+    </schedule-assignment>
+
+    <macsec policy="must-secure" cipher="gcm-aes-256">
+      <key-store type="tpm" ref="tpm0"/>
+    </macsec>
+
+    <eee-policy>disabled</eee-policy>
+  </network>
+
+  <!-- Network 2: Left arm 802.3dm chain -->
+  <network name="left-arm">
+    <description>Left arm 802.3dm daisy-chain: S32N79 XFI -> MCN1-L -> MCN2-L -> MCN3-L -> MCN4-L, camera spur at MCN3-L</description>
+
+    <chain name="left-arm-chain" type="802.3dm" mode="switched">
+      <description>Left arm motor chain (10G upstream / 100M downstream) with wrist camera spur</description>
+      <vlan id="10" pcp="5"/>
+      <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="arm-left-keys"/>
+      <hop device="s32n79" port="xfi_left" role="root"/>
+      <hop device="mcn1-l" ingress="eth0" egress="eth1"/>
+      <hop device="mcn2-l" ingress="eth0" egress="eth1"/>
+      <hop device="mcn3-l" ingress="eth0" egress="eth1">
+        <spur device="cam-l" port="eth0" via="eth2">
+          <description>Left wrist stereo camera (~7 Gbps upstream)</description>
+          <vlan id="20" pcp="3"/>
+        </spur>
+      </hop>
+      <hop device="mcn4-l" ingress="eth0" role="tail"/>
+    </chain>
+
+    <gptp domain="1">
+      <clock device="s32n79" port="xfi_left" gm-capable="true" priority1="128" priority2="128"/>
+      <clock device="mcn1-l" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn2-l" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn3-l" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn4-l" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="cam-l" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-thresh-ns="2000"/>
+    </gptp>
+
+    <traffic-classes count="8">
+      <class tc="7" pcp="7" name="ptp" preemption="express"/>
+      <class tc="6" pcp="6" name="safety" preemption="express"/>
+      <class tc="5" pcp="5" name="motion" preemption="express"/>
+      <class tc="4" pcp="4" name="sensor" preemption="express"/>
+      <class tc="3" pcp="3" name="camera" preemption="preemptable"/>
+      <class tc="2" pcp="2" name="lidar" preemption="preemptable"/>
+      <class tc="1" pcp="1" name="config" preemption="preemptable"/>
+      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
+    </traffic-classes>
+
+    <schedule name="arm-chain-1ms" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="20"/>
+      <gate tc-mask="0x60" duration-us="80"/>
+      <gate tc-mask="0x10" duration-us="50"/>
+      <gate tc-mask="0x0F" duration-us="850"/>
+    </schedule>
+
+    <schedule name="hand-link-1ms" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="20"/>
+      <gate tc-mask="0x60" duration-us="100"/>
+      <gate tc-mask="0x10" duration-us="80"/>
+      <gate tc-mask="0x0F" duration-us="800"/>
+    </schedule>
+
+    <schedule-assignment>
+      <assign schedule="arm-chain-1ms" chains="left-arm-chain"/>
+      <assign schedule="hand-link-1ms" ports="mcn3-l/eth1 mcn4-l/eth0"/>
+    </schedule-assignment>
+
+    <stream-profile uri="profiles/operational.streams.xml" active="true"/>
+
+    <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk">
+      <key-store type="secure-element" ref="se051"/>
+    </macsec>
+
+    <eee-policy>disabled</eee-policy>
+  </network>
+
+  <!-- Network 3: Right arm 802.3dm chain (mirror of left) -->
+  <network name="right-arm">
+    <description>Right arm 802.3dm daisy-chain: S32N79 XFI -> MCN1-R -> MCN2-R -> MCN3-R -> MCN4-R, camera spur at MCN3-R</description>
+
+    <chain name="right-arm-chain" type="802.3dm" mode="switched">
+      <description>Right arm motor chain (10G upstream / 100M downstream) with wrist camera spur</description>
+      <vlan id="11" pcp="5"/>
+      <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="arm-right-keys"/>
+      <hop device="s32n79" port="xfi_right" role="root"/>
+      <hop device="mcn1-r" ingress="eth0" egress="eth1"/>
+      <hop device="mcn2-r" ingress="eth0" egress="eth1"/>
+      <hop device="mcn3-r" ingress="eth0" egress="eth1">
+        <spur device="cam-r" port="eth0" via="eth2">
+          <description>Right wrist stereo camera (~7 Gbps upstream)</description>
+          <vlan id="21" pcp="3"/>
+        </spur>
+      </hop>
+      <hop device="mcn4-r" ingress="eth0" role="tail"/>
+    </chain>
+
+    <gptp domain="2">
+      <clock device="s32n79" port="xfi_right" gm-capable="true" priority1="128" priority2="128"/>
+      <clock device="mcn1-r" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn2-r" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn3-r" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="mcn4-r" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <clock device="cam-r" port="eth0" gm-capable="false" priority1="255" priority2="255"/>
+      <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-thresh-ns="2000"/>
+    </gptp>
+
+    <traffic-classes count="8">
+      <class tc="7" pcp="7" name="ptp" preemption="express"/>
+      <class tc="6" pcp="6" name="safety" preemption="express"/>
+      <class tc="5" pcp="5" name="motion" preemption="express"/>
+      <class tc="4" pcp="4" name="sensor" preemption="express"/>
+      <class tc="3" pcp="3" name="camera" preemption="preemptable"/>
+      <class tc="2" pcp="2" name="lidar" preemption="preemptable"/>
+      <class tc="1" pcp="1" name="config" preemption="preemptable"/>
+      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
+    </traffic-classes>
+
+    <schedule name="arm-chain-1ms" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="20"/>
+      <gate tc-mask="0x60" duration-us="80"/>
+      <gate tc-mask="0x10" duration-us="50"/>
+      <gate tc-mask="0x0F" duration-us="850"/>
+    </schedule>
+
+    <schedule name="hand-link-1ms" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="20"/>
+      <gate tc-mask="0x60" duration-us="100"/>
+      <gate tc-mask="0x10" duration-us="80"/>
+      <gate tc-mask="0x0F" duration-us="800"/>
+    </schedule>
+
+    <schedule-assignment>
+      <assign schedule="arm-chain-1ms" chains="right-arm-chain"/>
+      <assign schedule="hand-link-1ms" ports="mcn3-r/eth1 mcn4-r/eth0"/>
+    </schedule-assignment>
+
+    <stream-profile uri="profiles/operational.streams.xml" active="true"/>
+
+    <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk">
+      <key-store type="secure-element" ref="se051"/>
+    </macsec>
+
+    <eee-policy>disabled</eee-policy>
+  </network>
+
+  <!-- Network 4: Base zone (S32N79 -> S32J100 -> peripherals + CAN) -->
+  <network name="base">
+    <description>Base zone network: S32N79 QXGMII to S32J100, S32J100 to peripherals (head, lidars, radar), CAN-FD bus (wheels, BMS)</description>
+
+    <!-- QXGMII links: S32N79 -> S32J100 (4x 2.5G) -->
+    <link name="n79_to_j100_p0">
+      <wired standard="2.5gbase-t1">
+        <port>s32n79/qxgmii_p0</port>
+        <port>s32j100/eth_up0</port>
+        <vlan id="30"/>
+        <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="link-n79-j100-0"/>
+      </wired>
+    </link>
+    <link name="n79_to_j100_p1">
+      <wired standard="2.5gbase-t1">
+        <port>s32n79/qxgmii_p1</port>
+        <port>s32j100/eth_up1</port>
+        <vlan id="30"/>
+        <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="link-n79-j100-1"/>
+      </wired>
+    </link>
+    <link name="n79_to_j100_p2">
+      <wired standard="2.5gbase-t1">
+        <port>s32n79/qxgmii_p2</port>
+        <port>s32j100/eth_up2</port>
+        <vlan id="30"/>
+        <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="link-n79-j100-2"/>
+      </wired>
+    </link>
+    <link name="n79_to_j100_p3">
+      <wired standard="2.5gbase-t1">
+        <port>s32n79/qxgmii_p3</port>
+        <port>s32j100/eth_up3</port>
+        <vlan id="30"/>
+        <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk" key-ref="link-n79-j100-3"/>
+      </wired>
+    </link>
+
+    <!-- S32J100 -> base peripherals -->
+    <link name="j100_to_head">
+      <wired standard="1000base-t1">
+        <port>s32j100/eth_head</port>
+        <port>head/eth0</port>
+        <vlan id="40"/>
+      </wired>
+    </link>
+    <link name="j100_to_lidar_f">
+      <wired standard="1000base-t1">
+        <port>s32j100/eth_lidar_front</port>
+        <port>lidar-front/eth0</port>
+        <vlan id="50"/>
+      </wired>
+    </link>
+    <link name="j100_to_lidar_r">
+      <wired standard="1000base-t1">
+        <port>s32j100/eth_lidar_rear</port>
+        <port>lidar-rear/eth0</port>
+        <vlan id="50"/>
+      </wired>
+    </link>
+    <link name="j100_to_radar">
+      <wired standard="1000base-t1">
+        <port>s32j100/eth_radar</port>
+        <port>radar-4d/eth0</port>
+        <vlan id="50"/>
+      </wired>
+    </link>
+
+    <!-- SIGNAL links: ZLAC8015D controller -> hub motors -->
+    <link name="zlac_to_wheel_left_sig">
+      <wired standard="signal">
+        <port>zlac8015d/sig_left</port>
+        <port>wheel-left/sig0</port>
+      </wired>
+    </link>
+    <link name="zlac_to_wheel_left_phase">
+      <wired standard="signal">
+        <port>zlac8015d/phase_left</port>
+        <port>wheel-left/phase0</port>
+      </wired>
+    </link>
+    <link name="zlac_to_wheel_right_sig">
+      <wired standard="signal">
+        <port>zlac8015d/sig_right</port>
+        <port>wheel-right/sig0</port>
+      </wired>
+    </link>
+    <link name="zlac_to_wheel_right_phase">
+      <wired standard="signal">
+        <port>zlac8015d/phase_right</port>
+        <port>wheel-right/phase0</port>
+      </wired>
+    </link>
+
+    <!-- CAN-FD bus: S32J100 -> ZLAC8015D + BMS -->
+    <bus name="base_can" type="CAN" topology="daisy-chain">
+      <bitrate>5000000</bitrate>
+      <standard>CAN-FD</standard>
+      <participant device="s32j100" port="can0" role="controller" position="1"/>
+      <participant device="zlac8015d" port="can0" position="2" id="0x601">
+        <protocol>CANopen</protocol>
+      </participant>
+      <participant device="bms" port="can0" position="3" id="0x610" terminator="true">
+        <protocol>CAN-FD</protocol>
+      </participant>
+    </bus>
+
+    <gptp domain="3">
+      <clock device="s32n79" port="qxgmii_p0" gm-capable="true" priority1="128" priority2="128"/>
+      <clock device="s32j100" port="eth_up0" gm-capable="false" priority1="255" priority2="255"/>
+      <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-thresh-ns="2000"/>
+    </gptp>
+
+    <traffic-classes count="8">
+      <class tc="7" pcp="7" name="ptp" preemption="express"/>
+      <class tc="6" pcp="6" name="safety" preemption="express"/>
+      <class tc="5" pcp="5" name="motion" preemption="express"/>
+      <class tc="4" pcp="4" name="sensor" preemption="express"/>
+      <class tc="3" pcp="3" name="camera" preemption="preemptable"/>
+      <class tc="2" pcp="2" name="lidar" preemption="preemptable"/>
+      <class tc="1" pcp="1" name="config" preemption="preemptable"/>
+      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
+    </traffic-classes>
+
+    <schedule name="base-2ms" cycle-time-us="2000">
+      <gate tc-mask="0x80" duration-us="20"/>
+      <gate tc-mask="0x60" duration-us="100"/>
+      <gate tc-mask="0x1C" duration-us="880"/>
+      <gate tc-mask="0x03" duration-us="1000"/>
+    </schedule>
+
+    <schedule-assignment>
+      <assign schedule="base-2ms" ports="s32n79/qxgmii_p0 s32n79/qxgmii_p1 s32n79/qxgmii_p2 s32n79/qxgmii_p3 s32j100/eth_up0 s32j100/eth_up1 s32j100/eth_up2 s32j100/eth_up3"/>
+    </schedule-assignment>
+
+    <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk">
+      <key-store type="secure-element" ref="se051"/>
+    </macsec>
+
+    <eee-policy>disabled</eee-policy>
+  </network>
+
+  <!-- Network 5: Power distribution bus -->
+  <network name="power">
+    <description>24V power distribution from BMS to all powered components</description>
+
+    <bus name="power_bus" type="power">
+      <description>24V DC power distribution bus from MR-BMS771</description>
+      <voltage>24</voltage>
+      <participant device="bms" port="bat_out" role="source" position="0"/>
+      <participant device="agx-thor" port="pwr_in" role="sink" position="1"/>
+      <participant device="s32n79" port="pwr_in" role="sink" position="2"/>
+      <participant device="s32j100" port="pwr_in" role="sink" position="3"/>
+      <participant device="head" port="pwr_in" role="sink" position="4"/>
+      <participant device="lidar-front" port="pwr_in" role="sink" position="5"/>
+      <participant device="lidar-rear" port="pwr_in" role="sink" position="6"/>
+      <participant device="radar-4d" port="pwr_in" role="sink" position="7"/>
+      <participant device="zlac8015d" port="pwr_in" role="sink" position="8"/>
+      <participant device="wheel-left" port="pwr_in" role="sink" position="19"/>
+      <participant device="wheel-right" port="pwr_in" role="sink" position="20"/>
+      <participant device="mcn1-l" port="pwr_in" role="sink" position="9"/>
+      <participant device="mcn2-l" port="pwr_in" role="sink" position="10"/>
+      <participant device="mcn3-l" port="pwr_in" role="sink" position="11"/>
+      <participant device="mcn4-l" port="pwr_in" role="sink" position="12"/>
+      <participant device="cam-l" port="pwr_in" role="sink" position="13"/>
+      <participant device="mcn1-r" port="pwr_in" role="sink" position="14"/>
+      <participant device="mcn2-r" port="pwr_in" role="sink" position="15"/>
+      <participant device="mcn3-r" port="pwr_in" role="sink" position="16"/>
+      <participant device="mcn4-r" port="pwr_in" role="sink" position="17"/>
+      <participant device="cam-r" port="pwr_in" role="sink" position="18"/>
+    </bus>
+  </network>
+
+  <!-- ================================================================ -->
+  <!-- TRANSMISSIONS                                                    -->
+  <!-- ================================================================ -->
+
+  <transmission name="l_shoulder_yaw_tx" type="planetary">
+    <motor ref="shoulder_yaw_motor"/>
+    <joint ref="l_shoulder_yaw"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+
+  <transmission name="l_shoulder_pitch_tx" type="planetary">
+    <motor ref="shoulder_pitch_motor"/>
+    <joint ref="l_shoulder_yaw"/>
+    <reduction>80</reduction>
+    <efficiency>0.82</efficiency>
+  </transmission>
+
+  <transmission name="l_elbow_tx" type="planetary">
+    <motor ref="elbow_l_motor"/>
+    <joint ref="l_elbow"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+
+  <transmission name="l_wrist_pitch_tx" type="planetary">
+    <motor ref="wrist_pitch_l_motor"/>
+    <joint ref="l_wrist_pitch"/>
+    <reduction>30</reduction>
+    <efficiency>0.88</efficiency>
+  </transmission>
+
+  <transmission name="r_shoulder_yaw_tx" type="planetary">
+    <motor ref="shoulder_yaw_r_motor"/>
+    <joint ref="r_shoulder_yaw"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+
+  <transmission name="r_shoulder_pitch_tx" type="planetary">
+    <motor ref="shoulder_pitch_r_motor"/>
+    <joint ref="r_shoulder_yaw"/>
+    <reduction>80</reduction>
+    <efficiency>0.82</efficiency>
+  </transmission>
+
+  <transmission name="r_elbow_tx" type="planetary">
+    <motor ref="elbow_r_motor"/>
+    <joint ref="r_elbow"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+
+  <transmission name="r_wrist_pitch_tx" type="planetary">
+    <motor ref="wrist_pitch_r_motor"/>
+    <joint ref="r_wrist_pitch"/>
+    <reduction>30</reduction>
+    <efficiency>0.88</efficiency>
+  </transmission>
+
+  <transmission name="wheel_left_tx" type="simple">
+    <motor ref="left_wheel_motor"/>
+    <joint ref="chassis_to_wheel_left"/>
+    <reduction>1</reduction>
+    <efficiency>0.95</efficiency>
+  </transmission>
+
+  <transmission name="wheel_right_tx" type="simple">
+    <motor ref="right_wheel_motor"/>
+    <joint ref="chassis_to_wheel_right"/>
+    <reduction>1</reduction>
+    <efficiency>0.95</efficiency>
+  </transmission>
+
+  <!-- ================================================================ -->
+  <!-- MATERIALS                                                        -->
+  <!-- ================================================================ -->
+
+  <material name="aluminum-anodized">
+    <description>Anodized aluminum chassis and structural components</description>
+    <color rgba="0.7 0.7 0.7 1.0"/>
+    <surface>
+      <friction static="0.5" dynamic="0.35"/>
+      <restitution>0.1</restitution>
+    </surface>
+  </material>
+
+  <material name="rubber-tire">
+    <description>Rubber tire compound for driven wheels</description>
+    <color rgba="0.15 0.15 0.15 1.0"/>
+    <surface>
+      <friction static="0.9" dynamic="0.7"/>
+      <restitution>0.05</restitution>
+    </surface>
+  </material>
+
+  <material name="abs-black">
+    <description>ABS plastic enclosure material</description>
+    <color rgba="0.1 0.1 0.1 1.0"/>
+    <surface>
+      <friction static="0.4" dynamic="0.3"/>
+      <restitution>0.2</restitution>
+    </surface>
+  </material>
+
+</hcdf>

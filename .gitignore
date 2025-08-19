@@ -1,0 +1,3 @@
+tools/hcdf-cli/target/
+tools/hcdf-cli/Cargo.lock
+__pycache__/

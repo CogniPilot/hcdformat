@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="board">
+    <extension domain="gazebo" version="1.0">
+      <gravity>true</gravity>
+      <self_collide>false</self_collide>
+    </extension>
+  </comp>
+</hcdf>

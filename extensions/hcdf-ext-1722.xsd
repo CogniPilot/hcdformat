@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HCDF IEEE 1722 AVTP Extension Schema
+  Version: 1.0
+
+  Defines the structure of content inside <extension domain="org.ieee.1722">.
+  Describes AVTP (Audio Video Transport Protocol) capabilities per device
+  and detailed framing configuration per stream.
+
+  Covers IEEE 1722-2016, 1722a (ACF), 1722b (CoE/CVF/RVF), and 1722-2025.
+
+  Example usage within an HCDF file:
+
+    <extension domain="org.ieee.1722" version="1.0">
+      <avtp>
+        <avtp-capabilities>
+          <subtype>aaf</subtype>
+          <subtype>cvf</subtype>
+          <subtype>tscf</subtype>
+          <acf-type>can</acf-type>
+          <acf-type>gpio</acf-type>
+        </avtp-capabilities>
+        <avtp-stream stream="imu_control" subtype="tscf">
+          <acf type="can" bus="drive-bus"/>
+        </avtp-stream>
+        <avtp-stream stream="camera_front" subtype="cvf">
+          <cvf format="h264" profile="main"/>
+        </avtp-stream>
+        <avtp-stream stream="mic_array" subtype="aaf">
+          <aaf channels="8" sample-rate="48000" bit-depth="24" format="pcm-int"/>
+        </avtp-stream>
+      </avtp>
+    </extension>
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0"
+           elementFormDefault="unqualified">
+
+  <!-- ================================================================== -->
+  <!-- AvtpSubtype enumeration                                            -->
+  <!-- ================================================================== -->
+  <xs:simpleType name="AvtpSubtype">
+    <xs:annotation>
+      <xs:documentation>IEEE 1722 AVTP subtype identifiers. Each value corresponds to a
+distinct framing format defined in IEEE 1722-2016 and its amendments
+(1722a for ACF, 1722b for CoE/CVF/RVF, and 1722-2025).</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="aaf">
+        <xs:annotation>
+          <xs:documentation>AVTP Audio Format — uncompressed PCM audio transport.
+Used for microphone arrays, speaker feeds, and inter-device audio.
+Supports multi-channel PCM-int, PCM-float, and AES3 encapsulation.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="cvf">
+        <xs:annotation>
+          <xs:documentation>Compressed Video Format — H.264, MJPEG, and JPEG2000 video transport.
+Used for camera feeds over Ethernet with AVTP presentation timestamps
+for lip-sync and multi-camera synchronization.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="rvf">
+        <xs:annotation>
+          <xs:documentation>Raw Video Format — uncompressed video transport (Camera over Ethernet / 1722b).
+Used for machine vision cameras requiring zero-latency pixel access:
+Bayer, YUV, RGB, and monochrome formats.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="crf">
+        <xs:annotation>
+          <xs:documentation>Clock Reference Format — media clock distribution over AVTP.
+Distributes a media clock (audio word clock, video frame clock) across
+the network so that multiple talkers/listeners stay sample-locked.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="tscf">
+        <xs:annotation>
+          <xs:documentation>Time-Synchronous Control Format — gPTP-timestamped control messages.
+Encapsulates ACF messages (CAN, LIN, GPIO, SPI, I2C, sensor) with
+AVTP presentation timestamps for deterministic delivery.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ntscf">
+        <xs:annotation>
+          <xs:documentation>Non-Time-Synchronous Control Format — best-effort control messages.
+Same ACF message types as TSCF but without presentation timestamps.
+Used for configuration, diagnostics, and non-real-time control.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="aef">
+        <xs:annotation>
+          <xs:documentation>AVTP Encrypted Format — encrypted audio/video/control transport.
+Wraps other AVTP subtypes with encryption for secure media transport
+over untrusted network segments.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="sdi">
+        <xs:annotation>
+          <xs:documentation>Serial Digital Interface — professional video transport over AVTP.
+Encapsulates SDI video (SD-SDI, HD-SDI, 3G-SDI) for broadcast and
+professional AV applications.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ================================================================== -->
+  <!-- AcfType enumeration                                                -->
+  <!-- ================================================================== -->
+  <xs:simpleType name="AcfType">
+    <xs:annotation>
+      <xs:documentation>IEEE 1722 ACF (AVTP Control Format) message types.
+ACF messages are carried inside TSCF or NTSCF streams and tunnel
+legacy bus protocols or sensor data over Ethernet.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="can">
+        <xs:annotation>
+          <xs:documentation>CAN/CAN-FD frame tunneling — encapsulates full CAN frames
+(arbitration ID, DLC, data, FD flag) inside AVTP for bridging
+CAN segments over Ethernet.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="can-brief">
+        <xs:annotation>
+          <xs:documentation>Condensed CAN frames with reduced header — packs multiple
+short CAN messages into a single AVTP frame for bandwidth
+efficiency on high-message-rate buses.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="lin">
+        <xs:annotation>
+          <xs:documentation>LIN bus frame tunneling — encapsulates LIN frames (PID,
+data, checksum) for bridging LIN segments over Ethernet.
+Common in automotive body electronics.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="mdio">
+        <xs:annotation>
+          <xs:documentation>PHY management MDIO tunneling — remote read/write of
+Ethernet PHY registers (clause 22 and clause 45) over AVTP
+for centralized PHY management.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="gpio">
+        <xs:annotation>
+          <xs:documentation>Remote GPIO state transfer — tunnels digital I/O pin
+states over Ethernet for remote limit switches, emergency
+stops, indicator LEDs, and discrete signals.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="spi">
+        <xs:annotation>
+          <xs:documentation>SPI transaction tunneling — encapsulates SPI bus
+transactions (MOSI/MISO data, chip select, clock config)
+over Ethernet for remote sensor access.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="i2c">
+        <xs:annotation>
+          <xs:documentation>I2C transaction tunneling — encapsulates I2C bus
+transactions (address, read/write, data bytes) over
+Ethernet for remote sensor and EEPROM access.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="sensor">
+        <xs:annotation>
+          <xs:documentation>Generic sensor data — carries arbitrary sensor payloads
+(IMU samples, temperature, pressure) with a common header
+for sensor type and timestamp.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="aecp">
+        <xs:annotation>
+          <xs:documentation>AES67 discovery and control — AVDECC Entity Control Protocol
+messages for discovering and configuring AES67/1722
+endpoints on the network.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ancillary">
+        <xs:annotation>
+          <xs:documentation>Ancillary data — carries metadata, subtitles, timecode,
+and other auxiliary information alongside media streams.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ================================================================== -->
+  <!-- avtp_capabilities: device-level AVTP capability declaration         -->
+  <!-- ================================================================== -->
+  <xs:complexType name="avtp_capabilities">
+    <xs:annotation>
+      <xs:documentation>Declares which AVTP subtypes and ACF message types a device supports.
+This is a device-level capability advertisement: it tells agents what
+kinds of 1722 streams the device can produce or consume. A device that
+lists "cvf" can act as a compressed video talker; one that lists "can"
+as an ACF type can bridge CAN frames over Ethernet.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="subtype" type="AvtpSubtype" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>An AVTP subtype this device supports (e.g., aaf, cvf, tscf).
+List all subtypes the device can produce or consume.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="acf-type" type="AcfType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>An ACF message type this device supports (e.g., can, gpio, sensor).
+ACF types are relevant when the device uses TSCF or NTSCF streams.
+List all ACF types the device can originate or process.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- acf_config: ACF-specific stream configuration                      -->
+  <!-- ================================================================== -->
+  <xs:complexType name="acf_config">
+    <xs:annotation>
+      <xs:documentation>ACF-specific configuration for a TSCF or NTSCF control stream.
+Identifies which ACF message type the stream carries and optionally
+references the HCDF bus being tunneled (e.g., a CAN-FD bus name from
+the HCDF network topology).</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="type" type="AcfType" use="required">
+      <xs:annotation>
+        <xs:documentation>The ACF message type carried by this stream (e.g., "can", "gpio",
+"sensor"). Must match one of the device's declared acf-type capabilities.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bus" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional reference to an HCDF bus name being tunneled over this
+stream. For example, if this stream tunnels CAN frames from the
+"drive-bus" CAN-FD bus, set bus="drive-bus". Enables agents to
+trace the bus-to-stream mapping.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- aaf_config: AVTP Audio Format stream configuration                 -->
+  <!-- ================================================================== -->
+  <xs:complexType name="aaf_config">
+    <xs:annotation>
+      <xs:documentation>Audio format configuration for an AAF (AVTP Audio Format) stream.
+Specifies the PCM audio parameters: channel count, sample rate,
+bit depth, and encoding format. These parameters determine the
+AVTP frame payload size and stream bandwidth.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="channels" type="xs:unsignedInt">
+      <xs:annotation>
+        <xs:documentation>Number of audio channels in the stream (e.g., 2 for stereo,
+8 for a microphone array, 32 for a mixing bus).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sample-rate" type="xs:unsignedInt">
+      <xs:annotation>
+        <xs:documentation>Audio sample rate in Hz (e.g., 48000 for professional audio,
+96000 for high-resolution recording, 16000 for voice).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bit-depth" type="xs:unsignedInt">
+      <xs:annotation>
+        <xs:documentation>Bits per sample per channel (e.g., 16, 24, or 32).
+Higher bit depth increases dynamic range at the cost of bandwidth.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="format" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Audio encoding format: "pcm-int" (integer PCM, most common),
+"pcm-float" (IEEE 754 floating-point PCM), or "aes3" (AES3/SPDIF
+encapsulation for professional audio interconnect).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- cvf_config: Compressed Video Format stream configuration           -->
+  <!-- ================================================================== -->
+  <xs:complexType name="cvf_config">
+    <xs:annotation>
+      <xs:documentation>Compressed video configuration for a CVF (Compressed Video Format)
+stream. Specifies the video codec and optional codec profile. CVF
+streams carry NAL units (H.264) or compressed frames (MJPEG, JPEG2000)
+with AVTP presentation timestamps for synchronized playback.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="format" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Video compression format: "h264" (H.264/AVC NAL unit transport),
+"mjpeg" (Motion JPEG frame-by-frame), or "jpeg2000" (JPEG 2000
+wavelet compression for high-quality video).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="profile" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Optional codec profile. For H.264: "baseline" (low complexity,
+no B-frames), "main" (B-frames, CABAC), "high" (8x8 transforms,
+high bitrate). Ignored for MJPEG and JPEG2000.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- rvf_config: Raw Video Format stream configuration                  -->
+  <!-- ================================================================== -->
+  <xs:complexType name="rvf_config">
+    <xs:annotation>
+      <xs:documentation>Raw video configuration for an RVF (Raw Video Format) stream.
+Specifies the pixel format for uncompressed video transport. RVF
+is used for machine vision cameras where compression latency is
+unacceptable and pixel-perfect data is required.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="pixel-format" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Pixel format of the raw video stream: "rgb24" (8-bit RGB),
+"yuv422" (4:2:2 chroma subsampling), "yuv420" (4:2:0 chroma
+subsampling), "bayer-rggb" (Bayer mosaic for machine vision),
+"mono8" (8-bit grayscale), "mono16" (16-bit grayscale for
+depth or thermal imaging).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- avtp_stream: per-stream 1722 framing configuration                 -->
+  <!-- ================================================================== -->
+  <xs:complexType name="avtp_stream">
+    <xs:annotation>
+      <xs:documentation>Per-stream IEEE 1722 framing configuration. Each avtp-stream element
+maps to a named stream from the HCDF stream profile and specifies
+the AVTP subtype, timestamp behavior, and subtype-specific parameters.
+The stream attribute references the stream name defined in the
+associated .streams.xml file.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="acf" type="acf_config" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>ACF configuration for TSCF/NTSCF control streams. Specifies
+which ACF message type is carried and optionally which HCDF bus
+is being tunneled. Required when subtype is "tscf" or "ntscf".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="aaf" type="aaf_config" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Audio format configuration for AAF streams. Specifies channels,
+sample rate, bit depth, and encoding format. Required when subtype
+is "aaf".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cvf" type="cvf_config" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Compressed video configuration for CVF streams. Specifies codec
+and profile. Required when subtype is "cvf".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="rvf" type="rvf_config" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Raw video configuration for RVF streams. Specifies pixel format.
+Required when subtype is "rvf".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="stream" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Reference to a stream name defined in the HCDF stream profile
+(.streams.xml). This links the 1722 framing configuration to the
+stream's bandwidth, latency, and endpoint declarations.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="subtype" type="AvtpSubtype" use="required">
+      <xs:annotation>
+        <xs:documentation>The AVTP subtype used for this stream's framing. Determines
+the wire format and which child configuration element is expected
+(aaf for AAF, cvf for CVF, rvf for RVF, acf for TSCF/NTSCF).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timestamp" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>Whether this stream uses AVTP presentation timestamps (default: true).
+Presentation timestamps enable synchronized playback across multiple
+listeners. Set to false for best-effort streams where precise timing
+is not required.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Root element: avtp                                                 -->
+  <!-- ================================================================== -->
+  <xs:element name="avtp">
+    <xs:annotation>
+      <xs:documentation>Root element of the IEEE 1722 AVTP extension. Contains device-level
+capability declarations and per-stream framing configurations.
+Placed inside &lt;extension domain="org.ieee.1722"&gt;.
+
+The avtp-capabilities child advertises what AVTP subtypes and ACF
+message types the device supports. Each avtp-stream child configures
+the 1722 framing for a specific stream from the stream profile.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="avtp-capabilities" type="avtp_capabilities" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Device-level AVTP capability declaration. Lists which AVTP subtypes
+(aaf, cvf, rvf, tscf, etc.) and ACF message types (can, gpio, sensor,
+etc.) the device can produce or consume. At most one per extension block.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="avtp-stream" type="avtp_stream" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>Per-stream 1722 framing configuration. One element per stream that
+uses IEEE 1722 transport. Each references a stream name from the HCDF
+stream profile and specifies the AVTP subtype and format-specific parameters.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

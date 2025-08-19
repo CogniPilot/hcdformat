@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="body">
+    <collision name="c1">
+      <geometry>
+        <box><size>1 1 1</size></box>
+        <sphere><radius>0.5</radius></sphere>
+      </geometry>
+    </collision>
+  </comp>
+</hcdf>

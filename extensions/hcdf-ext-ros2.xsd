@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HCDF ROS 2 Extension Schema
+  Version: 1.0
+
+  Defines the structure of content inside <extension domain="org.ros2">.
+  Maps HCDF sensors, motors, and other devices to ROS 2 topics with
+  message types and QoS profiles.
+
+  Example usage within an HCDF file:
+
+    <extension domain="org.ros2" version="1.0">
+      <topic-map>
+        <topic sensor="imu0" name="/imu/data"
+               type="sensor_msgs/msg/Imu" qos="sensor_data"/>
+        <topic motor="prop_fl" name="/esc/fl/command"
+               type="actuator_msgs/msg/MotorCommand" qos="reliable"/>
+      </topic-map>
+    </extension>
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0"
+           elementFormDefault="unqualified">
+
+  <!-- ================================================================== -->
+  <!-- QoS profile preset enumeration                                     -->
+  <!-- ================================================================== -->
+  <xs:simpleType name="QosPreset">
+    <xs:annotation>
+      <xs:documentation>Predefined ROS 2 QoS profile presets. These correspond to the
+standard profiles defined in rclcpp::QoS and rclpy.qos.QoSProfile.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="sensor_data">
+        <xs:annotation>
+          <xs:documentation>Best-effort reliability, small queue depth. Suitable for
+high-frequency sensor streams where occasional drops are acceptable
+(IMU, barometer, magnetometer).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="reliable">
+        <xs:annotation>
+          <xs:documentation>Reliable reliability, larger queue depth. Suitable for
+commands and low-frequency data that must not be lost
+(motor commands, configuration updates).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="system_default">
+        <xs:annotation>
+          <xs:documentation>Use the RMW implementation's default QoS settings.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="services_default">
+        <xs:annotation>
+          <xs:documentation>Default QoS for service clients and servers: reliable,
+volatile durability.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="parameters">
+        <xs:annotation>
+          <xs:documentation>QoS profile for parameter events: reliable, transient-local
+durability, keep-last depth 1000.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="parameter_events">
+        <xs:annotation>
+          <xs:documentation>QoS profile for parameter event topics.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="action_status">
+        <xs:annotation>
+          <xs:documentation>QoS profile for action status topics: reliable, transient-local
+durability.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ================================================================== -->
+  <!-- Topic type: a single ROS 2 topic mapping                          -->
+  <!-- ================================================================== -->
+  <xs:complexType name="topic">
+    <xs:annotation>
+      <xs:documentation>Maps a single HCDF device (sensor or motor) to a ROS 2 topic.
+Exactly one of 'sensor' or 'motor' must be specified to identify the
+HCDF device being mapped. The 'name' attribute gives the ROS 2 topic
+name, 'type' gives the message type, and 'qos' selects the QoS profile.</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="sensor" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Reference to an HCDF sensor name (e.g., "imu0", "camera0").
+Mutually exclusive with the 'motor' attribute — specify one or the other.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="motor" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Reference to an HCDF motor name (e.g., "prop_fl", "joint_motor_1").
+Mutually exclusive with the 'sensor' attribute — specify one or the other.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>ROS 2 topic name (e.g., "/imu/data", "/camera/image_raw").
+Should follow ROS 2 naming conventions: lowercase, forward-slash separated,
+no special characters except underscores.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>ROS 2 message type in package/msg/Type format
+(e.g., "sensor_msgs/msg/Imu", "actuator_msgs/msg/MotorCommand").
+Must be a valid, installed ROS 2 message type.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="qos" type="QosPreset" default="system_default">
+      <xs:annotation>
+        <xs:documentation>QoS profile preset for this topic. Defaults to "system_default".
+Use "sensor_data" for high-frequency best-effort streams,
+"reliable" for commands that must not be dropped.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Topic-map type: container for topic mappings                       -->
+  <!-- ================================================================== -->
+  <xs:complexType name="topic_map">
+    <xs:annotation>
+      <xs:documentation>Container for ROS 2 topic mappings. Groups all sensor-to-topic and
+motor-to-topic mappings for a single HCDF component. Each child
+&lt;topic&gt; element maps one HCDF device to one ROS 2 topic.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="topic" type="topic" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single device-to-topic mapping. One per sensor or motor.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Root element: topic-map                                            -->
+  <!-- ================================================================== -->
+  <xs:element name="topic-map" type="topic_map">
+    <xs:annotation>
+      <xs:documentation>Root element of the ROS 2 extension. Contains topic mappings that
+bind HCDF sensors and motors to ROS 2 topics with message types and
+QoS profiles. Placed inside &lt;extension domain="org.ros2"&gt;.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+</xs:schema>

@@ -1,0 +1,18 @@
+[package]
+name = "hcdf"
+version = "1.0.0"
+edition = "2021"
+description = "HCDF CLI — validate, convert, and inspect Hardware Configuration Descriptive Format files"
+license = "Apache-2.0"
+repository = "https://github.com/CogniPilot/hcdformat"
+
+[[bin]]
+name = "hcdf"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+quick-xml = { version = "0.37", features = ["serialize"] }
+anyhow = "1"

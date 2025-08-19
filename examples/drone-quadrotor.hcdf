@@ -1,0 +1,966 @@
+<?xml version="1.0"?>
+<!--
+  Quadrotor drone HCDF example
+  NavQ95 flight controller, 4x AM32 ESCs + brushless motors with propellers,
+  MR-MCXN-T1 sensor boards (RTK GNSS + optical flow/IMU/mag/baro),
+  MIPI-CSI camera, LiPo battery, power distribution board.
+-->
+<hcdf version="1.0">
+
+  <!-- ============================================================ -->
+  <!-- COMPONENTS                                                    -->
+  <!-- ============================================================ -->
+
+  <!-- Airframe: structural root -->
+  <comp name="frame" role="parent" struct-type="frame">
+    <description>Carbon fiber quadrotor airframe (X configuration, 450mm motor-to-motor)</description>
+    <inertial>
+      <mass>0.35</mass>
+      <com>0 0 0</com>
+      <inertia>0.0045 0 0 0.0045 0 0.008</inertia>
+    </inertial>
+    <visual name="frame_body">
+      <geometry>
+        <box><size>0.18 0.18 0.03</size></box>
+      </geometry>
+      <material name="carbon"/>
+    </visual>
+    <collision name="frame_col">
+      <geometry>
+        <box><size>0.18 0.18 0.03</size></box>
+      </geometry>
+    </collision>
+  </comp>
+
+  <!-- Flight controller + compute: NXP NavQ95 (i.MX95) -->
+  <comp name="navq95" role="compute">
+    <description>NXP NavQ95 companion computer (i.MX 95 SoC) — flight controller and autonomy compute</description>
+    <board>navq95</board>
+    <inertial>
+      <mass>0.045</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <visual name="navq95_pcb">
+      <geometry>
+        <box><size>0.07 0.05 0.012</size></box>
+      </geometry>
+      <material name="green_pcb"/>
+    </visual>
+    <collision name="navq95_col">
+      <geometry>
+        <box><size>0.07 0.05 0.012</size></box>
+      </geometry>
+    </collision>
+
+    <!-- Ports -->
+    <port name="eth0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">1000</speed>
+        <standard>1000base-t</standard>
+        <connector>RJ45</connector>
+      </capabilities>
+    </port>
+    <port name="eth_t1_0" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">100</speed>
+        <standard>100base-t1</standard>
+        <phy role="master"/>
+        <connector>Micro-Lock Plus 2.0 4C</connector>
+      </capabilities>
+    </port>
+    <port name="eth_t1_1" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">100</speed>
+        <standard>100base-t1</standard>
+        <phy role="master"/>
+        <connector>Micro-Lock Plus 2.0 4C</connector>
+      </capabilities>
+    </port>
+    <port name="mipi_csi0" type="MIPI-CSI">
+      <capabilities>
+        <speed unit="Gbps">2.5</speed>
+        <standard>MIPI-CSI-2</standard>
+        <connector>22-pin FFC</connector>
+      </capabilities>
+    </port>
+    <port name="dshot0" iface="pwm0" type="SIGNAL">
+      <capabilities><protocol>DShot600</protocol></capabilities>
+    </port>
+    <port name="dshot1" iface="pwm1" type="SIGNAL">
+      <capabilities><protocol>DShot600</protocol></capabilities>
+    </port>
+    <port name="dshot2" iface="pwm2" type="SIGNAL">
+      <capabilities><protocol>DShot600</protocol></capabilities>
+    </port>
+    <port name="dshot3" iface="pwm3" type="SIGNAL">
+      <capabilities><protocol>DShot600</protocol></capabilities>
+    </port>
+    <port name="spi0" type="SPI">
+      <capabilities>
+        <bitrate unit="bps">10000000</bitrate>
+      </capabilities>
+    </port>
+    <port name="i2c0" type="I2C">
+      <capabilities>
+        <bitrate unit="bps">400000</bitrate>
+      </capabilities>
+    </port>
+    <port name="uart0" type="UART">
+      <capabilities>
+        <baud unit="Bd">115200</baud>
+        <protocol>MAVLink</protocol>
+        <connector>JST-GH 6-pin</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.5" max="5.5">5</voltage>
+        <current unit="A" max="3">1.5</current>
+        <power unit="W" max="15">7.5</power>
+        <typical-power unit="W">5</typical-power>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+
+    <!-- Camera sensor (direct MIPI-CSI connection) -->
+    <sensor name="camera0" update-rate="30">
+      <optical type="camera">
+        <pose>0 0 -0.015 0 1.5708 0</pose>
+        <driver name="imx219"/>
+        <geometry>
+          <box><size>0.025 0.025 0.01</size></box>
+        </geometry>
+        <fov name="rgb">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>50.0</far>
+              <hfov>1.0856</hfov>
+              <vfov>0.8517</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>1380.0</fx>
+            <fy>1380.0</fy>
+            <cx>960.0</cx>
+            <cy>540.0</cy>
+          </intrinsics>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">1492</bandwidth>
+          <bandwidth-compressed unit="Mbps">15</bandwidth-compressed>
+          <frame-size unit="bytes">6220800</frame-size>
+        </data-output>
+        <camera-params>
+          <shutter>rolling</shutter>
+          <hdr>false</hdr>
+          <compression>h265</compression>
+          <trigger>free-running</trigger>
+        </camera-params>
+      </optical>
+    </sensor>
+
+    <software name="cerebri">
+      <version>1.0.0</version>
+    </software>
+
+    <!-- ROS 2 topic mapping extension -->
+    <extension domain="org.ros2" version="1.0">
+      <topic-map>
+        <topic sensor="imu0" name="/imu/data" type="sensor_msgs/msg/Imu" qos="sensor_data"/>
+        <topic sensor="mag0" name="/mag/data" type="sensor_msgs/msg/MagneticField" qos="sensor_data"/>
+        <topic sensor="baro0" name="/baro/data" type="sensor_msgs/msg/FluidPressure" qos="sensor_data"/>
+        <topic sensor="gnss0" name="/gnss/fix" type="sensor_msgs/msg/NavSatFix" qos="sensor_data"/>
+        <topic sensor="optical_flow0" name="/optical_flow" type="synapse_msgs/msg/OpticalFlow" qos="sensor_data"/>
+        <topic sensor="camera0" name="/camera/image_raw" type="sensor_msgs/msg/Image" qos="sensor_data"/>
+        <topic motor="prop_fl" name="/dshot/fl/command" type="actuator_msgs/msg/MotorCommand" qos="reliable"/>
+      </topic-map>
+    </extension>
+
+    <!-- Gazebo simulation extension -->
+    <extension domain="org.gazebosim" version="1.0">
+      <physics>
+        <engine>ode</engine>
+        <max-step-size>0.001</max-step-size>
+        <real-time-factor>1.0</real-time-factor>
+      </physics>
+      <plugin name="aerodynamics" filename="libAerodynamicsPlugin.so">
+        <link>frame</link>
+        <air-density>1.225</air-density>
+        <forward-drag-coefficient>0.05</forward-drag-coefficient>
+        <upward-drag-coefficient>0.1</upward-drag-coefficient>
+      </plugin>
+      <plugin name="motor_model" filename="libMotorModelPlugin.so">
+        <motor>prop_fl</motor>
+        <turning-direction>ccw</turning-direction>
+        <time-constant-up>0.0125</time-constant-up>
+        <time-constant-down>0.025</time-constant-down>
+        <rotor-drag-coefficient>0.00025</rotor-drag-coefficient>
+        <rolling-moment-coefficient>1e-6</rolling-moment-coefficient>
+      </plugin>
+    </extension>
+  </comp>
+
+  <!-- ===== ESCs: 4x AM32 ===== -->
+
+  <comp name="esc_fl" role="actuator">
+    <description>AM32 ESC — front-left motor driver</description>
+    <board>am32-esc-35a</board>
+    <inertial><mass>0.012</mass></inertial>
+    <port name="dshot_in" type="SIGNAL">
+      <capabilities>
+        <protocol>DShot600</protocol>
+        <connector>servo-3pin</connector>
+      </capabilities>
+    </port>
+    <port name="sig_out" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="10" max="17.4">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <power unit="W" max="518">222</power>
+        <typical-power unit="W">60</typical-power>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+  </comp>
+
+  <comp name="esc_fr" role="actuator">
+    <description>AM32 ESC — front-right motor driver</description>
+    <board>am32-esc-35a</board>
+    <inertial><mass>0.012</mass></inertial>
+    <port name="dshot_in" type="SIGNAL">
+      <capabilities>
+        <protocol>DShot600</protocol>
+        <connector>servo-3pin</connector>
+      </capabilities>
+    </port>
+    <port name="sig_out" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="10" max="17.4">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <power unit="W" max="518">222</power>
+        <typical-power unit="W">60</typical-power>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+  </comp>
+
+  <comp name="esc_rl" role="actuator">
+    <description>AM32 ESC — rear-left motor driver</description>
+    <board>am32-esc-35a</board>
+    <inertial><mass>0.012</mass></inertial>
+    <port name="dshot_in" type="SIGNAL">
+      <capabilities>
+        <protocol>DShot600</protocol>
+        <connector>servo-3pin</connector>
+      </capabilities>
+    </port>
+    <port name="sig_out" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="10" max="17.4">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <power unit="W" max="518">222</power>
+        <typical-power unit="W">60</typical-power>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+  </comp>
+
+  <comp name="esc_rr" role="actuator">
+    <description>AM32 ESC — rear-right motor driver</description>
+    <board>am32-esc-35a</board>
+    <inertial><mass>0.012</mass></inertial>
+    <port name="dshot_in" type="SIGNAL">
+      <capabilities>
+        <protocol>DShot600</protocol>
+        <connector>servo-3pin</connector>
+      </capabilities>
+    </port>
+    <port name="sig_out" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="10" max="17.4">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <power unit="W" max="518">222</power>
+        <typical-power unit="W">60</typical-power>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- ===== Motors + Propellers (4x) ===== -->
+
+  <!-- Front-Left motor (CCW) -->
+  <comp name="motor_fl" role="actuator">
+    <description>2212-920KV brushless motor with 9x4.5 propeller — front-left (CCW)</description>
+    <inertial><mass>0.055</mass></inertial>
+    <port name="sig_in" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <motor name="prop_fl" type="thrust">
+      <voltage unit="V" nominal="14.8" max="17.4"/>
+      <current unit="A" continuous="15" peak="25"/>
+      <velocity-constant unit="RPM/V">920</velocity-constant>
+      <max-speed unit="rpm">13616</max-speed>
+      <thrust-axis>0 0 1</thrust-axis>
+      <max-thrust unit="N">15</max-thrust>
+      <control-modes>
+        <mode>pwm</mode>
+        <mode>velocity</mode>
+      </control-modes>
+    </motor>
+    <surface name="prop">
+      <prop>
+        <diameter unit="in">9</diameter>
+        <pitch unit="in">4.5</pitch>
+        <blades>2</blades>
+        <direction>CCW</direction>
+      </prop>
+    </surface>
+  </comp>
+
+  <!-- Front-Right motor (CW) -->
+  <comp name="motor_fr" role="actuator">
+    <description>2212-920KV brushless motor with 9x4.5 propeller — front-right (CW)</description>
+    <inertial><mass>0.055</mass></inertial>
+    <port name="sig_in" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <motor name="prop_fr" type="thrust">
+      <voltage unit="V" nominal="14.8" max="17.4"/>
+      <current unit="A" continuous="15" peak="25"/>
+      <velocity-constant unit="RPM/V">920</velocity-constant>
+      <max-speed unit="rpm">13616</max-speed>
+      <thrust-axis>0 0 1</thrust-axis>
+      <max-thrust unit="N">15</max-thrust>
+      <control-modes>
+        <mode>pwm</mode>
+        <mode>velocity</mode>
+      </control-modes>
+    </motor>
+    <surface name="prop">
+      <prop>
+        <diameter unit="in">9</diameter>
+        <pitch unit="in">4.5</pitch>
+        <blades>2</blades>
+        <direction>CW</direction>
+      </prop>
+    </surface>
+  </comp>
+
+  <!-- Rear-Left motor (CW) -->
+  <comp name="motor_rl" role="actuator">
+    <description>2212-920KV brushless motor with 9x4.5 propeller — rear-left (CW)</description>
+    <inertial><mass>0.055</mass></inertial>
+    <port name="sig_in" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <motor name="prop_rl" type="thrust">
+      <voltage unit="V" nominal="14.8" max="17.4"/>
+      <current unit="A" continuous="15" peak="25"/>
+      <velocity-constant unit="RPM/V">920</velocity-constant>
+      <max-speed unit="rpm">13616</max-speed>
+      <thrust-axis>0 0 1</thrust-axis>
+      <max-thrust unit="N">15</max-thrust>
+      <control-modes>
+        <mode>pwm</mode>
+        <mode>velocity</mode>
+      </control-modes>
+    </motor>
+    <surface name="prop">
+      <prop>
+        <diameter unit="in">9</diameter>
+        <pitch unit="in">4.5</pitch>
+        <blades>2</blades>
+        <direction>CW</direction>
+      </prop>
+    </surface>
+  </comp>
+
+  <!-- Rear-Right motor (CCW) -->
+  <comp name="motor_rr" role="actuator">
+    <description>2212-920KV brushless motor with 9x4.5 propeller — rear-right (CCW)</description>
+    <inertial><mass>0.055</mass></inertial>
+    <port name="sig_in" type="SIGNAL">
+      <capabilities>
+        <protocol>3-phase-BLDC</protocol>
+        <connector>3-pin bullet</connector>
+      </capabilities>
+    </port>
+    <motor name="prop_rr" type="thrust">
+      <voltage unit="V" nominal="14.8" max="17.4"/>
+      <current unit="A" continuous="15" peak="25"/>
+      <velocity-constant unit="RPM/V">920</velocity-constant>
+      <max-speed unit="rpm">13616</max-speed>
+      <thrust-axis>0 0 1</thrust-axis>
+      <max-thrust unit="N">15</max-thrust>
+      <control-modes>
+        <mode>pwm</mode>
+        <mode>velocity</mode>
+      </control-modes>
+    </motor>
+    <surface name="prop">
+      <prop>
+        <diameter unit="in">9</diameter>
+        <pitch unit="in">4.5</pitch>
+        <blades>2</blades>
+        <direction>CCW</direction>
+      </prop>
+    </surface>
+  </comp>
+
+  <!-- ===== Sensor boards ===== -->
+
+  <!-- MR-MCXN-T1 #1: RTK GNSS (u-blox F9P) -->
+  <comp name="mcxn_rtk_gnss" role="sensor">
+    <description>MR-MCXN-T1 board #1 — u-blox F9P multi-band RTK GNSS receiver</description>
+    <board>mr-mcxn-t1</board>
+    <inertial><mass>0.018</mass></inertial>
+    <port name="eth_t1" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">100</speed>
+        <standard>100base-t1</standard>
+        <phy role="slave"/>
+        <connector>Micro-Lock Plus 2.0 4C</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.5" max="5.5">5</voltage>
+        <current unit="A" max="0.5">0.2</current>
+        <power unit="W" max="2.5">1.0</power>
+        <typical-power unit="W">0.8</typical-power>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+    <antenna name="gnss_ant" type="gnss">
+      <capabilities>
+        <band>L1</band>
+        <band>L2</band>
+        <gain unit="dBi">5</gain>
+        <polarization>RHCP</polarization>
+      </capabilities>
+    </antenna>
+    <sensor name="gnss0" update-rate="10">
+      <rf type="gnss">
+        <driver name="ubx-f9p"/>
+        <gnss-params>
+          <constellation>GPS</constellation>
+          <constellation>GLONASS</constellation>
+          <constellation>Galileo</constellation>
+          <constellation>BeiDou</constellation>
+          <frequency>L1</frequency>
+          <frequency>L2</frequency>
+          <rtk>true</rtk>
+          <accuracy-standalone unit="m">1.5</accuracy-standalone>
+          <accuracy-rtk unit="m">0.01</accuracy-rtk>
+          <pps>true</pps>
+        </gnss-params>
+      </rf>
+    </sensor>
+  </comp>
+
+  <!-- MR-MCXN-T1 #2: Optical flow + IMU + Mag + Baro -->
+  <comp name="mcxn_optical_flow" role="sensor">
+    <description>MR-MCXN-T1 board #2 — optical flow (PAA3905), IMU (ICM45686), magnetometer (BMM350), barometer (BMP581)</description>
+    <board>mr-mcxn-t1</board>
+    <inertial><mass>0.018</mass></inertial>
+    <port name="eth_t1" type="ethernet">
+      <capabilities>
+        <speed unit="Mbps">100</speed>
+        <standard>100base-t1</standard>
+        <phy role="slave"/>
+        <connector>Micro-Lock Plus 2.0 4C</connector>
+      </capabilities>
+    </port>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.5" max="5.5">5</voltage>
+        <current unit="A" max="0.5">0.15</current>
+        <power unit="W" max="2.5">0.75</power>
+        <typical-power unit="W">0.6</typical-power>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+
+    <!-- PAA3905 optical flow -->
+    <sensor name="optical_flow0" update-rate="100">
+      <optical type="optical_flow">
+        <pose>0 0 -0.005 0 3.14159 0</pose>
+        <driver name="paa3905"/>
+        <fov name="flow">
+          <geometry>
+            <frustum shape="conical">
+              <near>0.08</near>
+              <far>5.0</far>
+              <fov>0.733</fov>
+            </frustum>
+          </geometry>
+        </fov>
+      </optical>
+    </sensor>
+
+    <!-- ICM45686 IMU -->
+    <sensor name="imu0" update-rate="3200">
+      <inertial type="accel_gyro">
+        <driver name="icm45686">
+          <axis-align x="X" y="Y" z="Z"/>
+        </driver>
+        <accel>
+          <range unit="g">16</range>
+          <resolution unit="mg">0.488</resolution>
+          <odr unit="Hz">3200</odr>
+          <bandwidth unit="Hz">1600</bandwidth>
+          <fifo depth="256" watermark="8"/>
+          <noise type="gaussian">
+            <mean>0</mean>
+            <stddev>0.003</stddev>
+            <bias-mean>0.01</bias-mean>
+            <bias-stddev>0.001</bias-stddev>
+          </noise>
+        </accel>
+        <gyro>
+          <range unit="dps">2000</range>
+          <resolution unit="dps">0.061</resolution>
+          <odr unit="Hz">3200</odr>
+          <bandwidth unit="Hz">1600</bandwidth>
+          <fifo depth="256" watermark="8"/>
+          <noise type="gaussian">
+            <mean>0</mean>
+            <stddev>0.01</stddev>
+            <bias-mean>0.005</bias-mean>
+            <bias-stddev>0.0005</bias-stddev>
+          </noise>
+        </gyro>
+      </inertial>
+    </sensor>
+
+    <!-- BMM350 magnetometer -->
+    <sensor name="mag0" update-rate="100">
+      <em type="mag">
+        <driver name="bmm350"/>
+        <range unit="mT">2</range>
+        <resolution unit="uT">0.3</resolution>
+        <noise type="gaussian">
+          <stddev>0.6</stddev>
+        </noise>
+      </em>
+    </sensor>
+
+    <!-- BMP581 barometer -->
+    <sensor name="baro0" update-rate="50">
+      <force type="pressure">
+        <driver name="bmp581"/>
+        <range unit="hPa">1100</range>
+        <resolution unit="Pa">0.5</resolution>
+        <noise type="gaussian">
+          <stddev>0.5</stddev>
+        </noise>
+      </force>
+    </sensor>
+  </comp>
+
+  <!-- ===== Power ===== -->
+
+  <!-- LiPo battery -->
+  <comp name="battery" role="parent">
+    <description>4S LiPo battery pack (14.8V nominal, 5000mAh)</description>
+    <inertial><mass>0.42</mass></inertial>
+    <visual name="battery_body">
+      <geometry>
+        <box><size>0.14 0.045 0.035</size></box>
+      </geometry>
+    </visual>
+    <collision name="battery_col">
+      <geometry>
+        <box><size>0.14 0.045 0.035</size></box>
+      </geometry>
+    </collision>
+    <port name="pwr_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="150">60</current>
+        <power unit="W" max="2220">888</power>
+        <connector>XT60</connector>
+      </capabilities>
+    </port>
+    <power-source name="lipo_4s">
+      <battery>
+        <chemistry>LiPo</chemistry>
+        <cells-series>4</cells-series>
+        <cells-parallel>1</cells-parallel>
+        <nominal-voltage unit="V">14.8</nominal-voltage>
+        <capacity unit="Ah">5.0</capacity>
+        <energy unit="Wh">74.0</energy>
+        <max-discharge unit="C">30</max-discharge>
+        <min-voltage unit="V">12.0</min-voltage>
+        <max-voltage unit="V">16.8</max-voltage>
+      </battery>
+    </power-source>
+  </comp>
+
+  <!-- Power distribution board -->
+  <comp name="pdb" role="parent">
+    <description>Power distribution board — routes battery power to ESCs and 5V BEC for NavQ95/sensors</description>
+    <inertial><mass>0.025</mass></inertial>
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="150">60</current>
+        <connector>XT60</connector>
+      </capabilities>
+    </port>
+    <port name="esc_fl_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+    <port name="esc_fr_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+    <port name="esc_rl_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+    <port name="esc_rr_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="12.0" max="16.8">14.8</voltage>
+        <current unit="A" max="35">15</current>
+        <connector>solder pad</connector>
+      </capabilities>
+    </port>
+    <port name="bec_5v_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.8" max="5.2">5.0</voltage>
+        <current unit="A" max="5">2</current>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+    <port name="sensor1_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.8" max="5.2">5.0</voltage>
+        <current unit="A" max="1">0.3</current>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+    <port name="sensor2_out" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="4.8" max="5.2">5.0</voltage>
+        <current unit="A" max="1">0.3</current>
+        <connector>JST-GH 2-pin</connector>
+      </capabilities>
+    </port>
+  </comp>
+
+
+  <!-- ============================================================ -->
+  <!-- JOINTS (all fixed — everything bolted to the airframe)       -->
+  <!-- ============================================================ -->
+
+  <joint name="frame_to_navq95" type="fixed">
+    <description>NavQ95 flight controller mounted atop center frame</description>
+    <parent comp="frame"/>
+    <child comp="navq95"/>
+    <origin xyz="0 0 0.02"/>
+  </joint>
+
+  <joint name="frame_to_esc_fl" type="fixed">
+    <parent comp="frame"/>
+    <child comp="esc_fl"/>
+    <origin xyz="0.16 0.16 0"/>
+  </joint>
+  <joint name="frame_to_esc_fr" type="fixed">
+    <parent comp="frame"/>
+    <child comp="esc_fr"/>
+    <origin xyz="0.16 -0.16 0"/>
+  </joint>
+  <joint name="frame_to_esc_rl" type="fixed">
+    <parent comp="frame"/>
+    <child comp="esc_rl"/>
+    <origin xyz="-0.16 0.16 0"/>
+  </joint>
+  <joint name="frame_to_esc_rr" type="fixed">
+    <parent comp="frame"/>
+    <child comp="esc_rr"/>
+    <origin xyz="-0.16 -0.16 0"/>
+  </joint>
+
+  <joint name="esc_fl_to_motor_fl" type="fixed">
+    <description>Front-left motor mounted on arm tip</description>
+    <parent comp="esc_fl"/>
+    <child comp="motor_fl"/>
+    <origin xyz="0 0 0.01"/>
+  </joint>
+  <joint name="esc_fr_to_motor_fr" type="fixed">
+    <description>Front-right motor mounted on arm tip</description>
+    <parent comp="esc_fr"/>
+    <child comp="motor_fr"/>
+    <origin xyz="0 0 0.01"/>
+  </joint>
+  <joint name="esc_rl_to_motor_rl" type="fixed">
+    <description>Rear-left motor mounted on arm tip</description>
+    <parent comp="esc_rl"/>
+    <child comp="motor_rl"/>
+    <origin xyz="0 0 0.01"/>
+  </joint>
+  <joint name="esc_rr_to_motor_rr" type="fixed">
+    <description>Rear-right motor mounted on arm tip</description>
+    <parent comp="esc_rr"/>
+    <child comp="motor_rr"/>
+    <origin xyz="0 0 0.01"/>
+  </joint>
+
+  <joint name="frame_to_gnss" type="fixed">
+    <description>GNSS module on mast above frame for clear sky view</description>
+    <parent comp="frame"/>
+    <child comp="mcxn_rtk_gnss"/>
+    <origin xyz="0 0 0.08"/>
+  </joint>
+
+  <joint name="frame_to_optflow" type="fixed">
+    <description>Optical flow / IMU / mag / baro board underneath frame</description>
+    <parent comp="frame"/>
+    <child comp="mcxn_optical_flow"/>
+    <origin xyz="0 0 -0.02"/>
+  </joint>
+
+  <joint name="frame_to_battery" type="fixed">
+    <description>Battery slung beneath frame center of gravity</description>
+    <parent comp="frame"/>
+    <child comp="battery"/>
+    <origin xyz="0 0 -0.05"/>
+  </joint>
+
+  <joint name="frame_to_pdb" type="fixed">
+    <description>PDB integrated into frame base plate</description>
+    <parent comp="frame"/>
+    <child comp="pdb"/>
+    <origin xyz="0 0 -0.01"/>
+  </joint>
+
+
+  <!-- ============================================================ -->
+  <!-- GROUP                                                         -->
+  <!-- ============================================================ -->
+
+  <group name="propulsion" type="locomotion">
+    <description>All four propulsion motor joints</description>
+    <joint ref="esc_fl_to_motor_fl"/>
+    <joint ref="esc_fr_to_motor_fr"/>
+    <joint ref="esc_rl_to_motor_rl"/>
+    <joint ref="esc_rr_to_motor_rr"/>
+  </group>
+
+
+  <!-- ============================================================ -->
+  <!-- STATE                                                         -->
+  <!-- ============================================================ -->
+
+  <state name="disarmed" default="true">
+    <description>All motors off — safe disarmed configuration</description>
+  </state>
+
+
+  <!-- ============================================================ -->
+  <!-- SELF-COLLISION DISABLE                                        -->
+  <!-- ============================================================ -->
+
+  <self-collision-disable>
+    <pair comp1="frame" comp2="navq95" reason="mounted"/>
+    <pair comp1="frame" comp2="esc_fl" reason="mounted"/>
+    <pair comp1="frame" comp2="esc_fr" reason="mounted"/>
+    <pair comp1="frame" comp2="esc_rl" reason="mounted"/>
+    <pair comp1="frame" comp2="esc_rr" reason="mounted"/>
+    <pair comp1="esc_fl" comp2="motor_fl" reason="adjacent"/>
+    <pair comp1="esc_fr" comp2="motor_fr" reason="adjacent"/>
+    <pair comp1="esc_rl" comp2="motor_rl" reason="adjacent"/>
+    <pair comp1="esc_rr" comp2="motor_rr" reason="adjacent"/>
+    <pair comp1="frame" comp2="battery" reason="mounted"/>
+    <pair comp1="frame" comp2="pdb" reason="mounted"/>
+    <pair comp1="frame" comp2="mcxn_rtk_gnss" reason="mounted"/>
+    <pair comp1="frame" comp2="mcxn_optical_flow" reason="mounted"/>
+  </self-collision-disable>
+
+
+  <!-- ============================================================ -->
+  <!-- NETWORKS                                                      -->
+  <!-- ============================================================ -->
+
+  <!-- 100BASE-T1 sensor network -->
+  <network name="t1-sensors">
+    <description>100BASE-T1 Ethernet links from NavQ95 to sensor boards</description>
+
+    <link name="navq95_to_gnss">
+      <description>NavQ95 to RTK GNSS module (100BASE-T1)</description>
+      <wired standard="100base-t1">
+        <port>navq95/eth_t1_0</port>
+        <port>mcxn_rtk_gnss/eth_t1</port>
+      </wired>
+    </link>
+
+    <link name="navq95_to_optflow">
+      <description>NavQ95 to optical flow module (100BASE-T1)</description>
+      <wired standard="100base-t1">
+        <port>navq95/eth_t1_1</port>
+        <port>mcxn_optical_flow/eth_t1</port>
+      </wired>
+    </link>
+  </network>
+
+  <!-- DShot ESC control signals -->
+  <network name="esc-control">
+    <description>DShot600 control signals from NavQ95 to ESCs</description>
+
+    <link name="navq95_to_esc_fl">
+      <wired standard="dshot600">
+        <port>navq95/dshot0</port>
+        <port>esc_fl/dshot_in</port>
+      </wired>
+    </link>
+    <link name="navq95_to_esc_fr">
+      <wired standard="dshot600">
+        <port>navq95/dshot1</port>
+        <port>esc_fr/dshot_in</port>
+      </wired>
+    </link>
+    <link name="navq95_to_esc_rl">
+      <wired standard="dshot600">
+        <port>navq95/dshot2</port>
+        <port>esc_rl/dshot_in</port>
+      </wired>
+    </link>
+    <link name="navq95_to_esc_rr">
+      <wired standard="dshot600">
+        <port>navq95/dshot3</port>
+        <port>esc_rr/dshot_in</port>
+      </wired>
+    </link>
+  </network>
+
+  <!-- Power distribution network -->
+  <network name="power">
+    <description>Power distribution from battery through PDB to all loads</description>
+
+    <bus name="main_power" type="power" topology="star">
+      <description>Battery to PDB main power rail</description>
+      <participant device="battery" port="pwr_out" role="source" position="0"/>
+      <participant device="pdb" port="pwr_in" role="sink" position="1"/>
+    </bus>
+
+    <bus name="esc_power" type="power" topology="star">
+      <description>PDB high-current rail to ESCs (14.8V direct)</description>
+      <participant device="pdb" port="esc_fl_out" role="source" position="0"/>
+      <participant device="esc_fl" port="pwr_in" role="sink" position="1"/>
+      <participant device="pdb" port="esc_fr_out" role="source" position="2"/>
+      <participant device="esc_fr" port="pwr_in" role="sink" position="3"/>
+      <participant device="pdb" port="esc_rl_out" role="source" position="4"/>
+      <participant device="esc_rl" port="pwr_in" role="sink" position="5"/>
+      <participant device="pdb" port="esc_rr_out" role="source" position="6"/>
+      <participant device="esc_rr" port="pwr_in" role="sink" position="7"/>
+    </bus>
+
+    <bus name="avionics_power" type="power" topology="star">
+      <description>PDB 5V BEC rail to NavQ95 and sensor boards</description>
+      <participant device="pdb" port="bec_5v_out" role="source" position="0"/>
+      <participant device="navq95" port="pwr_in" role="sink" position="1"/>
+      <participant device="pdb" port="sensor1_out" role="source" position="2"/>
+      <participant device="mcxn_rtk_gnss" port="pwr_in" role="sink" position="3"/>
+      <participant device="pdb" port="sensor2_out" role="source" position="4"/>
+      <participant device="mcxn_optical_flow" port="pwr_in" role="sink" position="5"/>
+    </bus>
+  </network>
+
+  <!-- ESC-to-motor signal network -->
+  <network name="motor-signal">
+    <description>3-phase BLDC signal wiring from ESCs to motors</description>
+
+    <link name="esc_fl_to_motor_fl_sig">
+      <wired standard="3-phase-BLDC">
+        <port>esc_fl/sig_out</port>
+        <port>motor_fl/sig_in</port>
+      </wired>
+    </link>
+    <link name="esc_fr_to_motor_fr_sig">
+      <wired standard="3-phase-BLDC">
+        <port>esc_fr/sig_out</port>
+        <port>motor_fr/sig_in</port>
+      </wired>
+    </link>
+    <link name="esc_rl_to_motor_rl_sig">
+      <wired standard="3-phase-BLDC">
+        <port>esc_rl/sig_out</port>
+        <port>motor_rl/sig_in</port>
+      </wired>
+    </link>
+    <link name="esc_rr_to_motor_rr_sig">
+      <wired standard="3-phase-BLDC">
+        <port>esc_rr/sig_out</port>
+        <port>motor_rr/sig_in</port>
+      </wired>
+    </link>
+  </network>
+
+
+  <!-- ============================================================ -->
+  <!-- MATERIALS                                                     -->
+  <!-- ============================================================ -->
+
+  <material name="carbon">
+    <description>Carbon fiber composite</description>
+    <color rgba="0.15 0.15 0.15 1.0"/>
+    <surface>
+      <friction static="0.4" dynamic="0.3"/>
+      <restitution>0.1</restitution>
+    </surface>
+  </material>
+
+  <material name="green_pcb">
+    <description>FR4 PCB solder mask</description>
+    <color rgba="0.05 0.35 0.1 1.0"/>
+  </material>
+
+</hcdf>

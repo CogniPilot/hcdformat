@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HCDF Stream Profile XML Schema Definition
+  Version: 1.0
+
+  Stream profiles define application-level data flows (TSN streams) with QoS
+  requirements. They live in separate .streams.xml files referenced from the
+  HCDF via <stream-profile uri="..." sha="..."/>.
+
+  Same hardware can have multiple profiles: operational, calibration, safe-mode.
+  The agent reads the active profile alongside the HCDF to compute per-device
+  TSN configuration (Qbv gate control lists, CBS idle slopes, PSFP rules).
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0"
+           elementFormDefault="unqualified">
+
+  <!-- FRER: IEEE 802.1CB Frame Replication and Elimination for Reliability -->
+  <xs:complexType name="frer">
+    <xs:annotation><xs:documentation>IEEE 802.1CB Frame Replication and Elimination for Reliability configuration for a safety-critical stream. When present, the stream's frames are replicated over multiple disjoint paths through the network and duplicates are eliminated at the receiver, providing seamless redundancy with zero packet loss. Used for safety heartbeats, emergency stop signals, and other streams where a single link failure must not cause data loss.</xs:documentation></xs:annotation>
+    <xs:attribute name="seamless-trees" type="xs:unsignedInt" use="required">
+      <xs:annotation><xs:documentation>Number of redundant disjoint paths (seamless trees) for this stream. Typically 2 for dual-path redundancy. The network must have at least this many physically independent paths between talker and listener. Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="seq-encoding" type="xs:string" default="r-tag">
+      <xs:annotation><xs:documentation>Sequence number encoding method used to identify and eliminate duplicate frames. "r-tag" (default): dedicated R-TAG (EtherType 0xF1C1) inserted in the frame — standard 802.1CB method. "hsr": HSR (High-availability Seamless Redundancy, IEC 62439-3) sequence tag — used in industrial ring networks.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Stream: a single TSN data flow between a talker and listener -->
+  <xs:complexType name="stream">
+    <xs:annotation><xs:documentation>A single TSN data flow (IEEE 802.1Qcc stream) with QoS requirements. Defines a unidirectional communication path from a talker port to a listener port with bandwidth, latency, and priority constraints. An agent uses stream definitions to compute per-port Qbv gate control lists, CBS idle slopes, and PSFP policing rules. The talker and listener reference device/port names from the HCDF file — the agent traces the path through the network topology to determine which switch ports need scheduling.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name="description" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Human-readable description of this stream's purpose, data content, and timing requirements. Example: "IMU accel/gyro at 1kHz from optical-flow sensor to navigation filter on S32N79."</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="frer" type="frer" minOccurs="0">
+        <xs:annotation><xs:documentation>IEEE 802.1CB redundancy configuration for this stream. Only needed for safety-critical streams that require seamless failover on link failure. Omit for best-effort or non-critical streams.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Unique name for this stream within the profile. Used by the agent to reference this stream in schedule computation and diagnostics. Example: "imu_1khz", "cam_left_30fps", "safety_heartbeat". Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="talker" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Source port reference in the format "device/port" or "device/port:switch_port". Must match a comp and port defined in the HCDF. The talker originates the stream's frames. Example: "optical-flow/ETH0", "s32n79/xfi_left". Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="listener" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Destination port reference in the format "device/port" or "device/port:switch_port". Must match a comp and port defined in the HCDF. The listener receives and consumes the stream's frames. Example: "s32n79/eth0:2", "agx-thor/mgbe0". Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="vlan" type="xs:unsignedInt">
+      <xs:annotation><xs:documentation>IEEE 802.1Q VLAN ID (1-4094) for this stream. Streams on different VLANs are isolated at Layer 2. Typically all streams in the same functional domain share a VLAN: motion control on VLAN 10, camera on VLAN 20, safety on VLAN 1. Optional — if omitted, the stream uses the link/chain default VLAN.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="pcp" type="xs:unsignedInt">
+      <xs:annotation><xs:documentation>IEEE 802.1Q Priority Code Point (0-7). Maps to a traffic class in the TSN domain's traffic-classes definition. Higher PCP = higher priority. Typical mapping: 7=PTP, 6=safety, 5=motion control, 4=sensor, 3=camera, 0=best-effort. The agent uses PCP to determine which Qbv gate window this stream's frames are transmitted in. Optional.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="max-frame-size" type="xs:unsignedInt" use="required">
+      <xs:annotation><xs:documentation>Maximum Ethernet frame size in bytes for this stream, excluding MACsec overhead (32 bytes) and Ethernet preamble/IFG. The agent adds MACsec overhead when computing serialization delay. Standard frames: up to 1500 bytes. Jumbo frames: up to 9000 bytes (for camera/lidar). Small control frames: 64-256 bytes. Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="interval-us" type="xs:unsignedInt" use="required">
+      <xs:annotation><xs:documentation>Transmission interval in microseconds — how often the talker sends one frame of this stream. Determines bandwidth: bandwidth = max-frame-size * 8 / interval-us (Mbps). Examples: 1000 us (1 kHz motor control), 33333 us (30 fps camera), 10000 us (100 Hz safety heartbeat). Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="max-latency-us" type="xs:unsignedInt">
+      <xs:annotation><xs:documentation>Maximum acceptable end-to-end latency in microseconds from talker transmission to listener reception. The agent validates that the cumulative per-hop delay (serialization + switch processing + propagation) across the network path does not exceed this value. If it does, the schedule is infeasible. Examples: 200 us (motor control, 4 hops), 10000 us (camera, tolerant), 500 us (safety heartbeat). Optional — if omitted, no latency constraint (best-effort).</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="protocol" type="xs:string">
+      <xs:annotation><xs:documentation>Transport protocol when not raw Ethernet. "ieee-1722-acf-can": IEEE 1722 AVTP with ACF CAN encapsulation — CAN frames tunneled over Ethernet for remote CAN bus access (e.g., S32N79 sending motor commands to S32J100 which decapsulates to CAN-FD). "ieee-1722-coe": IEEE 1722 Camera over Ethernet. Omit for standard Ethernet frames (raw L2 or IP). Optional.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Stream group: logical grouping of related streams -->
+  <xs:complexType name="stream_group">
+    <xs:annotation><xs:documentation>Logical grouping of related TSN streams for organizational clarity and chain association. Groups typically correspond to a functional subsystem: "left-arm-control" (all motor command/status streams for the left arm), "perception-cameras" (all camera streams), "base-mobility" (wheel control via 1722+CAN). The optional chain attribute tells the agent which HCDF chain these streams traverse — enabling automatic path computation without the agent having to trace each stream individually.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name="description" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Human-readable description of this stream group's purpose and the subsystem it serves.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="stream" type="stream" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Individual TSN stream definitions within this group. All streams in a group typically share the same VLAN and chain path, though each can override with its own VLAN/PCP.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Unique name for this stream group within the profile. Example: "left-arm-control", "perception-cameras", "safety". Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="chain" type="xs:string">
+      <xs:annotation><xs:documentation>Name of the HCDF chain that all streams in this group traverse. References a chain defined in the HCDF's network element. When set, the agent knows the ordered hop sequence without tracing each stream individually. Example: "left-arm" references the 802.3dm chain from S32N79 through MCN1-MCN4. Optional — omit for streams that don't traverse a chain (e.g., point-to-point links).</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- Root element: stream-profile -->
+  <xs:element name="stream-profile">
+    <xs:complexType>
+      <xs:annotation><xs:documentation>Root element of an HCDF stream profile document. Defines the application-level TSN data flows for a specific operational mode of the robot. The same hardware (described in the HCDF) can have multiple stream profiles for different scenarios: "operational" (normal operation with all streams active), "calibration" (only sensor streams, no motor commands), "safe-mode" (safety heartbeat only, minimal traffic), "demo" (cameras + display, motors at reduced rate). The HCDF references profiles via stream-profile uri="..." — the agent loads the active profile and validates it against the hardware topology and port capabilities before computing TSN device configurations.</xs:documentation></xs:annotation>
+      <xs:sequence>
+        <xs:element name="description" type="xs:string" minOccurs="0">
+          <xs:annotation><xs:documentation>Human-readable description of this profile's purpose and operational scenario. Example: "Normal operational mode: 1kHz arm control, 30fps wrist cameras, base wheel control via 1722+CAN, lidar/radar perception pipeline."</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="stream-group" type="stream_group" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation><xs:documentation>Grouped streams organized by functional subsystem. Recommended over ungrouped streams for clarity. Each group can reference the HCDF chain it traverses.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="stream" type="stream" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation><xs:documentation>Ungrouped streams at the profile root level. Use for streams that don't belong to a specific group or for simple profiles with few streams.</xs:documentation></xs:annotation>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required">
+        <xs:annotation><xs:documentation>Profile name identifying the operational mode. Example: "operational", "calibration", "safe-mode", "demo". Must be unique across all profiles referenced by the HCDF. Required.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="version" type="xs:string" use="required">
+        <xs:annotation><xs:documentation>Profile version using semantic versioning. Increment when streams are added, removed, or their QoS requirements change. The agent can detect version mismatches between the profile and the HCDF. Required.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="hcdf-ref" type="xs:string">
+        <xs:annotation><xs:documentation>Reference to the HCDF file this profile is designed for. All talker/listener device/port references in the streams must exist in this HCDF. Example: "humanoid-mobile-base.hcdf". Optional but recommended — enables the agent to validate stream references at load time.</xs:documentation></xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

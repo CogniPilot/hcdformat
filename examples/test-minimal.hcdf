@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+
+  <!-- Comp 1: board with switch, sensors, motor, surface, antenna, port -->
+  <comp name="test-board" role="actuator">
+    <description>Test component exercising all major child elements</description>
+
+    <inertial>
+      <mass>0.5</mass>
+      <com>0 0 0.005</com>
+      <inertia>1.2e-5 0 0 1.1e-5 0 2.0e-5</inertia>
+    </inertial>
+
+    <visual name="board">
+      <pose>0 0 0 0 0 0</pose>
+      <model uri="models/test-board.glb" sha="abc123def456"/>
+    </visual>
+
+    <collision name="board_col">
+      <pose>0 0 -0.005 0 0 0</pose>
+      <geometry>
+        <box><size>0.048 0.044 0.012</size></box>
+      </geometry>
+      <surface>
+        <friction static="0.6" dynamic="0.4"/>
+        <restitution>0.2</restitution>
+      </surface>
+    </collision>
+
+    <frame name="sensor_origin" relative-to="test-board">
+      <description>Sensor reference frame</description>
+      <pose>0 0 0.01 0 0 0</pose>
+    </frame>
+
+    <switch chip="test-switch">
+      <port name="eth0" iface="swp0" type="ethernet">
+        <capabilities>
+          <speed-tx unit="Mbps">10000</speed-tx>
+          <speed-rx unit="Mbps">100</speed-rx>
+          <standard>802.3dm</standard>
+          <phy role="master"/>
+          <tsn>
+            <gptp hw-timestamping="true" gm-capable="true"/>
+            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+            <preemption min-fragment-size="64"/>
+          </tsn>
+          <macsec><cipher>gcm-aes-128</cipher></macsec>
+          <eee supported="true"/>
+          <connector>Micro-Lock Plus 2.0 4C</connector>
+        </capabilities>
+      </port>
+      <port name="eth1" iface="swp1" type="ethernet">
+        <capabilities>
+          <speed unit="Mbps">1000</speed>
+          <standard>1000BASE-T1</standard>
+          <phy role="slave"/>
+        </capabilities>
+      </port>
+    </switch>
+
+    <port name="can0" type="CAN">
+      <capabilities>
+        <bitrate unit="bps">5000000</bitrate>
+      </capabilities>
+    </port>
+
+    <port name="sig_motor" type="SIGNAL">
+      <capabilities>
+        <connector>12-pin Molex</connector>
+      </capabilities>
+    </port>
+
+    <port name="phase_motor" type="SIGNAL">
+      <capabilities>
+        <connector>3-pin power</connector>
+      </capabilities>
+    </port>
+
+    <port name="pwr_in" type="POWER">
+      <capabilities>
+        <voltage unit="V" min="20" max="29.2">24</voltage>
+        <current unit="A" max="6">3</current>
+        <power unit="W" max="144">72</power>
+      </capabilities>
+    </port>
+
+    <antenna name="gnss0" type="gnss">
+      <capabilities>
+        <gain unit="dBi">3.5</gain>
+        <polarization>RHCP</polarization>
+      </capabilities>
+    </antenna>
+
+    <sensor name="imu0" update-rate="1000">
+      <inertial type="accel_gyro">
+        <pose>0.016 -0.001 -0.008 0 0 0</pose>
+        <driver name="icm45686">
+          <axis-align x="Y" y="-X" z="Z"/>
+        </driver>
+        <accel>
+          <range unit="g">16</range>
+          <resolution unit="mg">0.488</resolution>
+          <noise type="gaussian">
+            <mean>0</mean>
+            <stddev>0.003</stddev>
+            <bias-mean>0.01</bias-mean>
+          </noise>
+        </accel>
+        <gyro>
+          <range unit="dps">2000</range>
+          <noise type="gaussian">
+            <stddev>0.01</stddev>
+          </noise>
+        </gyro>
+      </inertial>
+    </sensor>
+
+    <sensor name="tof0">
+      <optical type="tof">
+        <pose>-0.008 0 0.003 0 0 0</pose>
+        <driver name="afbr_s50"/>
+        <fov name="collector" color="#4488ff">
+          <pose>0 0 0 0 0.0471 0</pose>
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.05</near>
+              <far>50.0</far>
+              <hfov>0.2164</hfov>
+              <vfov>0.0942</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <fov name="emitter" color="#ff4444">
+          <pose>-0.005 0 0 0 0 0</pose>
+          <geometry>
+            <frustum shape="conical">
+              <near>0.001</near>
+              <far>50.0</far>
+              <fov>0.035</fov>
+            </frustum>
+          </geometry>
+        </fov>
+      </optical>
+    </sensor>
+
+    <sensor name="motor_encoder">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+
+    <sensor name="motor_hall">
+      <em type="mag">
+        <range unit="mT">100</range>
+      </em>
+    </sensor>
+
+    <sensor name="motor_temp">
+      <temperature type="thermistor">
+        <range unit="degC">150</range>
+      </temperature>
+    </sensor>
+
+    <motor name="foc_motor" type="bldc" encoder="motor_encoder" hall="motor_hall" thermistor="motor_temp">
+      <voltage unit="V" nominal="24" max="28"/>
+      <current unit="A" continuous="6.5" peak="19"/>
+      <resistance unit="ohm">0.5</resistance>
+      <torque-constant unit="Nm/A">0.29</torque-constant>
+      <velocity-constant unit="V/RPM">0.109</velocity-constant>
+      <max-speed unit="rpm">260</max-speed>
+      <stall-torque unit="Nm">19.76</stall-torque>
+      <no-load-speed unit="rpm">257.9</no-load-speed>
+      <no-load-current unit="A">0.974</no-load-current>
+      <max-power-out unit="W">158.8</max-power-out>
+      <max-efficiency unit="percent">68.4</max-efficiency>
+      <control-modes>
+        <mode>velocity</mode>
+        <mode>position</mode>
+        <mode>torque</mode>
+      </control-modes>
+    </motor>
+
+    <surface name="wheel">
+      <wheel type="driven">
+        <radius unit="m">0.085</radius>
+        <width unit="m">0.041</width>
+        <friction static="0.9" dynamic="0.7"/>
+      </wheel>
+    </surface>
+
+    <software name="firmware">
+      <version>1.0.0</version>
+      <hash>abc123def456</hash>
+    </software>
+  </comp>
+
+  <!-- Comp 2: minimal parent for joint target -->
+  <comp name="parent-body" role="parent">
+    <inertial>
+      <mass>5.0</mass>
+      <com>0 0 0</com>
+    </inertial>
+    <collision name="parent_col">
+      <geometry><cylinder><radius>0.05</radius><length>0.2</length></cylinder></geometry>
+    </collision>
+    <collision name="parent_cap">
+      <geometry><capsule><radius>0.03</radius><length>0.1</length></capsule></geometry>
+    </collision>
+    <collision name="parent_sphere">
+      <geometry><sphere><radius>0.04</radius></sphere></geometry>
+    </collision>
+    <collision name="parent_ellipsoid">
+      <geometry><ellipsoid><radii>0.05 0.03 0.02</radii></ellipsoid></geometry>
+    </collision>
+    <collision name="parent_cone">
+      <geometry><cone><radius>0.03</radius><length>0.08</length></cone></geometry>
+    </collision>
+    <port name="eth0" type="ethernet">
+      <capabilities>
+        <speed-tx unit="Mbps">10000</speed-tx>
+        <speed-rx unit="Mbps">100</speed-rx>
+        <standard>802.3dm</standard>
+        <phy role="slave"/>
+        <tsn>
+          <gptp hw-timestamping="true" gm-capable="false"/>
+          <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
+          <preemption min-fragment-size="64"/>
+        </tsn>
+        <macsec><cipher>gcm-aes-128</cipher></macsec>
+      </capabilities>
+    </port>
+    <port name="can0" type="CAN">
+      <capabilities>
+        <bitrate unit="bps">5000000</bitrate>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- Joints -->
+  <joint name="shoulder_yaw" type="revolute">
+    <parent comp="parent-body"/>
+    <child comp="test-board"/>
+    <origin xyz="0 0.15 0.3" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="50" velocity="3.14"/>
+    <dynamics damping="0.5" friction="0.1" spring_stiffness="0" spring_reference="0"/>
+  </joint>
+
+  <joint name="fixed_mount" type="fixed">
+    <parent comp="parent-body"/>
+    <child comp="test-board"/>
+  </joint>
+
+  <!-- Group -->
+  <group name="test_chain" type="kinematic-chain">
+    <description>Test kinematic chain</description>
+    <joint ref="shoulder_yaw"/>
+  </group>
+
+  <!-- State -->
+  <state name="home" default="true">
+    <description>Home position</description>
+    <joint-position joint="shoulder_yaw" value="0"/>
+  </state>
+
+  <!-- Self-collision disable -->
+  <self-collision-disable>
+    <pair comp1="parent-body" comp2="test-board" reason="adjacent"/>
+  </self-collision-disable>
+
+  <!-- Network: contains link, bus, chain, gPTP, schedule, macsec -->
+  <network name="test">
+    <description>Test network exercising all topology types</description>
+
+    <link name="test_link">
+      <wired standard="802.3dm">
+        <port>parent-body/eth0</port>
+        <port>test-board/eth0</port>
+        <vlan id="10" pcp="5"/>
+        <macsec policy="must-secure" cipher="gcm-aes-128"
+                key-agreement="psk" key-ref="test-key"/>
+      </wired>
+    </link>
+
+    <bus name="test_can" type="CAN" topology="daisy-chain">
+      <bitrate>5000000</bitrate>
+      <participant device="parent-body" port="can0" role="controller" position="1"/>
+      <participant device="test-board" port="can0" position="2" id="0x601" terminator="true"/>
+    </bus>
+
+    <chain name="test-chain" type="802.3dm" mode="switched" topology="line">
+      <vlan id="10" pcp="5"/>
+      <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk"/>
+      <hop device="parent-body" port="eth0" role="root"/>
+      <hop device="test-board" ingress="eth0" role="tail"/>
+    </chain>
+
+    <gptp domain="0">
+      <clock device="parent-body" port="eth0"
+             gm-capable="true" priority1="128" priority2="128"/>
+      <clock device="test-board" port="eth0"
+             gm-capable="false" priority1="255" priority2="255"/>
+      <port-defaults log-sync-interval="-3" neighbor-prop-delay-thresh-ns="800"/>
+    </gptp>
+
+    <traffic-classes count="8">
+      <class tc="7" pcp="7" name="ptp" preemption="express"/>
+      <class tc="6" pcp="6" name="safety" preemption="express"/>
+      <class tc="5" pcp="5" name="motion" preemption="express"/>
+      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
+    </traffic-classes>
+
+    <schedule name="1ms-control" cycle-time-us="1000">
+      <gate tc-mask="0x80" duration-us="50"/>
+      <gate tc-mask="0x60" duration-us="200"/>
+      <gate tc-mask="0x0F" duration-us="750"/>
+    </schedule>
+
+    <schedule-assignment>
+      <assign schedule="1ms-control" ports="parent-body/eth0 test-board/eth0"/>
+      <assign schedule="1ms-control" chains="test-chain"/>
+    </schedule-assignment>
+
+    <stream-profile uri="profiles/operational.streams.xml" active="true"/>
+
+    <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk">
+      <key-store type="secure-element" ref="se051"/>
+    </macsec>
+
+    <eee-policy>disabled</eee-policy>
+  </network>
+
+  <!-- Transmission -->
+  <transmission name="shoulder_transmission" type="planetary">
+    <motor ref="foc_motor"/>
+    <joint ref="shoulder_yaw"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+
+  <!-- Material -->
+  <material name="rubber">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+    <surface>
+      <friction static="0.8" dynamic="0.6"/>
+      <restitution>0.3</restitution>
+    </surface>
+  </material>
+
+  <!-- Include -->
+  <include uri="components/sensor-module.hcdf" sha="abc123" name="sensor-1" pose="0 0 0.1 0 0 0"/>
+
+</hcdf>

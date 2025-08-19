@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j1" type="invalid_type">
+    <parent comp="a"/>
+    <child comp="b"/>
+  </joint>
+</hcdf>

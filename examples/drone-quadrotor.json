@@ -1,0 +1,1898 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "comp": [
+      {
+        "name": "frame",
+        "role": "parent",
+        "struct-type": "frame",
+        "description": "Carbon fiber quadrotor airframe (X configuration, 450mm motor-to-motor)",
+        "inertial": {
+          "mass": 0.35,
+          "com": "0 0 0",
+          "inertia": "0.0045 0 0 0.0045 0 0.008"
+        },
+        "visual": {
+          "name": "frame_body",
+          "geometry": {
+            "box": {
+              "size": "0.18 0.18 0.03"
+            }
+          },
+          "material": {
+            "name": "carbon"
+          }
+        },
+        "collision": {
+          "name": "frame_col",
+          "geometry": {
+            "box": {
+              "size": "0.18 0.18 0.03"
+            }
+          }
+        }
+      },
+      {
+        "name": "navq95",
+        "role": "compute",
+        "description": "NXP NavQ95 companion computer (i.MX 95 SoC) — flight controller and autonomy compute",
+        "board": "navq95",
+        "inertial": {
+          "mass": 0.045,
+          "com": "0 0 0"
+        },
+        "visual": {
+          "name": "navq95_pcb",
+          "geometry": {
+            "box": {
+              "size": "0.07 0.05 0.012"
+            }
+          },
+          "material": {
+            "name": "green_pcb"
+          }
+        },
+        "collision": {
+          "name": "navq95_col",
+          "geometry": {
+            "box": {
+              "size": "0.07 0.05 0.012"
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "type": "ethernet",
+            "capabilities": {
+              "speed": {
+                "unit": "Mbps",
+                "$text": 1000
+              },
+              "standard": "1000base-t",
+              "connector": "RJ45"
+            }
+          },
+          {
+            "name": "eth_t1_0",
+            "type": "ethernet",
+            "capabilities": {
+              "speed": {
+                "unit": "Mbps",
+                "$text": 100
+              },
+              "standard": "100base-t1",
+              "phy": {
+                "role": "master"
+              },
+              "connector": "Micro-Lock Plus 2.0 4C"
+            }
+          },
+          {
+            "name": "eth_t1_1",
+            "type": "ethernet",
+            "capabilities": {
+              "speed": {
+                "unit": "Mbps",
+                "$text": 100
+              },
+              "standard": "100base-t1",
+              "phy": {
+                "role": "master"
+              },
+              "connector": "Micro-Lock Plus 2.0 4C"
+            }
+          },
+          {
+            "name": "mipi_csi0",
+            "type": "MIPI-CSI",
+            "capabilities": {
+              "speed": {
+                "unit": "Gbps",
+                "$text": 2.5
+              },
+              "standard": "MIPI-CSI-2",
+              "connector": "22-pin FFC"
+            }
+          },
+          {
+            "name": "dshot0",
+            "iface": "pwm0",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600"
+            }
+          },
+          {
+            "name": "dshot1",
+            "iface": "pwm1",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600"
+            }
+          },
+          {
+            "name": "dshot2",
+            "iface": "pwm2",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600"
+            }
+          },
+          {
+            "name": "dshot3",
+            "iface": "pwm3",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600"
+            }
+          },
+          {
+            "name": "spi0",
+            "type": "SPI",
+            "capabilities": {
+              "bitrate": {
+                "unit": "bps",
+                "$text": 10000000
+              }
+            }
+          },
+          {
+            "name": "i2c0",
+            "type": "I2C",
+            "capabilities": {
+              "bitrate": {
+                "unit": "bps",
+                "$text": 400000
+              }
+            }
+          },
+          {
+            "name": "uart0",
+            "type": "UART",
+            "capabilities": {
+              "baud": {
+                "unit": "Bd",
+                "$text": 115200
+              },
+              "protocol": "MAVLink",
+              "connector": "JST-GH 6-pin"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.5,
+                "max": 5.5,
+                "$text": 5
+              },
+              "current": {
+                "unit": "A",
+                "max": 3,
+                "$text": 1.5
+              },
+              "power": {
+                "unit": "W",
+                "max": 15,
+                "$text": 7.5
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 5
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          }
+        ],
+        "sensor": {
+          "name": "camera0",
+          "update-rate": 30,
+          "optical": {
+            "type": "camera",
+            "pose": "0 0 -0.015 0 1.5708 0",
+            "driver": {
+              "name": "imx219"
+            },
+            "geometry": {
+              "box": {
+                "size": "0.025 0.025 0.01"
+              }
+            },
+            "fov": {
+              "name": "rgb",
+              "geometry": {
+                "frustum": {
+                  "shape": "pyramidal",
+                  "near": 0.1,
+                  "far": 50.0,
+                  "hfov": 1.0856,
+                  "vfov": 0.8517
+                }
+              },
+              "intrinsics": {
+                "width": 1920,
+                "height": 1080,
+                "format": "RGB8",
+                "fx": 1380.0,
+                "fy": 1380.0,
+                "cx": 960.0,
+                "cy": 540.0
+              }
+            },
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 1492
+              },
+              "bandwidth-compressed": {
+                "unit": "Mbps",
+                "$text": 15
+              },
+              "frame-size": {
+                "unit": "bytes",
+                "$text": 6220800
+              }
+            },
+            "camera-params": {
+              "shutter": "rolling",
+              "hdr": false,
+              "compression": "h265",
+              "trigger": "free-running"
+            }
+          }
+        },
+        "software": {
+          "name": "cerebri",
+          "version": "1.0.0"
+        },
+        "extension": [
+          {
+            "domain": "org.ros2",
+            "version": 1.0,
+            "topic-map": {
+              "topic": [
+                {
+                  "sensor": "imu0",
+                  "name": "/imu/data",
+                  "type": "sensor_msgs/msg/Imu",
+                  "qos": "sensor_data"
+                },
+                {
+                  "sensor": "mag0",
+                  "name": "/mag/data",
+                  "type": "sensor_msgs/msg/MagneticField",
+                  "qos": "sensor_data"
+                },
+                {
+                  "sensor": "baro0",
+                  "name": "/baro/data",
+                  "type": "sensor_msgs/msg/FluidPressure",
+                  "qos": "sensor_data"
+                },
+                {
+                  "sensor": "gnss0",
+                  "name": "/gnss/fix",
+                  "type": "sensor_msgs/msg/NavSatFix",
+                  "qos": "sensor_data"
+                },
+                {
+                  "sensor": "optical_flow0",
+                  "name": "/optical_flow",
+                  "type": "synapse_msgs/msg/OpticalFlow",
+                  "qos": "sensor_data"
+                },
+                {
+                  "sensor": "camera0",
+                  "name": "/camera/image_raw",
+                  "type": "sensor_msgs/msg/Image",
+                  "qos": "sensor_data"
+                },
+                {
+                  "motor": "prop_fl",
+                  "name": "/dshot/fl/command",
+                  "type": "actuator_msgs/msg/MotorCommand",
+                  "qos": "reliable"
+                }
+              ]
+            }
+          },
+          {
+            "domain": "org.gazebosim",
+            "version": 1.0,
+            "physics": {
+              "engine": "ode",
+              "max-step-size": 0.001,
+              "real-time-factor": 1.0
+            },
+            "plugin": [
+              {
+                "name": "aerodynamics",
+                "filename": "libAerodynamicsPlugin.so",
+                "link": "frame",
+                "air-density": 1.225,
+                "forward-drag-coefficient": 0.05,
+                "upward-drag-coefficient": 0.1
+              },
+              {
+                "name": "motor_model",
+                "filename": "libMotorModelPlugin.so",
+                "motor": "prop_fl",
+                "turning-direction": "ccw",
+                "time-constant-up": 0.0125,
+                "time-constant-down": 0.025,
+                "rotor-drag-coefficient": 0.00025,
+                "rolling-moment-coefficient": "1e-6"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "esc_fl",
+        "role": "actuator",
+        "description": "AM32 ESC — front-left motor driver",
+        "board": "am32-esc-35a",
+        "inertial": {
+          "mass": 0.012
+        },
+        "port": [
+          {
+            "name": "dshot_in",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600",
+              "connector": "servo-3pin"
+            }
+          },
+          {
+            "name": "sig_out",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "3-phase-BLDC",
+              "connector": "3-pin bullet"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 10,
+                "max": 17.4,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "power": {
+                "unit": "W",
+                "max": 518,
+                "$text": 222
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 60
+              },
+              "connector": "solder pad"
+            }
+          }
+        ]
+      },
+      {
+        "name": "esc_fr",
+        "role": "actuator",
+        "description": "AM32 ESC — front-right motor driver",
+        "board": "am32-esc-35a",
+        "inertial": {
+          "mass": 0.012
+        },
+        "port": [
+          {
+            "name": "dshot_in",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600",
+              "connector": "servo-3pin"
+            }
+          },
+          {
+            "name": "sig_out",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "3-phase-BLDC",
+              "connector": "3-pin bullet"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 10,
+                "max": 17.4,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "power": {
+                "unit": "W",
+                "max": 518,
+                "$text": 222
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 60
+              },
+              "connector": "solder pad"
+            }
+          }
+        ]
+      },
+      {
+        "name": "esc_rl",
+        "role": "actuator",
+        "description": "AM32 ESC — rear-left motor driver",
+        "board": "am32-esc-35a",
+        "inertial": {
+          "mass": 0.012
+        },
+        "port": [
+          {
+            "name": "dshot_in",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600",
+              "connector": "servo-3pin"
+            }
+          },
+          {
+            "name": "sig_out",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "3-phase-BLDC",
+              "connector": "3-pin bullet"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 10,
+                "max": 17.4,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "power": {
+                "unit": "W",
+                "max": 518,
+                "$text": 222
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 60
+              },
+              "connector": "solder pad"
+            }
+          }
+        ]
+      },
+      {
+        "name": "esc_rr",
+        "role": "actuator",
+        "description": "AM32 ESC — rear-right motor driver",
+        "board": "am32-esc-35a",
+        "inertial": {
+          "mass": 0.012
+        },
+        "port": [
+          {
+            "name": "dshot_in",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "DShot600",
+              "connector": "servo-3pin"
+            }
+          },
+          {
+            "name": "sig_out",
+            "type": "SIGNAL",
+            "capabilities": {
+              "protocol": "3-phase-BLDC",
+              "connector": "3-pin bullet"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 10,
+                "max": 17.4,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "power": {
+                "unit": "W",
+                "max": 518,
+                "$text": 222
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 60
+              },
+              "connector": "solder pad"
+            }
+          }
+        ]
+      },
+      {
+        "name": "motor_fl",
+        "role": "actuator",
+        "description": "2212-920KV brushless motor with 9x4.5 propeller — front-left (CCW)",
+        "inertial": {
+          "mass": 0.055
+        },
+        "port": {
+          "name": "sig_in",
+          "type": "SIGNAL",
+          "capabilities": {
+            "protocol": "3-phase-BLDC",
+            "connector": "3-pin bullet"
+          }
+        },
+        "motor": {
+          "name": "prop_fl",
+          "type": "thrust",
+          "voltage": {
+            "unit": "V",
+            "nominal": 14.8,
+            "max": 17.4
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 15,
+            "peak": 25
+          },
+          "velocity-constant": {
+            "unit": "RPM/V",
+            "$text": 920
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 13616
+          },
+          "thrust-axis": "0 0 1",
+          "max-thrust": {
+            "unit": "N",
+            "$text": 15
+          },
+          "control-modes": {
+            "mode": [
+              "pwm",
+              "velocity"
+            ]
+          }
+        },
+        "surface": {
+          "name": "prop",
+          "prop": {
+            "diameter": {
+              "unit": "in",
+              "$text": 9
+            },
+            "pitch": {
+              "unit": "in",
+              "$text": 4.5
+            },
+            "blades": 2,
+            "direction": "CCW"
+          }
+        }
+      },
+      {
+        "name": "motor_fr",
+        "role": "actuator",
+        "description": "2212-920KV brushless motor with 9x4.5 propeller — front-right (CW)",
+        "inertial": {
+          "mass": 0.055
+        },
+        "port": {
+          "name": "sig_in",
+          "type": "SIGNAL",
+          "capabilities": {
+            "protocol": "3-phase-BLDC",
+            "connector": "3-pin bullet"
+          }
+        },
+        "motor": {
+          "name": "prop_fr",
+          "type": "thrust",
+          "voltage": {
+            "unit": "V",
+            "nominal": 14.8,
+            "max": 17.4
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 15,
+            "peak": 25
+          },
+          "velocity-constant": {
+            "unit": "RPM/V",
+            "$text": 920
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 13616
+          },
+          "thrust-axis": "0 0 1",
+          "max-thrust": {
+            "unit": "N",
+            "$text": 15
+          },
+          "control-modes": {
+            "mode": [
+              "pwm",
+              "velocity"
+            ]
+          }
+        },
+        "surface": {
+          "name": "prop",
+          "prop": {
+            "diameter": {
+              "unit": "in",
+              "$text": 9
+            },
+            "pitch": {
+              "unit": "in",
+              "$text": 4.5
+            },
+            "blades": 2,
+            "direction": "CW"
+          }
+        }
+      },
+      {
+        "name": "motor_rl",
+        "role": "actuator",
+        "description": "2212-920KV brushless motor with 9x4.5 propeller — rear-left (CW)",
+        "inertial": {
+          "mass": 0.055
+        },
+        "port": {
+          "name": "sig_in",
+          "type": "SIGNAL",
+          "capabilities": {
+            "protocol": "3-phase-BLDC",
+            "connector": "3-pin bullet"
+          }
+        },
+        "motor": {
+          "name": "prop_rl",
+          "type": "thrust",
+          "voltage": {
+            "unit": "V",
+            "nominal": 14.8,
+            "max": 17.4
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 15,
+            "peak": 25
+          },
+          "velocity-constant": {
+            "unit": "RPM/V",
+            "$text": 920
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 13616
+          },
+          "thrust-axis": "0 0 1",
+          "max-thrust": {
+            "unit": "N",
+            "$text": 15
+          },
+          "control-modes": {
+            "mode": [
+              "pwm",
+              "velocity"
+            ]
+          }
+        },
+        "surface": {
+          "name": "prop",
+          "prop": {
+            "diameter": {
+              "unit": "in",
+              "$text": 9
+            },
+            "pitch": {
+              "unit": "in",
+              "$text": 4.5
+            },
+            "blades": 2,
+            "direction": "CW"
+          }
+        }
+      },
+      {
+        "name": "motor_rr",
+        "role": "actuator",
+        "description": "2212-920KV brushless motor with 9x4.5 propeller — rear-right (CCW)",
+        "inertial": {
+          "mass": 0.055
+        },
+        "port": {
+          "name": "sig_in",
+          "type": "SIGNAL",
+          "capabilities": {
+            "protocol": "3-phase-BLDC",
+            "connector": "3-pin bullet"
+          }
+        },
+        "motor": {
+          "name": "prop_rr",
+          "type": "thrust",
+          "voltage": {
+            "unit": "V",
+            "nominal": 14.8,
+            "max": 17.4
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 15,
+            "peak": 25
+          },
+          "velocity-constant": {
+            "unit": "RPM/V",
+            "$text": 920
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 13616
+          },
+          "thrust-axis": "0 0 1",
+          "max-thrust": {
+            "unit": "N",
+            "$text": 15
+          },
+          "control-modes": {
+            "mode": [
+              "pwm",
+              "velocity"
+            ]
+          }
+        },
+        "surface": {
+          "name": "prop",
+          "prop": {
+            "diameter": {
+              "unit": "in",
+              "$text": 9
+            },
+            "pitch": {
+              "unit": "in",
+              "$text": 4.5
+            },
+            "blades": 2,
+            "direction": "CCW"
+          }
+        }
+      },
+      {
+        "name": "mcxn_rtk_gnss",
+        "role": "sensor",
+        "description": "MR-MCXN-T1 board #1 — u-blox F9P multi-band RTK GNSS receiver",
+        "board": "mr-mcxn-t1",
+        "inertial": {
+          "mass": 0.018
+        },
+        "port": [
+          {
+            "name": "eth_t1",
+            "type": "ethernet",
+            "capabilities": {
+              "speed": {
+                "unit": "Mbps",
+                "$text": 100
+              },
+              "standard": "100base-t1",
+              "phy": {
+                "role": "slave"
+              },
+              "connector": "Micro-Lock Plus 2.0 4C"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.5,
+                "max": 5.5,
+                "$text": 5
+              },
+              "current": {
+                "unit": "A",
+                "max": 0.5,
+                "$text": 0.2
+              },
+              "power": {
+                "unit": "W",
+                "max": 2.5,
+                "$text": 1.0
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 0.8
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          }
+        ],
+        "antenna": {
+          "name": "gnss_ant",
+          "type": "gnss",
+          "capabilities": {
+            "band": [
+              "L1",
+              "L2"
+            ],
+            "gain": {
+              "unit": "dBi",
+              "$text": 5
+            },
+            "polarization": "RHCP"
+          }
+        },
+        "sensor": {
+          "name": "gnss0",
+          "update-rate": 10,
+          "rf": {
+            "type": "gnss",
+            "driver": {
+              "name": "ubx-f9p"
+            },
+            "gnss-params": {
+              "constellation": [
+                "GPS",
+                "GLONASS",
+                "Galileo",
+                "BeiDou"
+              ],
+              "frequency": [
+                "L1",
+                "L2"
+              ],
+              "rtk": true,
+              "accuracy-standalone": {
+                "unit": "m",
+                "$text": 1.5
+              },
+              "accuracy-rtk": {
+                "unit": "m",
+                "$text": 0.01
+              },
+              "pps": true
+            }
+          }
+        }
+      },
+      {
+        "name": "mcxn_optical_flow",
+        "role": "sensor",
+        "description": "MR-MCXN-T1 board #2 — optical flow (PAA3905), IMU (ICM45686), magnetometer (BMM350), barometer (BMP581)",
+        "board": "mr-mcxn-t1",
+        "inertial": {
+          "mass": 0.018
+        },
+        "port": [
+          {
+            "name": "eth_t1",
+            "type": "ethernet",
+            "capabilities": {
+              "speed": {
+                "unit": "Mbps",
+                "$text": 100
+              },
+              "standard": "100base-t1",
+              "phy": {
+                "role": "slave"
+              },
+              "connector": "Micro-Lock Plus 2.0 4C"
+            }
+          },
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.5,
+                "max": 5.5,
+                "$text": 5
+              },
+              "current": {
+                "unit": "A",
+                "max": 0.5,
+                "$text": 0.15
+              },
+              "power": {
+                "unit": "W",
+                "max": 2.5,
+                "$text": 0.75
+              },
+              "typical-power": {
+                "unit": "W",
+                "$text": 0.6
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          }
+        ],
+        "sensor": [
+          {
+            "name": "optical_flow0",
+            "update-rate": 100,
+            "optical": {
+              "type": "optical_flow",
+              "pose": "0 0 -0.005 0 3.14159 0",
+              "driver": {
+                "name": "paa3905"
+              },
+              "fov": {
+                "name": "flow",
+                "geometry": {
+                  "frustum": {
+                    "shape": "conical",
+                    "near": 0.08,
+                    "far": 5.0,
+                    "fov": 0.733
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "imu0",
+            "update-rate": 3200,
+            "inertial": {
+              "type": "accel_gyro",
+              "driver": {
+                "name": "icm45686",
+                "axis-align": {
+                  "x": "X",
+                  "y": "Y",
+                  "z": "Z"
+                }
+              },
+              "accel": {
+                "range": {
+                  "unit": "g",
+                  "$text": 16
+                },
+                "resolution": {
+                  "unit": "mg",
+                  "$text": 0.488
+                },
+                "odr": {
+                  "unit": "Hz",
+                  "$text": 3200
+                },
+                "bandwidth": {
+                  "unit": "Hz",
+                  "$text": 1600
+                },
+                "fifo": {
+                  "depth": 256,
+                  "watermark": 8
+                },
+                "noise": {
+                  "type": "gaussian",
+                  "mean": 0,
+                  "stddev": 0.003,
+                  "bias-mean": 0.01,
+                  "bias-stddev": 0.001
+                }
+              },
+              "gyro": {
+                "range": {
+                  "unit": "dps",
+                  "$text": 2000
+                },
+                "resolution": {
+                  "unit": "dps",
+                  "$text": 0.061
+                },
+                "odr": {
+                  "unit": "Hz",
+                  "$text": 3200
+                },
+                "bandwidth": {
+                  "unit": "Hz",
+                  "$text": 1600
+                },
+                "fifo": {
+                  "depth": 256,
+                  "watermark": 8
+                },
+                "noise": {
+                  "type": "gaussian",
+                  "mean": 0,
+                  "stddev": 0.01,
+                  "bias-mean": 0.005,
+                  "bias-stddev": 0.0005
+                }
+              }
+            }
+          },
+          {
+            "name": "mag0",
+            "update-rate": 100,
+            "em": {
+              "type": "mag",
+              "driver": {
+                "name": "bmm350"
+              },
+              "range": {
+                "unit": "mT",
+                "$text": 2
+              },
+              "resolution": {
+                "unit": "uT",
+                "$text": 0.3
+              },
+              "noise": {
+                "type": "gaussian",
+                "stddev": 0.6
+              }
+            }
+          },
+          {
+            "name": "baro0",
+            "update-rate": 50,
+            "force": {
+              "type": "pressure",
+              "driver": {
+                "name": "bmp581"
+              },
+              "range": {
+                "unit": "hPa",
+                "$text": 1100
+              },
+              "resolution": {
+                "unit": "Pa",
+                "$text": 0.5
+              },
+              "noise": {
+                "type": "gaussian",
+                "stddev": 0.5
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "battery",
+        "role": "parent",
+        "description": "4S LiPo battery pack (14.8V nominal, 5000mAh)",
+        "inertial": {
+          "mass": 0.42
+        },
+        "visual": {
+          "name": "battery_body",
+          "geometry": {
+            "box": {
+              "size": "0.14 0.045 0.035"
+            }
+          }
+        },
+        "collision": {
+          "name": "battery_col",
+          "geometry": {
+            "box": {
+              "size": "0.14 0.045 0.035"
+            }
+          }
+        },
+        "port": {
+          "name": "pwr_out",
+          "type": "POWER",
+          "capabilities": {
+            "voltage": {
+              "unit": "V",
+              "min": 12.0,
+              "max": 16.8,
+              "$text": 14.8
+            },
+            "current": {
+              "unit": "A",
+              "max": 150,
+              "$text": 60
+            },
+            "power": {
+              "unit": "W",
+              "max": 2220,
+              "$text": 888
+            },
+            "connector": "XT60"
+          }
+        },
+        "power-source": {
+          "name": "lipo_4s",
+          "battery": {
+            "chemistry": "LiPo",
+            "cells-series": 4,
+            "cells-parallel": 1,
+            "nominal-voltage": {
+              "unit": "V",
+              "$text": 14.8
+            },
+            "capacity": {
+              "unit": "Ah",
+              "$text": 5.0
+            },
+            "energy": {
+              "unit": "Wh",
+              "$text": 74.0
+            },
+            "max-discharge": {
+              "unit": "C",
+              "$text": 30
+            },
+            "min-voltage": {
+              "unit": "V",
+              "$text": 12.0
+            },
+            "max-voltage": {
+              "unit": "V",
+              "$text": 16.8
+            }
+          }
+        }
+      },
+      {
+        "name": "pdb",
+        "role": "parent",
+        "description": "Power distribution board — routes battery power to ESCs and 5V BEC for NavQ95/sensors",
+        "inertial": {
+          "mass": 0.025
+        },
+        "port": [
+          {
+            "name": "pwr_in",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 12.0,
+                "max": 16.8,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 150,
+                "$text": 60
+              },
+              "connector": "XT60"
+            }
+          },
+          {
+            "name": "esc_fl_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 12.0,
+                "max": 16.8,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "connector": "solder pad"
+            }
+          },
+          {
+            "name": "esc_fr_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 12.0,
+                "max": 16.8,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "connector": "solder pad"
+            }
+          },
+          {
+            "name": "esc_rl_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 12.0,
+                "max": 16.8,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "connector": "solder pad"
+            }
+          },
+          {
+            "name": "esc_rr_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 12.0,
+                "max": 16.8,
+                "$text": 14.8
+              },
+              "current": {
+                "unit": "A",
+                "max": 35,
+                "$text": 15
+              },
+              "connector": "solder pad"
+            }
+          },
+          {
+            "name": "bec_5v_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.8,
+                "max": 5.2,
+                "$text": 5.0
+              },
+              "current": {
+                "unit": "A",
+                "max": 5,
+                "$text": 2
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          },
+          {
+            "name": "sensor1_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.8,
+                "max": 5.2,
+                "$text": 5.0
+              },
+              "current": {
+                "unit": "A",
+                "max": 1,
+                "$text": 0.3
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          },
+          {
+            "name": "sensor2_out",
+            "type": "POWER",
+            "capabilities": {
+              "voltage": {
+                "unit": "V",
+                "min": 4.8,
+                "max": 5.2,
+                "$text": 5.0
+              },
+              "current": {
+                "unit": "A",
+                "max": 1,
+                "$text": 0.3
+              },
+              "connector": "JST-GH 2-pin"
+            }
+          }
+        ]
+      }
+    ],
+    "joint": [
+      {
+        "name": "frame_to_navq95",
+        "type": "fixed",
+        "description": "NavQ95 flight controller mounted atop center frame",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "navq95"
+        },
+        "origin": {
+          "xyz": "0 0 0.02"
+        }
+      },
+      {
+        "name": "frame_to_esc_fl",
+        "type": "fixed",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "esc_fl"
+        },
+        "origin": {
+          "xyz": "0.16 0.16 0"
+        }
+      },
+      {
+        "name": "frame_to_esc_fr",
+        "type": "fixed",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "esc_fr"
+        },
+        "origin": {
+          "xyz": "0.16 -0.16 0"
+        }
+      },
+      {
+        "name": "frame_to_esc_rl",
+        "type": "fixed",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "esc_rl"
+        },
+        "origin": {
+          "xyz": "-0.16 0.16 0"
+        }
+      },
+      {
+        "name": "frame_to_esc_rr",
+        "type": "fixed",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "esc_rr"
+        },
+        "origin": {
+          "xyz": "-0.16 -0.16 0"
+        }
+      },
+      {
+        "name": "esc_fl_to_motor_fl",
+        "type": "fixed",
+        "description": "Front-left motor mounted on arm tip",
+        "parent": {
+          "comp": "esc_fl"
+        },
+        "child": {
+          "comp": "motor_fl"
+        },
+        "origin": {
+          "xyz": "0 0 0.01"
+        }
+      },
+      {
+        "name": "esc_fr_to_motor_fr",
+        "type": "fixed",
+        "description": "Front-right motor mounted on arm tip",
+        "parent": {
+          "comp": "esc_fr"
+        },
+        "child": {
+          "comp": "motor_fr"
+        },
+        "origin": {
+          "xyz": "0 0 0.01"
+        }
+      },
+      {
+        "name": "esc_rl_to_motor_rl",
+        "type": "fixed",
+        "description": "Rear-left motor mounted on arm tip",
+        "parent": {
+          "comp": "esc_rl"
+        },
+        "child": {
+          "comp": "motor_rl"
+        },
+        "origin": {
+          "xyz": "0 0 0.01"
+        }
+      },
+      {
+        "name": "esc_rr_to_motor_rr",
+        "type": "fixed",
+        "description": "Rear-right motor mounted on arm tip",
+        "parent": {
+          "comp": "esc_rr"
+        },
+        "child": {
+          "comp": "motor_rr"
+        },
+        "origin": {
+          "xyz": "0 0 0.01"
+        }
+      },
+      {
+        "name": "frame_to_gnss",
+        "type": "fixed",
+        "description": "GNSS module on mast above frame for clear sky view",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "mcxn_rtk_gnss"
+        },
+        "origin": {
+          "xyz": "0 0 0.08"
+        }
+      },
+      {
+        "name": "frame_to_optflow",
+        "type": "fixed",
+        "description": "Optical flow / IMU / mag / baro board underneath frame",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "mcxn_optical_flow"
+        },
+        "origin": {
+          "xyz": "0 0 -0.02"
+        }
+      },
+      {
+        "name": "frame_to_battery",
+        "type": "fixed",
+        "description": "Battery slung beneath frame center of gravity",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "battery"
+        },
+        "origin": {
+          "xyz": "0 0 -0.05"
+        }
+      },
+      {
+        "name": "frame_to_pdb",
+        "type": "fixed",
+        "description": "PDB integrated into frame base plate",
+        "parent": {
+          "comp": "frame"
+        },
+        "child": {
+          "comp": "pdb"
+        },
+        "origin": {
+          "xyz": "0 0 -0.01"
+        }
+      }
+    ],
+    "group": {
+      "name": "propulsion",
+      "type": "locomotion",
+      "description": "All four propulsion motor joints",
+      "joint": [
+        {
+          "ref": "esc_fl_to_motor_fl"
+        },
+        {
+          "ref": "esc_fr_to_motor_fr"
+        },
+        {
+          "ref": "esc_rl_to_motor_rl"
+        },
+        {
+          "ref": "esc_rr_to_motor_rr"
+        }
+      ]
+    },
+    "state": {
+      "name": "disarmed",
+      "default": true,
+      "description": "All motors off — safe disarmed configuration"
+    },
+    "self-collision-disable": {
+      "pair": [
+        {
+          "comp1": "frame",
+          "comp2": "navq95",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "esc_fl",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "esc_fr",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "esc_rl",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "esc_rr",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "esc_fl",
+          "comp2": "motor_fl",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "esc_fr",
+          "comp2": "motor_fr",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "esc_rl",
+          "comp2": "motor_rl",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "esc_rr",
+          "comp2": "motor_rr",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "battery",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "pdb",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "mcxn_rtk_gnss",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "frame",
+          "comp2": "mcxn_optical_flow",
+          "reason": "mounted"
+        }
+      ]
+    },
+    "network": [
+      {
+        "name": "t1-sensors",
+        "description": "100BASE-T1 Ethernet links from NavQ95 to sensor boards",
+        "link": [
+          {
+            "name": "navq95_to_gnss",
+            "description": "NavQ95 to RTK GNSS module (100BASE-T1)",
+            "wired": {
+              "standard": "100base-t1",
+              "port": [
+                "navq95/eth_t1_0",
+                "mcxn_rtk_gnss/eth_t1"
+              ]
+            }
+          },
+          {
+            "name": "navq95_to_optflow",
+            "description": "NavQ95 to optical flow module (100BASE-T1)",
+            "wired": {
+              "standard": "100base-t1",
+              "port": [
+                "navq95/eth_t1_1",
+                "mcxn_optical_flow/eth_t1"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "esc-control",
+        "description": "DShot600 control signals from NavQ95 to ESCs",
+        "link": [
+          {
+            "name": "navq95_to_esc_fl",
+            "wired": {
+              "standard": "dshot600",
+              "port": [
+                "navq95/dshot0",
+                "esc_fl/dshot_in"
+              ]
+            }
+          },
+          {
+            "name": "navq95_to_esc_fr",
+            "wired": {
+              "standard": "dshot600",
+              "port": [
+                "navq95/dshot1",
+                "esc_fr/dshot_in"
+              ]
+            }
+          },
+          {
+            "name": "navq95_to_esc_rl",
+            "wired": {
+              "standard": "dshot600",
+              "port": [
+                "navq95/dshot2",
+                "esc_rl/dshot_in"
+              ]
+            }
+          },
+          {
+            "name": "navq95_to_esc_rr",
+            "wired": {
+              "standard": "dshot600",
+              "port": [
+                "navq95/dshot3",
+                "esc_rr/dshot_in"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "power",
+        "description": "Power distribution from battery through PDB to all loads",
+        "bus": [
+          {
+            "name": "main_power",
+            "type": "power",
+            "topology": "star",
+            "description": "Battery to PDB main power rail",
+            "participant": [
+              {
+                "device": "battery",
+                "port": "pwr_out",
+                "role": "source",
+                "position": 0
+              },
+              {
+                "device": "pdb",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 1
+              }
+            ]
+          },
+          {
+            "name": "esc_power",
+            "type": "power",
+            "topology": "star",
+            "description": "PDB high-current rail to ESCs (14.8V direct)",
+            "participant": [
+              {
+                "device": "pdb",
+                "port": "esc_fl_out",
+                "role": "source",
+                "position": 0
+              },
+              {
+                "device": "esc_fl",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 1
+              },
+              {
+                "device": "pdb",
+                "port": "esc_fr_out",
+                "role": "source",
+                "position": 2
+              },
+              {
+                "device": "esc_fr",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 3
+              },
+              {
+                "device": "pdb",
+                "port": "esc_rl_out",
+                "role": "source",
+                "position": 4
+              },
+              {
+                "device": "esc_rl",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 5
+              },
+              {
+                "device": "pdb",
+                "port": "esc_rr_out",
+                "role": "source",
+                "position": 6
+              },
+              {
+                "device": "esc_rr",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "name": "avionics_power",
+            "type": "power",
+            "topology": "star",
+            "description": "PDB 5V BEC rail to NavQ95 and sensor boards",
+            "participant": [
+              {
+                "device": "pdb",
+                "port": "bec_5v_out",
+                "role": "source",
+                "position": 0
+              },
+              {
+                "device": "navq95",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 1
+              },
+              {
+                "device": "pdb",
+                "port": "sensor1_out",
+                "role": "source",
+                "position": 2
+              },
+              {
+                "device": "mcxn_rtk_gnss",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 3
+              },
+              {
+                "device": "pdb",
+                "port": "sensor2_out",
+                "role": "source",
+                "position": 4
+              },
+              {
+                "device": "mcxn_optical_flow",
+                "port": "pwr_in",
+                "role": "sink",
+                "position": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "motor-signal",
+        "description": "3-phase BLDC signal wiring from ESCs to motors",
+        "link": [
+          {
+            "name": "esc_fl_to_motor_fl_sig",
+            "wired": {
+              "standard": "3-phase-BLDC",
+              "port": [
+                "esc_fl/sig_out",
+                "motor_fl/sig_in"
+              ]
+            }
+          },
+          {
+            "name": "esc_fr_to_motor_fr_sig",
+            "wired": {
+              "standard": "3-phase-BLDC",
+              "port": [
+                "esc_fr/sig_out",
+                "motor_fr/sig_in"
+              ]
+            }
+          },
+          {
+            "name": "esc_rl_to_motor_rl_sig",
+            "wired": {
+              "standard": "3-phase-BLDC",
+              "port": [
+                "esc_rl/sig_out",
+                "motor_rl/sig_in"
+              ]
+            }
+          },
+          {
+            "name": "esc_rr_to_motor_rr_sig",
+            "wired": {
+              "standard": "3-phase-BLDC",
+              "port": [
+                "esc_rr/sig_out",
+                "motor_rr/sig_in"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "material": [
+      {
+        "name": "carbon",
+        "description": "Carbon fiber composite",
+        "color": {
+          "rgba": "0.15 0.15 0.15 1.0"
+        },
+        "surface": {
+          "friction": {
+            "static": 0.4,
+            "dynamic": 0.3
+          },
+          "restitution": 0.1
+        }
+      },
+      {
+        "name": "green_pcb",
+        "description": "FR4 PCB solder mask",
+        "color": {
+          "rgba": "0.05 0.35 0.1 1.0"
+        }
+      }
+    ]
+  }
+}

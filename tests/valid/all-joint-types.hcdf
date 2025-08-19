@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="a"/>
+  <comp name="b"/>
+
+  <joint name="j_revolute" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="1"/>
+  </joint>
+
+  <joint name="j_continuous" type="continuous">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <joint name="j_prismatic" type="prismatic">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="0.5" effort="100" velocity="0.5"/>
+  </joint>
+
+  <joint name="j_fixed" type="fixed">
+    <parent comp="a"/>
+    <child comp="b"/>
+  </joint>
+
+  <joint name="j_ball" type="ball">
+    <parent comp="a"/>
+    <child comp="b"/>
+  </joint>
+
+  <joint name="j_universal" type="universal">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <axis2 xyz="0 1 0"/>
+  </joint>
+
+  <joint name="j_planar" type="planar">
+    <parent comp="a"/>
+    <child comp="b"/>
+  </joint>
+
+  <joint name="j_screw" type="screw" thread_pitch="0.002">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+</hcdf>

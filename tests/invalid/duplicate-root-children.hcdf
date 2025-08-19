@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <joint name="j1" type="fixed">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <comp name="nested"/>
+  </joint>
+</hcdf>

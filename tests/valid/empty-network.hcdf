@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="board"/>
+  <network name="backbone"/>
+</hcdf>

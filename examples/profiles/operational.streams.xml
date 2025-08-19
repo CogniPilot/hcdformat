@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<stream-profile name="operational" version="1.0"
+                hcdf-ref="humanoid-mobile-base.hcdf">
+
+  <description>Normal operational mode: arm control, cameras, base mobility, perception.</description>
+
+  <stream-group name="left-arm-control" chain="left-arm">
+    <description>Left arm motor commands and status at 1kHz</description>
+    <stream name="cmd_mcn1l" talker="s32n79/xfi_left" listener="mcn1-l/sgmii0"
+            vlan="10" pcp="5" max-frame-size="192" interval-us="1000" max-latency-us="200"/>
+    <stream name="cmd_mcn2l" talker="s32n79/xfi_left" listener="mcn2-l/sgmii0"
+            vlan="10" pcp="5" max-frame-size="128" interval-us="1000" max-latency-us="200"/>
+    <stream name="status_mcn1l" talker="mcn1-l/sgmii0" listener="s32n79/xfi_left"
+            vlan="10" pcp="5" max-frame-size="384" interval-us="1000" max-latency-us="200"/>
+    <stream name="status_mcn2l" talker="mcn2-l/sgmii0" listener="s32n79/xfi_left"
+            vlan="10" pcp="5" max-frame-size="256" interval-us="1000" max-latency-us="200"/>
+  </stream-group>
+
+  <stream-group name="perception-cameras">
+    <description>Wrist stereo cameras to AGX Thor</description>
+    <stream name="cam_left" talker="cam-l/eth0" listener="agx-thor/mgbe0"
+            vlan="20" pcp="3" max-frame-size="9000" interval-us="33" max-latency-us="10000"/>
+    <stream name="cam_right" talker="cam-r/eth0" listener="agx-thor/mgbe1"
+            vlan="21" pcp="3" max-frame-size="9000" interval-us="33" max-latency-us="10000"/>
+  </stream-group>
+
+  <stream-group name="base-mobility">
+    <description>Wheel control via 1722+CAN encapsulation</description>
+    <stream name="wheel_cmd" talker="s32n79/qxgmii_p0" listener="s32j100/eth_up0"
+            vlan="30" pcp="5" max-frame-size="128" interval-us="1000" max-latency-us="500"
+            protocol="ieee-1722-acf-can"/>
+    <stream name="wheel_status" talker="s32j100/eth_up0" listener="s32n79/qxgmii_p0"
+            vlan="30" pcp="5" max-frame-size="256" interval-us="1000" max-latency-us="500"
+            protocol="ieee-1722-acf-can"/>
+  </stream-group>
+
+  <stream-group name="base-perception">
+    <stream name="lidar_front" talker="lidar-front/eth0" listener="agx-thor/mgbe0"
+            vlan="50" pcp="4" max-frame-size="1500" interval-us="1000" max-latency-us="5000"/>
+    <stream name="lidar_rear" talker="lidar-rear/eth0" listener="agx-thor/mgbe0"
+            vlan="50" pcp="4" max-frame-size="1500" interval-us="1000" max-latency-us="5000"/>
+    <stream name="radar_4d" talker="radar-4d/eth0" listener="agx-thor/mgbe0"
+            vlan="50" pcp="4" max-frame-size="4000" interval-us="10000" max-latency-us="10000"/>
+  </stream-group>
+
+  <stream-group name="safety">
+    <stream name="safety_arms" talker="s32n79/xfi_left" listener="mcn1-l/eth0"
+            vlan="1" pcp="6" max-frame-size="64" interval-us="10000" max-latency-us="500"/>
+    <stream name="safety_base" talker="s32n79/qxgmii_p0" listener="s32j100/eth_up0"
+            vlan="1" pcp="6" max-frame-size="64" interval-us="10000" max-latency-us="500"
+            protocol="ieee-1722-acf-can">
+      <description>Safety heartbeat to base — S32J100 converts to CAN e-stop</description>
+    </stream>
+  </stream-group>
+
+</stream-profile>

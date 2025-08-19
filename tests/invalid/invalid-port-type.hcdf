@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<hcdf version="1.0">
+  <comp name="board">
+    <port name="p0" type="INVALID"/>
+  </comp>
+</hcdf>

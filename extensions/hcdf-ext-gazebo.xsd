@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HCDF Gazebo Extension Schema
+  Version: 1.0
+
+  Defines the structure of content inside <extension domain="org.gazebosim">.
+  Provides physics engine configuration and simulation plugin declarations
+  for Gazebo (gz-sim) integration.
+
+  Example usage within an HCDF file:
+
+    <extension domain="org.gazebosim" version="1.0">
+      <physics>
+        <engine>ode</engine>
+        <max-step-size>0.001</max-step-size>
+        <real-time-factor>1.0</real-time-factor>
+      </physics>
+      <plugin name="aerodynamics" filename="libAerodynamicsPlugin.so">
+        <link>frame</link>
+        <air-density>1.225</air-density>
+      </plugin>
+    </extension>
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0"
+           elementFormDefault="unqualified">
+
+  <!-- ================================================================== -->
+  <!-- Physics engine enumeration                                         -->
+  <!-- ================================================================== -->
+  <xs:simpleType name="PhysicsEngine">
+    <xs:annotation>
+      <xs:documentation>Supported physics engine backends in Gazebo.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ode">
+        <xs:annotation>
+          <xs:documentation>Open Dynamics Engine — the default physics engine in Gazebo classic and gz-sim.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="bullet">
+        <xs:annotation>
+          <xs:documentation>Bullet Physics — real-time collision detection and multi-physics simulation.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="dart">
+        <xs:annotation>
+          <xs:documentation>Dynamic Animation and Robotics Toolkit — multi-body dynamics for robotics and animation.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="simbody">
+        <xs:annotation>
+          <xs:documentation>Simbody — multibody physics engine optimized for biomechanics and robotics.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="tpe">
+        <xs:annotation>
+          <xs:documentation>Trivial Physics Engine — lightweight engine for basic kinematic simulation without dynamics.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ================================================================== -->
+  <!-- Physics configuration type                                         -->
+  <!-- ================================================================== -->
+  <xs:complexType name="physics">
+    <xs:annotation>
+      <xs:documentation>Physics engine configuration for the Gazebo simulation.
+Controls which dynamics solver is used, simulation time step, and
+the ratio of simulation time to wall-clock time.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="engine" type="PhysicsEngine" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Physics engine backend to use (ode, bullet, dart, simbody, tpe).
+Defaults to "ode" if not specified.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="max-step-size" type="xs:double" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Maximum physics time step in seconds (e.g., 0.001 for 1 ms).
+Smaller values increase accuracy but reduce simulation speed.
+Typical range: 0.0001 to 0.01.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="real-time-factor" type="xs:double" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Target ratio of simulation time to wall-clock time.
+1.0 means real-time, 0.5 means half-speed, 2.0 means double-speed.
+Set to 0 for maximum speed (no throttling).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Plugin type: a Gazebo simulation plugin                            -->
+  <!-- ================================================================== -->
+  <xs:complexType name="plugin">
+    <xs:annotation>
+      <xs:documentation>A Gazebo simulation plugin declaration. Plugins extend simulation
+behavior — physics models, sensor simulation, controllers, etc.
+Child elements are plugin-specific parameters passed through with
+lax validation (any well-formed XML is accepted).</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax">
+        <xs:annotation>
+          <xs:documentation>Plugin-specific parameters. The content depends on the plugin
+implementation; any well-formed XML elements are accepted.
+Examples: &lt;link&gt;, &lt;air-density&gt;, &lt;turning-direction&gt;, etc.</xs:documentation>
+        </xs:annotation>
+      </xs:any>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Unique name identifying this plugin instance within the model
+(e.g., "aerodynamics", "motor_model", "contact_sensor").</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="filename" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Shared library filename for the plugin
+(e.g., "libAerodynamicsPlugin.so", "libMotorModelPlugin.so").
+Gazebo searches its plugin path for this library at load time.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Root element: gazebo-sim                                           -->
+  <!-- ================================================================== -->
+  <xs:element name="gazebo-sim">
+    <xs:annotation>
+      <xs:documentation>Root element of the Gazebo extension. Contains physics engine
+configuration and plugin declarations for gz-sim integration.
+Placed inside &lt;extension domain="org.gazebosim"&gt;.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="physics" type="physics" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Physics engine configuration. At most one per extension block.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="plugin" type="plugin" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>Simulation plugin declaration. Zero or more plugins can be defined,
+each with its own name, library filename, and plugin-specific parameters.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
