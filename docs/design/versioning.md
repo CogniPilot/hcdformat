@@ -70,7 +70,7 @@ Maintain CHANGELOG.md at the repo root with entries for each version:
 - Added: <new-element> for describing X
 - Added: "new-value" to SomeType enum
 
-## 1.0 (2025-08-19)
+## 1.0 (2026-04-07)
 - Initial release
 - 142 complex types, 39 enumerations
 ```

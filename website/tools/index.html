@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tools | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Tools &amp; Ecosystem</h1>
+
+  <hr class="section-divider"/>
+
+  <h2>HCDF CLI (Rust)</h2>
+  <p>
+    The <code>hcdf</code> command-line tool provides XML and JSON conversion, file inspection,
+    and schema analysis. It is a single compiled binary with no runtime dependencies.
+  </p>
+  <ul>
+    <li><code>hcdf convert -i file.hcdf -o file.json</code> converts XML to JSON</li>
+    <li><code>hcdf convert -i file.json -o file.hcdf --xsd hcdf.xsd</code> converts JSON back to XML (lossless roundtrip)</li>
+    <li><code>hcdf info file.hcdf</code> prints a summary: component count, joints, networks, sensors, motors</li>
+    <li><code>hcdf schema --xsd hcdf.xsd</code> reports type and enum counts</li>
+  </ul>
+  <p>
+    The converter uses a generic tree-walking approach (not hardcoded structs) so it automatically
+    supports any schema changes without recompilation. JSON to XML conversion is XSD-aware:
+    it reads the schema to correctly distinguish attributes from child elements, handling
+    type inheritance and mixed content types.
+  </p>
+  <p>Build from source:</p>
+<pre class="language-bash"><code>cd tools/hcdf-cli &amp;&amp; cargo build --release
+# Binary at tools/hcdf-cli/target/release/hcdf</code></pre>
+
+  <h2>Python Tools</h2>
+  <p>
+    Python tools are provided for validation, spec generation, JSON Schema generation, and XML/JSON conversion.
+    All require <code>lxml</code> (<code>pip install lxml</code>).
+  </p>
+  <ul>
+    <li><code>python3 validate.py hcdf.xsd file.hcdf</code> validates against the XSD</li>
+    <li><code>python3 convert.py file.hcdf file.json</code> bidirectional XML/JSON conversion</li>
+    <li><code>python3 generate_spec_html.py hcdf.xsd spec.html</code> generates the interactive spec browser</li>
+    <li><code>python3 generate_json_schema.py hcdf.xsd hcdf.schema.json</code> generates JSON Schema from XSD</li>
+  </ul>
+  <p>
+    The Python converter uses the same context-aware XSD type walker as the Rust version,
+    ensuring identical roundtrip behavior. Both support bidirectional XML to JSON conversion
+    with full schema fidelity.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>Dendrite: HCDF Visualization &amp; Builder</h2>
+
+  <p>
+    Dendrite is a Rust-based 3D visualization tool that renders HCDF descriptions as
+    interactive 3D models. It serves as both a viewer and an editor for HCDF files within
+    the CogniPilot ecosystem.
+  </p>
+
+  <ul>
+    <li>Fetches HCDF components from hcdf.cognipilot.org with SHA verification</li>
+    <li>Renders GLB/glTF models referenced in <code>&lt;visual&gt;</code> elements</li>
+    <li>Displays port locations, sensor FOVs, and network topology</li>
+    <li>Shows device discovery state (which devices are online)</li>
+    <li>Supports editing poses and configurations</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>SHA-Based Content Addressing</h2>
+
+  <p>
+    HCDF uses SHA256 hashes for verified distribution of all referenced artifacts.
+    Every model file, stream profile, included component, and firmware image carries
+    a hash that enables integrity verification and efficient caching.
+  </p>
+
+<pre class="language-xml"><code>&lt;!-- Model files --&gt;
+&lt;model uri="models/abc123-board.glb" sha="abc123..."/&gt;
+
+&lt;!-- Stream profiles --&gt;
+&lt;stream-profile uri="profiles/operational.streams.xml" sha="..."/&gt;
+
+&lt;!-- Included components --&gt;
+&lt;include uri="components/sensor.hcdf" sha="..."/&gt;
+
+&lt;!-- Firmware --&gt;
+&lt;software&gt;&lt;hash&gt;abc123...&lt;/hash&gt;&lt;/software&gt;</code></pre>
+
+  <p>This enables:</p>
+
+  <ul>
+    <li><strong>Cache deduplication:</strong> same content produces the same hash, stored once</li>
+    <li><strong>Integrity verification:</strong> detect corrupted or tampered downloads</li>
+    <li><strong>Version pinning:</strong> a specific SHA corresponds to a specific version</li>
+    <li><strong>Vendor trust:</strong> a published hash represents vendor-verified content</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Firmware Integration with MCUboot</h2>
+
+  <p>
+    The <code>&lt;software&gt;</code> element describes firmware running on each device.
+    MCUboot image hashes match the HCDF hash, allowing agents to verify firmware identity
+    and detect mismatches that require OTA updates.
+  </p>
+
+<pre class="language-xml"><code>&lt;software name="cerebri"&gt;
+  &lt;version&gt;1.2.3&lt;/version&gt;
+  &lt;hash&gt;a1b2c3d4...&lt;/hash&gt;
+  &lt;firmware-manifest-uri&gt;https://firmware.cognipilot.org/mr_mcxn_t1/optical-flow&lt;/firmware-manifest-uri&gt;
+&lt;/software&gt;</code></pre>
+
+  <ul>
+    <li>MCUboot image hash matches the HCDF hash; agent verifies firmware identity</li>
+    <li>Firmware manifest URI enables OTA update checking</li>
+    <li>An agent can detect firmware mismatches and trigger updates automatically</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Building from Components</h2>
+
+  <p>
+    Hardware vendors provide HCDF components for their boards. System integrators compose
+    these components into a full robot description using the <code>&lt;include&gt;</code>
+    element with SHA integrity verification.
+  </p>
+
+  <h3>Vendor-provided component</h3>
+
+<pre class="language-xml"><code>&lt;!-- Vendor provides: mr_mcxn_t1/optical-flow.hcdf --&gt;
+&lt;comp name="optical-flow" role="sensor"&gt;
+  &lt;board&gt;mr_mcxn_t1&lt;/board&gt;
+  &lt;port name="ETH0" type="ethernet"&gt;...&lt;/port&gt;
+  &lt;sensor name="imu0"&gt;...&lt;/sensor&gt;
+  ...
+&lt;/comp&gt;</code></pre>
+
+  <h3>System integrator composition</h3>
+
+<pre class="language-xml"><code>&lt;hcdf version="1.0"&gt;
+  &lt;!-- Include vendor-provided components --&gt;
+  &lt;include uri="https://hcdf.cognipilot.org/mr_mcxn_t1/optical-flow/optical-flow.hcdf"
+           sha="d9507e38..." name="optical-flow-1"/&gt;
+  &lt;include uri="https://hcdf.cognipilot.org/navq95/default/default.hcdf"
+           sha="e4559866..." name="navq95"/&gt;
+
+  &lt;!-- System-level: joints, networks, groups, states --&gt;
+  &lt;joint name="mount" type="fixed"&gt;
+    &lt;parent comp="navq95"/&gt;&lt;child comp="optical-flow-1"/&gt;
+  &lt;/joint&gt;
+  &lt;network name="sensor-bus"&gt;
+    &lt;link name="nav_to_of"&gt;
+      &lt;wired standard="100base-t1"&gt;
+        &lt;port&gt;navq95/eth0:2&lt;/port&gt;
+        &lt;port&gt;optical-flow-1/ETH0&lt;/port&gt;
+      &lt;/wired&gt;
+    &lt;/link&gt;
+  &lt;/network&gt;
+&lt;/hcdf&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Validation</h2>
+
+  <p>
+    HCDF files can be validated against the XSD schema using the included Python validator.
+    The spec browser provides an interactive view of every element, attribute, type, and
+    enumeration in the schema.
+  </p>
+
+<pre class="language-bash"><code># Validate against schema
+python3 validate.py hcdf.xsd my-robot.hcdf
+
+# Generate and view spec browser
+python3 generate_spec_html.py hcdf.xsd spec.html
+python3 -m http.server 8080</code></pre>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

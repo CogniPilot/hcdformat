@@ -1,0 +1,47 @@
+name: HCDF Schema Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.xsd'
+      - 'extensions/*.xsd'
+      - 'examples/**'
+      - 'tests/**'
+      - '*.py'
+      - 'convert.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '*.xsd'
+      - 'extensions/*.xsd'
+      - 'examples/**'
+      - 'tests/**'
+      - '*.py'
+      - 'convert.py'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install lxml
+        run: pip install lxml
+
+      - name: Run test suite
+        run: python3 tests/run_tests.py
+
+      - name: Regenerate spec and check for drift
+        run: |
+          python3 generate_spec_html.py hcdf.xsd spec.html.new
+          diff spec.html spec.html.new || (echo "spec.html is out of date — regenerate with: python3 generate_spec_html.py hcdf.xsd spec.html" && exit 1)
+          rm spec.html.new

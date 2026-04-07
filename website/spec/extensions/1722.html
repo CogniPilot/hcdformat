@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCDF IEEE 1722 Extension Specification Browser</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/style.css"/>
+<style>
+/* Spec browser overrides for dark theme */
+.spec-container { max-width:1200px; margin:0 auto; padding:20px; }
+.tree { background-color:#161b22; border-radius:6px; min-height:20px; padding:19px; overflow-y:auto; border:1px solid #30363d; }
+.tree ul { margin:0; padding-left:25px; }
+.tree li { list-style-type:none; margin:0 !important; margin-bottom:0 !important; padding:2px 0 0 2px; position:relative; }
+.tree li::before, .tree li::after { display:none; }
+.tree>ul>li::before, .tree>ul>li::after { display:none; }
+.tree li.parent_li > span { cursor:pointer; transition:background-color 0.15s; }
+.tree li.parent_li > span.tree-element:hover { background-color:#244a6f; border-color:#58a6ff; }
+.tree li.parent_li > span.tree-attribute:hover { background-color:#2a5a3a; border-color:#3fb950; }
+.tree-element { word-wrap:break-word; border:1px solid #2d5a8a; border-radius:5px; display:inline-block;
+  line-height:14px; padding:4px 8px; background-color:#1a3a5c; color:#79c0ff; margin:2px 0; }
+.tree-attribute { word-wrap:break-word; border:1px solid #2a6a3a; border-radius:5px; display:inline-block;
+  line-height:14px; padding:4px 8px; background-color:#1a3a2a; color:#56d364; margin:2px 0; }
+.tree-element h5, .tree-attribute h5 { display:inline; margin:0; padding:0; font-size:13px; color:inherit; font-weight:600;
+  background:none; border:none; line-height:inherit; }
+.tree-element h5 small, .tree-attribute h5 small { color:#8b949e; font-size:10px; font-weight:normal; }
+.tree-element div, .tree-attribute div { margin-top:2px; }
+.type-info { font-size:11px; color:#8b949e; padding:2px 4px; }
+.desc { font-size:11px; color:#8b949e; padding:2px 4px; font-style:italic; }
+.req { color:#f85149; font-weight:bold; }
+.mult { color:#8b949e; }
+.tree-collapse { margin-right:4px; cursor:pointer; font-size:10px; color:#8b949e; background:none !important;
+  border:none !important; box-shadow:none !important; padding:0 !important; }
+h1 { color:#e6edf3; }
+h1 small { font-size:14px; color:#8b949e; }
+.key-box { background:#161b22; padding:12px; border-radius:6px; margin-bottom:15px; border:1px solid #30363d; color:#e6edf3; }
+.key-box span { margin-right:12px; }
+.nav-tabs { border-bottom-color:#30363d !important; }
+.nav-tabs > li > a { color:#8b949e !important; background:transparent !important; border-color:transparent !important; }
+.nav-tabs > li > a:hover { color:#e6edf3 !important; background:#161b22 !important; border-color:#30363d #30363d transparent !important; }
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+  color:#58a6ff !important; background:#161b22 !important; border-color:#30363d #30363d #161b22 !important; }
+.tab-content { padding-top:15px; }
+@media (max-width:768px) { .nav-tabs > li > a { font-size:10px; padding:6px 6px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="spec-container">
+<h1>HCDF IEEE 1722 Extension <small>Specification Browser</small></h1>
+<div class="key-box">
+  <span class="tree-collapse glyphicon glyphicon-stop" style="color:#1a3a5c"></span> Element
+  <span class="tree-collapse glyphicon glyphicon-stop" style="color:#1a3a2a"></span> Attribute
+  <span class="tree-collapse glyphicon glyphicon-plus"></span> Has children (click to expand)
+  <span class="tree-collapse glyphicon glyphicon-minus"></span> Leaf node
+  <span class="tree-collapse glyphicon glyphicon-chevron-right"></span> Defined in another tab (click to switch)
+</div>
+
+<ul class="nav nav-tabs" role="tablist" id="spec-tabs">
+<li class="active"><a href="#tab-avtp" data-toggle="tab">Avtp</a></li>
+<li><a href="#tab-avtp_capabilities" data-toggle="tab">Avtp Capabilities</a></li>
+<li><a href="#tab-acf_config" data-toggle="tab">Acf Config</a></li>
+<li><a href="#tab-aaf_config" data-toggle="tab">Aaf Config</a></li>
+<li><a href="#tab-cvf_config" data-toggle="tab">Cvf Config</a></li>
+<li><a href="#tab-rvf_config" data-toggle="tab">Rvf Config</a></li>
+<li><a href="#tab-avtp_stream" data-toggle="tab">Avtp Stream</a></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane active" id="tab-avtp">
+<div class="tree"><ul>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('avtp_capabilities')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('avtp_capabilities')"><h5>&lt;avtp-capabilities&gt; <small>Element</small></h5><div class="desc">Device-level AVTP capability declaration. Lists which AVTP subtypes
+(aaf, cvf, rvf, tscf, etc.) and ACF message types (can, gpio, sensor,
+etc.) the device can produce or consume. At most one per extension block.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('avtp_stream')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('avtp_stream')"><h5>&lt;avtp-stream&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Per-stream 1722 framing configuration. One element per stream that
+uses IEEE 1722 transport. Each references a stream name from the HCDF
+stream profile and specifies the AVTP subtype and format-specific parameters.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-avtp_capabilities">
+<div class="tree"><ul>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;subtype&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="type-info"><b>Values:</b> aaf | cvf | rvf | crf | tscf | ntscf | aef | sdi</div><div class="desc">An AVTP subtype this device supports (e.g., aaf, cvf, tscf).
+List all subtypes the device can produce or consume.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;acf-type&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="type-info"><b>Values:</b> can | can-brief | lin | mdio | gpio | spi | i2c | sensor | aecp | ancillary</div><div class="desc">An ACF message type this device supports (e.g., can, gpio, sensor).
+ACF types are relevant when the device uses TSCF or NTSCF streams.
+List all ACF types the device can originate or process.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-acf_config">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>type <small>Attribute</small></h5><div class="type-info"><b>Type:</b> can | can-brief | lin | mdio | gpio | spi | i2c | sensor | aecp | ancillary (required) &mdash; The ACF message type carried by this stream (e.g., &quot;can&quot;, &quot;gpio&quot;,
+&quot;sensor&quot;). Must match one of the device's declared acf-type capabilities.</div></span></li>
+<li><span class="tree-attribute"><h5>bus <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Optional reference to an HCDF bus name being tunneled over this
+stream. For example, if this stream tunnels CAN frames from the
+&quot;drive-bus&quot; CAN-FD bus, set bus=&quot;drive-bus&quot;. Enables agents to
+trace the bus-to-stream mapping.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-aaf_config">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>channels <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Number of audio channels in the stream (e.g., 2 for stereo,
+8 for a microphone array, 32 for a mixing bus).</div></span></li>
+<li><span class="tree-attribute"><h5>sample-rate <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Audio sample rate in Hz (e.g., 48000 for professional audio,
+96000 for high-resolution recording, 16000 for voice).</div></span></li>
+<li><span class="tree-attribute"><h5>bit-depth <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Bits per sample per channel (e.g., 16, 24, or 32).
+Higher bit depth increases dynamic range at the cost of bandwidth.</div></span></li>
+<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Audio encoding format: &quot;pcm-int&quot; (integer PCM, most common),
+&quot;pcm-float&quot; (IEEE 754 floating-point PCM), or &quot;aes3&quot; (AES3/SPDIF
+encapsulation for professional audio interconnect).</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-cvf_config">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Video compression format: &quot;h264&quot; (H.264/AVC NAL unit transport),
+&quot;mjpeg&quot; (Motion JPEG frame-by-frame), or &quot;jpeg2000&quot; (JPEG 2000
+wavelet compression for high-quality video).</div></span></li>
+<li><span class="tree-attribute"><h5>profile <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Optional codec profile. For H.264: &quot;baseline&quot; (low complexity,
+no B-frames), &quot;main&quot; (B-frames, CABAC), &quot;high&quot; (8x8 transforms,
+high bitrate). Ignored for MJPEG and JPEG2000.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-rvf_config">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>pixel-format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Pixel format of the raw video stream: &quot;rgb24&quot; (8-bit RGB),
+&quot;yuv422&quot; (4:2:2 chroma subsampling), &quot;yuv420&quot; (4:2:0 chroma
+subsampling), &quot;bayer-rggb&quot; (Bayer mosaic for machine vision),
+&quot;mono8&quot; (8-bit grayscale), &quot;mono16&quot; (16-bit grayscale for
+depth or thermal imaging).</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-avtp_stream">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>stream <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Reference to a stream name defined in the HCDF stream profile
+(.streams.xml). This links the 1722 framing configuration to the
+stream's bandwidth, latency, and endpoint declarations.</div></span></li>
+<li><span class="tree-attribute"><h5>subtype <small>Attribute</small></h5><div class="type-info"><b>Type:</b> aaf | cvf | rvf | crf | tscf | ntscf | aef | sdi (required) &mdash; The AVTP subtype used for this stream's framing. Determines
+the wire format and which child configuration element is expected
+(aaf for AAF, cvf for CVF, rvf for RVF, acf for TSCF/NTSCF).</div></span></li>
+<li><span class="tree-attribute"><h5>timestamp <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:boolean, default="true" &mdash; Whether this stream uses AVTP presentation timestamps (default: true).
+Presentation timestamps enable synchronized playback across multiple
+listeners. Set to false for best-effort streams where precise timing
+is not required.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('acf_config')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('acf_config')"><h5>&lt;acf&gt; <small>Element</small></h5><div class="desc">ACF configuration for TSCF/NTSCF control streams. Specifies
+which ACF message type is carried and optionally which HCDF bus
+is being tunneled. Required when subtype is &quot;tscf&quot; or &quot;ntscf&quot;.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('aaf_config')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('aaf_config')"><h5>&lt;aaf&gt; <small>Element</small></h5><div class="desc">Audio format configuration for AAF streams. Specifies channels,
+sample rate, bit depth, and encoding format. Required when subtype
+is &quot;aaf&quot;.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('cvf_config')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('cvf_config')"><h5>&lt;cvf&gt; <small>Element</small></h5><div class="desc">Compressed video configuration for CVF streams. Specifies codec
+and profile. Required when subtype is &quot;cvf&quot;.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('rvf_config')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('rvf_config')"><h5>&lt;rvf&gt; <small>Element</small></h5><div class="desc">Raw video configuration for RVF streams. Specifies pixel format.
+Required when subtype is &quot;rvf&quot;.</div></span></li>
+</ul></div></div>
+</div>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="/assets/nav.js"></script>
+<script>
+function switchTab(tabId) {
+    $('#spec-tabs a[href="#tab-' + tabId + '"]').tab('show');
+}
+$(function () {
+    // Mark parent nodes
+    $('.tree li:has(ul)').addClass('parent_li')
+        .find(' > span.tree-element, > span.tree-attribute').attr('title', 'Collapse this branch');
+    // Start collapsed
+    $('.tree li.parent_li > ul > li').hide();
+    // Toggle on click (only on tree-element/tree-attribute spans, not chevrons)
+    $('.tree li.parent_li > span.tree-element, .tree li.parent_li > span.tree-attribute').on('click', function (e) {
+        var children = $(this).parent('li.parent_li').find(' > ul > li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+        } else {
+            children.show('fast');
+        }
+        e.stopPropagation();
+    });
+    // Cross-tab chevron clicks
+    $('.tree .glyphicon-chevron-right[onclick]').on('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+</body>
+</html>

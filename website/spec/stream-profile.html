@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCDF Stream Profile 1.0 Specification Browser</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/style.css"/>
+<style>
+/* Spec browser overrides for dark theme */
+.spec-container { max-width:1200px; margin:0 auto; padding:20px; }
+.tree { background-color:#161b22; border-radius:6px; min-height:20px; padding:19px; overflow-y:auto; border:1px solid #30363d; }
+.tree ul { margin:0; padding-left:25px; }
+.tree li { list-style-type:none; margin:0 !important; margin-bottom:0 !important; padding:2px 0 0 2px; position:relative; }
+.tree li::before, .tree li::after { display:none; }
+.tree>ul>li::before, .tree>ul>li::after { display:none; }
+.tree li.parent_li > span { cursor:pointer; transition:background-color 0.15s; }
+.tree li.parent_li > span.tree-element:hover { background-color:#244a6f; border-color:#58a6ff; }
+.tree li.parent_li > span.tree-attribute:hover { background-color:#2a5a3a; border-color:#3fb950; }
+.tree-element { word-wrap:break-word; border:1px solid #2d5a8a; border-radius:5px; display:inline-block;
+  line-height:14px; padding:4px 8px; background-color:#1a3a5c; color:#79c0ff; margin:2px 0; }
+.tree-attribute { word-wrap:break-word; border:1px solid #2a6a3a; border-radius:5px; display:inline-block;
+  line-height:14px; padding:4px 8px; background-color:#1a3a2a; color:#56d364; margin:2px 0; }
+.tree-element h5, .tree-attribute h5 { display:inline; margin:0; padding:0; font-size:13px; color:inherit; font-weight:600;
+  background:none; border:none; line-height:inherit; }
+.tree-element h5 small, .tree-attribute h5 small { color:#8b949e; font-size:10px; font-weight:normal; }
+.tree-element div, .tree-attribute div { margin-top:2px; }
+.type-info { font-size:11px; color:#8b949e; padding:2px 4px; }
+.desc { font-size:11px; color:#8b949e; padding:2px 4px; font-style:italic; }
+.req { color:#f85149; font-weight:bold; }
+.mult { color:#8b949e; }
+.tree-collapse { margin-right:4px; cursor:pointer; font-size:10px; color:#8b949e; background:none !important;
+  border:none !important; box-shadow:none !important; padding:0 !important; }
+h1 { color:#e6edf3; }
+h1 small { font-size:14px; color:#8b949e; }
+.key-box { background:#161b22; padding:12px; border-radius:6px; margin-bottom:15px; border:1px solid #30363d; color:#e6edf3; }
+.key-box span { margin-right:12px; }
+.nav-tabs { border-bottom-color:#30363d !important; }
+.nav-tabs > li > a { color:#8b949e !important; background:transparent !important; border-color:transparent !important; }
+.nav-tabs > li > a:hover { color:#e6edf3 !important; background:#161b22 !important; border-color:#30363d #30363d transparent !important; }
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+  color:#58a6ff !important; background:#161b22 !important; border-color:#30363d #30363d #161b22 !important; }
+.tab-content { padding-top:15px; }
+@media (max-width:768px) { .nav-tabs > li > a { font-size:10px; padding:6px 6px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="spec-container">
+<h1>HCDF Stream Profile 1.0 <small>Specification Browser</small></h1>
+<div class="key-box">
+  <span class="tree-collapse glyphicon glyphicon-stop" style="color:#1a3a5c"></span> Element
+  <span class="tree-collapse glyphicon glyphicon-stop" style="color:#1a3a2a"></span> Attribute
+  <span class="tree-collapse glyphicon glyphicon-plus"></span> Has children (click to expand)
+  <span class="tree-collapse glyphicon glyphicon-minus"></span> Leaf node
+  <span class="tree-collapse glyphicon glyphicon-chevron-right"></span> Defined in another tab (click to switch)
+</div>
+
+<ul class="nav nav-tabs" role="tablist" id="spec-tabs">
+<li class="active"><a href="#tab-stream-profile" data-toggle="tab">Stream Profile</a></li>
+<li><a href="#tab-stream" data-toggle="tab">Stream</a></li>
+<li><a href="#tab-stream-group" data-toggle="tab">Stream Group</a></li>
+<li><a href="#tab-frer" data-toggle="tab">FRER</a></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane active" id="tab-stream-profile">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Profile name identifying the operational mode. Example: &quot;operational&quot;, &quot;calibration&quot;, &quot;safe-mode&quot;, &quot;demo&quot;. Must be unique across all profiles referenced by the HCDF. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>version <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Profile version using semantic versioning. Increment when streams are added, removed, or their QoS requirements change. The agent can detect version mismatches between the profile and the HCDF. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>hcdf-ref <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Reference to the HCDF file this profile is designed for. All talker/listener device/port references in the streams must exist in this HCDF. Example: &quot;humanoid-mobile-base.hcdf&quot;. Optional but recommended — enables the agent to validate stream references at load time.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;description&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:string</div><div class="desc">Human-readable description of this profile's purpose and operational scenario. Example: &quot;Normal operational mode: 1kHz arm control, 30fps wrist cameras, base wheel control via 1722+CAN, lidar/radar perception pipeline.&quot;</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('stream-group')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('stream-group')"><h5>&lt;stream-group&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Grouped streams organized by functional subsystem. Recommended over ungrouped streams for clarity. Each group can reference the HCDF chain it traverses.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('stream')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('stream')"><h5>&lt;stream&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Ungrouped streams at the profile root level. Use for streams that don't belong to a specific group or for simple profiles with few streams.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-stream">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Unique name for this stream within the profile. Used by the agent to reference this stream in schedule computation and diagnostics. Example: &quot;imu_1khz&quot;, &quot;cam_left_30fps&quot;, &quot;safety_heartbeat&quot;. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>talker <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Source port reference in the format &quot;device/port&quot; or &quot;device/port:switch_port&quot;. Must match a comp and port defined in the HCDF. The talker originates the stream's frames. Example: &quot;optical-flow/ETH0&quot;, &quot;s32n79/xfi_left&quot;. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>listener <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Destination port reference in the format &quot;device/port&quot; or &quot;device/port:switch_port&quot;. Must match a comp and port defined in the HCDF. The listener receives and consumes the stream's frames. Example: &quot;s32n79/eth0:2&quot;, &quot;agx-thor/mgbe0&quot;. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>vlan <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; IEEE 802.1Q VLAN ID (1-4094) for this stream. Streams on different VLANs are isolated at Layer 2. Typically all streams in the same functional domain share a VLAN: motion control on VLAN 10, camera on VLAN 20, safety on VLAN 1. Optional — if omitted, the stream uses the link/chain default VLAN.</div></span></li>
+<li><span class="tree-attribute"><h5>pcp <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; IEEE 802.1Q Priority Code Point (0-7). Maps to a traffic class in the TSN domain's traffic-classes definition. Higher PCP = higher priority. Typical mapping: 7=PTP, 6=safety, 5=motion control, 4=sensor, 3=camera, 0=best-effort. The agent uses PCP to determine which Qbv gate window this stream's frames are transmitted in. Optional.</div></span></li>
+<li><span class="tree-attribute"><h5>max-frame-size <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt (required) &mdash; Maximum Ethernet frame size in bytes for this stream, excluding MACsec overhead (32 bytes) and Ethernet preamble/IFG. The agent adds MACsec overhead when computing serialization delay. Standard frames: up to 1500 bytes. Jumbo frames: up to 9000 bytes (for camera/lidar). Small control frames: 64-256 bytes. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>interval-us <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt (required) &mdash; Transmission interval in microseconds — how often the talker sends one frame of this stream. Determines bandwidth: bandwidth = max-frame-size * 8 / interval-us (Mbps). Examples: 1000 us (1 kHz motor control), 33333 us (30 fps camera), 10000 us (100 Hz safety heartbeat). Required.</div></span></li>
+<li><span class="tree-attribute"><h5>max-latency-us <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Maximum acceptable end-to-end latency in microseconds from talker transmission to listener reception. The agent validates that the cumulative per-hop delay (serialization + switch processing + propagation) across the network path does not exceed this value. If it does, the schedule is infeasible. Examples: 200 us (motor control, 4 hops), 10000 us (camera, tolerant), 500 us (safety heartbeat). Optional — if omitted, no latency constraint (best-effort).</div></span></li>
+<li><span class="tree-attribute"><h5>protocol <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Transport protocol when not raw Ethernet. &quot;ieee-1722-acf-can&quot;: IEEE 1722 AVTP with ACF CAN encapsulation — CAN frames tunneled over Ethernet for remote CAN bus access (e.g., S32N79 sending motor commands to S32J100 which decapsulates to CAN-FD). &quot;ieee-1722-coe&quot;: IEEE 1722 Camera over Ethernet. Omit for standard Ethernet frames (raw L2 or IP). Optional.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;description&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:string</div><div class="desc">Human-readable description of this stream's purpose, data content, and timing requirements. Example: &quot;IMU accel/gyro at 1kHz from optical-flow sensor to navigation filter on S32N79.&quot;</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('frer')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('frer')"><h5>&lt;frer&gt; <small>Element</small></h5><div class="desc">IEEE 802.1CB redundancy configuration for this stream. Only needed for safety-critical streams that require seamless failover on link failure. Omit for best-effort or non-critical streams.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-stream-group">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Unique name for this stream group within the profile. Example: &quot;left-arm-control&quot;, &quot;perception-cameras&quot;, &quot;safety&quot;. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>chain <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Name of the HCDF chain that all streams in this group traverse. References a chain defined in the HCDF's network element. When set, the agent knows the ordered hop sequence without tracing each stream individually. Example: &quot;left-arm&quot; references the 802.3dm chain from S32N79 through MCN1-MCN4. Optional — omit for streams that don't traverse a chain (e.g., point-to-point links).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;description&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:string</div><div class="desc">Human-readable description of this stream group's purpose and the subsystem it serves.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('stream')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('stream')"><h5>&lt;stream&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Individual TSN stream definitions within this group. All streams in a group typically share the same VLAN and chain path, though each can override with its own VLAN/PCP.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-frer">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>seamless-trees <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt (required) &mdash; Number of redundant disjoint paths (seamless trees) for this stream. Typically 2 for dual-path redundancy. The network must have at least this many physically independent paths between talker and listener. Required.</div></span></li>
+<li><span class="tree-attribute"><h5>seq-encoding <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string, default="r-tag" &mdash; Sequence number encoding method used to identify and eliminate duplicate frames. &quot;r-tag&quot; (default): dedicated R-TAG (EtherType 0xF1C1) inserted in the frame — standard 802.1CB method. &quot;hsr&quot;: HSR (High-availability Seamless Redundancy, IEC 62439-3) sequence tag — used in industrial ring networks.</div></span></li>
+</ul></div></div>
+</div>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="/assets/nav.js"></script>
+<script>
+function switchTab(tabId) {
+    $('#spec-tabs a[href="#tab-' + tabId + '"]').tab('show');
+}
+$(function () {
+    // Mark parent nodes
+    $('.tree li:has(ul)').addClass('parent_li')
+        .find(' > span.tree-element, > span.tree-attribute').attr('title', 'Collapse this branch');
+    // Start collapsed
+    $('.tree li.parent_li > ul > li').hide();
+    // Toggle on click (only on tree-element/tree-attribute spans, not chevrons)
+    $('.tree li.parent_li > span.tree-element, .tree li.parent_li > span.tree-attribute').on('click', function (e) {
+        var children = $(this).parent('li.parent_li').find(' > ul > li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+        } else {
+            children.show('fast');
+        }
+        e.stopPropagation();
+    });
+    // Cross-tab chevron clicks
+    $('.tree .glyphicon-chevron-right[onclick]').on('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+</body>
+</html>

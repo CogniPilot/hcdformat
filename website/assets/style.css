@@ -1,0 +1,706 @@
+/* ================================================================
+   HCDF Website — style.css
+   Dark theme. GitHub-dark inspired color palette.
+   ================================================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-elevated: #1c2128;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-primary: #58a6ff;
+  --color-primary-light: #79c0ff;
+  --color-primary-dark: #388bfd;
+  --color-accent: #58a6ff;
+  --color-accent-green: #3fb950;
+  --color-accent-orange: #d29922;
+  --color-border: #30363d;
+  --color-nav-bg: #010409;
+  --color-nav-text: #e6edf3;
+  --color-nav-hover: #58a6ff;
+  --color-card-bg: #161b22;
+  --color-card-border: #30363d;
+  --color-code-bg: #0d1117;
+  --color-code-border: #30363d;
+  --color-footer-bg: #010409;
+  --color-footer-text: #8b949e;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --max-width: 1100px;
+  --nav-height: 56px;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.65;
+  padding-top: var(--nav-height);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* --- Nav Bar --- */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--color-nav-bg);
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+nav .brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-nav-text);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  margin-right: 2rem;
+  white-space: nowrap;
+}
+nav .brand:hover {
+  color: var(--color-nav-hover);
+  text-decoration: none;
+}
+
+nav .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+nav .nav-links > a,
+nav .nav-links > .dropdown > a {
+  color: var(--color-nav-text);
+  text-decoration: none;
+  padding: 0 1rem;
+  line-height: var(--nav-height);
+  display: block;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+nav .nav-links > a:hover,
+nav .nav-links > .dropdown > a:hover,
+nav .nav-links > a.active,
+nav .nav-links > .dropdown.active > a {
+  color: var(--color-nav-hover);
+  text-decoration: none;
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: var(--nav-height);
+  left: 0;
+  min-width: 220px;
+  background: var(--color-nav-bg);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+}
+
+.dropdown.open .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 0.6rem 1rem;
+  color: var(--color-nav-text);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.dropdown-content a:hover {
+  background: var(--color-surface-elevated);
+  color: var(--color-nav-hover);
+  text-decoration: none;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto;
+}
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-nav-text);
+  margin: 5px 0;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* --- Content --- */
+.content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+}
+
+h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+ul, ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+li {
+  margin-bottom: 0.35rem;
+}
+
+/* --- Hero --- */
+.hero {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  color: var(--color-text);
+  margin: -2rem -1.5rem 2rem -1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.hero h1 {
+  font-size: 2.5rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+.hero .tagline {
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+.hero .version {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  margin-top: 0.75rem;
+}
+
+/* --- Feature Cards --- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover {
+  box-shadow: 0 4px 16px rgba(56, 139, 253, 0.1);
+  border-color: var(--color-primary-dark);
+}
+.card h3 {
+  margin-top: 0;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+}
+.card p {
+  color: var(--color-text-muted);
+  font-size: 0.93rem;
+}
+
+.card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.card-link:hover {
+  text-decoration: none;
+}
+
+/* --- Code Blocks --- */
+pre[class*="language-"] {
+  background: var(--color-code-bg) !important;
+  border: 1px solid var(--color-code-border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+:not(pre) > code {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  color: var(--color-primary-light);
+}
+
+/* --- Collapsible Sections --- */
+.collapsible {
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.25rem;
+  background: var(--color-surface-elevated);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  transition: background 0.15s;
+}
+.collapsible-header:hover {
+  background: #262c36;
+}
+
+.collapsible-header .indicator {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  width: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.collapsible-body {
+  display: none;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-card-border);
+  background: var(--color-surface);
+}
+
+.collapsible.open .collapsible-body {
+  display: block;
+}
+
+.collapsible-body pre[class*="language-"] {
+  margin-bottom: 1rem;
+}
+
+/* --- Tree View (for spec browser) --- */
+.tree ul {
+  list-style: none;
+  padding-left: 1.25rem;
+}
+.tree > ul {
+  padding-left: 0;
+}
+.tree li {
+  position: relative;
+  padding: 0.15rem 0;
+}
+.tree li::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+.tree li:last-child::before {
+  bottom: 50%;
+}
+.tree li::after {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 50%;
+  width: 0.75rem;
+  height: 1px;
+  background: var(--color-border);
+}
+.tree > ul > li::before,
+.tree > ul > li::after {
+  display: none;
+}
+
+/* Tree element names in blue, attributes in green */
+.tree .element,
+.tree .tag {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.tree .attr,
+.tree .attribute {
+  color: var(--color-accent-green);
+}
+
+/* --- Stats Grid --- */
+.stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.stat {
+  text-align: center;
+}
+.stat .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.stat .stat-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* --- Quick Start --- */
+.quickstart {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+.quickstart h3 {
+  margin-top: 0;
+}
+
+/* --- Comparison Table --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+th {
+  background: var(--color-surface-elevated);
+  font-weight: 600;
+  color: var(--color-text);
+}
+/* Alternating row colors */
+tr:nth-child(even) td {
+  background: var(--color-surface);
+}
+tr:nth-child(odd) td {
+  background: var(--color-bg);
+}
+tr:hover td {
+  background: var(--color-surface-elevated);
+}
+
+/* --- Section Divider --- */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2.5rem 0;
+}
+
+/* --- Inline Badge --- */
+.badge {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: #fff;
+  vertical-align: middle;
+}
+
+/* --- Footer --- */
+footer {
+  background: var(--color-footer-bg);
+  border-top: 1px solid var(--color-border);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--color-footer-text);
+  font-size: 0.85rem;
+  margin-top: 3rem;
+}
+footer a {
+  color: var(--color-text-muted);
+}
+footer a:hover {
+  color: var(--color-primary);
+}
+
+/* --- Alert / Note --- */
+.note {
+  background: rgba(56, 139, 253, 0.1);
+  border-left: 4px solid var(--color-primary);
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  .hero {
+    padding: 2.5rem 1rem;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  nav .nav-links {
+    display: none;
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: var(--color-nav-bg);
+    flex-direction: column;
+    align-items: stretch;
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  nav .nav-links.open {
+    display: flex;
+  }
+
+  nav .nav-links > a,
+  nav .nav-links > .dropdown > a {
+    padding: 0.75rem 1.5rem;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .dropdown-content {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: var(--color-surface-elevated);
+  }
+  .dropdown-content a {
+    padding-left: 2.5rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    justify-content: center;
+  }
+
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* ================================================================
+   Prism.js Dark Override — "Tomorrow Night" style
+   Forces dark syntax highlighting regardless of which Prism CSS
+   theme is loaded in the HTML files.
+   ================================================================ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #c9d1d9 !important;
+  background: var(--color-code-bg) !important;
+  text-shadow: none !important;
+  font-family: var(--font-mono) !important;
+  direction: ltr !important;
+  text-align: left !important;
+  white-space: pre !important;
+  word-spacing: normal !important;
+  word-break: normal !important;
+  line-height: 1.5 !important;
+  tab-size: 4 !important;
+  hyphens: none !important;
+}
+
+pre[class*="language-"]::selection,
+pre[class*="language-"] ::selection,
+code[class*="language-"]::selection,
+code[class*="language-"] ::selection {
+  background: #3b4252 !important;
+}
+
+/* Line numbers */
+.line-numbers .line-numbers-rows {
+  border-right-color: var(--color-border) !important;
+}
+.line-numbers-rows > span::before {
+  color: #484f58 !important;
+}
+
+/* Token colors — Tomorrow Night / GitHub Dark palette */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #8b949e !important;
+}
+
+.token.punctuation {
+  color: #c9d1d9 !important;
+}
+
+.token.namespace {
+  opacity: 0.7 !important;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #79c0ff !important;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #a5d6ff !important;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #d2a8ff !important;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #ff7b72 !important;
+}
+
+.token.function,
+.token.class-name {
+  color: #d2a8ff !important;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #ffa657 !important;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold !important;
+}
+
+.token.italic {
+  font-style: italic !important;
+}
+
+.token.entity {
+  cursor: help !important;
+}
+
+/* XML-specific tokens for HCDF examples */
+.token.tag .token.tag {
+  color: #7ee787 !important;
+}
+.token.tag .token.attr-name {
+  color: #79c0ff !important;
+}
+.token.tag .token.attr-value {
+  color: #a5d6ff !important;
+}
+.token.tag .token.punctuation {
+  color: #8b949e !important;
+}

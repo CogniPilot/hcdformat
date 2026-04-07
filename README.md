@@ -81,4 +81,4 @@ of every element, attribute, type, and enumeration in the HCDF schema.
 
 ## License
 
-Apache-2.0. Copyright 2025 CogniPilot Foundation
+Apache-2.0. Copyright 2026 CogniPilot Foundation

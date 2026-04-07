@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 (2025-08-19)
+## 1.0.0 (2026-04-07)
 
 Initial release of the Hardware Configuration Descriptive Format.
 

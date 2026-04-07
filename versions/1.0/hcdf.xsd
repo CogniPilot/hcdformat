@@ -7,7 +7,7 @@
   sensors, actuators, geometry) and cyber infrastructure (networking, TSN, MACsec,
   firmware, device discovery, connectivity topology).
 
-  Copyright (c) 2025 CogniPilot Foundation
+  Copyright (c) 2026 CogniPilot Foundation
   Licensed under Apache-2.0
 
   Semantic constraints not expressible in XSD 1.0 (enforced by tooling):
@@ -3107,7 +3107,7 @@
         <xs:annotation><xs:documentation>Discovered service port number (e.g., 8080 for a web interface, 7400 for DDS). Populated at runtime.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="last-seen" type="xs:string" minOccurs="0">
-        <xs:annotation><xs:documentation>ISO 8601 timestamp of when the device was last seen online (e.g., "2025-06-15T10:30:00Z"). Populated at runtime by discovery agents.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>ISO 8601 timestamp of when the device was last seen online (e.g., "2026-04-05T10:30:00Z"). Populated at runtime by discovery agents.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:all>
   </xs:complexType>

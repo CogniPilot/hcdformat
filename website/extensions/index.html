@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Extensions | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Extensions Guide</h1>
+
+  <p>
+    HCDF has a built-in extension mechanism that allows vendor-specific or domain-specific data
+    to live alongside the core schema without modifying it. Extensions use reverse-DNS domain
+    identifiers and explicit versioning to prevent conflicts and allow evolution.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- How Extensions Work -->
+  <h2>How Extensions Work</h2>
+
+  <p>
+    An <code>&lt;extension&gt;</code> element can appear as a child of any <code>&lt;comp&gt;</code>.
+    It carries a <code>domain</code> attribute (reverse-DNS identifier) and a <code>version</code>
+    attribute. Inside, any well-formed XML is accepted. The HCDF schema declares
+    <code>xs:any processContents="lax"</code> for the extension body, so the core validator will
+    not reject unknown elements.
+  </p>
+
+<pre class="language-xml"><code>&lt;extension domain="org.example.my-domain" version="1.0"&gt;
+  &lt;!-- Any well-formed XML here --&gt;
+  &lt;custom-element attribute="value"&gt;
+    &lt;nested&gt;data&lt;/nested&gt;
+  &lt;/custom-element&gt;
+&lt;/extension&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- How to Write One -->
+  <h2>How to Write an Extension</h2>
+
+  <ol>
+    <li><strong>Choose a domain:</strong> Use reverse-DNS notation. If your organization is
+    <code>example.org</code>, your domain is <code>org.example.feature-name</code>. CogniPilot
+    extensions use <code>org.cognipilot.*</code>.</li>
+    <li><strong>Version it:</strong> Start at <code>1.0</code>. Increment the minor version for
+    backward-compatible additions, the major version for breaking changes.</li>
+    <li><strong>Document it:</strong> Write a guide page (like the
+    <a href="/extensions/imu-stability.html">IMU Stability</a> example) explaining what data
+    your extension carries, why it is an extension rather than core, and how agents should use it.</li>
+    <li><strong>Optionally provide an XSD:</strong> You can write an XSD for your extension's inner
+    elements. Validators can then check extension content with <code>processContents="strict"</code>
+    if the extension schema is available.</li>
+    <li><strong>Register it:</strong> Submit a pull request to the HCDF repository adding your
+    extension to the registry (see below).</li>
+  </ol>
+
+  <hr class="section-divider"/>
+
+  <!-- Registered Extensions -->
+  <h2>Registered Extensions</h2>
+
+  <div class="cards">
+    <div class="card">
+      <h3>org.ros2 <span class="badge">v1.0</span></h3>
+      <p>Maps HCDF sensors and motors to ROS 2 topics with message types and QoS profiles.
+      Enables zero-config topic advertisement from the hardware description.</p>
+      <p><a href="/spec/extensions/ros2.html">Schema reference</a></p>
+    </div>
+    <div class="card">
+      <h3>org.gazebosim <span class="badge">v1.0</span></h3>
+      <p>Simulation parameters for Gazebo: physics engine settings, plugin bindings,
+      aerodynamics, motor models, and contact surface overrides.</p>
+      <p><a href="/spec/extensions/gazebo.html">Schema reference</a></p>
+    </div>
+    <div class="card">
+      <h3>org.ieee.1722 <span class="badge">v1.0</span></h3>
+      <p>IEEE 1722 AVTP capabilities and per-stream configuration
+      (audio, video, control, CAN/LIN/GPIO tunneling).
+      </p>
+      <p><a href="/spec/extensions/1722.html">Schema reference</a></p>
+    </div>
+    <div class="card">
+      <h3>org.cognipilot.imu-stability <span class="badge">v1.0</span></h3>
+      <p>Allan variance parameters for tactical/navigation-grade IMUs: bias stability,
+      scale factor error, g-sensitivity, ARW/VRW, temperature sensitivity.</p>
+      <p><a href="/extensions/imu-stability.html">Extension guide</a></p>
+    </div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- ROS 2 Extension Example -->
+  <h2>Example: ROS 2 Topic Mapping</h2>
+
+  <p>
+    The <code>org.ros2</code> extension maps each sensor and motor to a ROS 2 topic name, message
+    type, and QoS profile. This allows a ROS 2 launch system to auto-configure publishers and
+    subscribers from the HCDF file without manual topic remapping.
+  </p>
+
+<pre class="language-xml"><code>&lt;extension domain="org.ros2" version="1.0"&gt;
+  &lt;topic-map&gt;
+    &lt;topic sensor="imu0" name="/imu/data"
+           type="sensor_msgs/msg/Imu" qos="sensor_data"/&gt;
+    &lt;topic sensor="mag0" name="/mag/data"
+           type="sensor_msgs/msg/MagneticField" qos="sensor_data"/&gt;
+    &lt;topic sensor="baro0" name="/baro/data"
+           type="sensor_msgs/msg/FluidPressure" qos="sensor_data"/&gt;
+    &lt;topic sensor="gnss0" name="/gnss/fix"
+           type="sensor_msgs/msg/NavSatFix" qos="sensor_data"/&gt;
+    &lt;topic sensor="optical_flow0" name="/optical_flow"
+           type="synapse_msgs/msg/OpticalFlow" qos="sensor_data"/&gt;
+    &lt;topic sensor="camera0" name="/camera/image_raw"
+           type="sensor_msgs/msg/Image" qos="sensor_data"/&gt;
+    &lt;topic motor="prop_fl" name="/esc/fl/command"
+           type="actuator_msgs/msg/MotorCommand" qos="reliable"/&gt;
+  &lt;/topic-map&gt;
+&lt;/extension&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- Gazebo Extension Example -->
+  <h2>Example: Gazebo Simulation</h2>
+
+  <p>
+    The <code>org.gazebosim</code> extension carries physics engine settings and plugin
+    configurations. This data is used when generating an SDF world from the HCDF file, or when
+    a Gazebo bridge reads the HCDF directly.
+  </p>
+
+<pre class="language-xml"><code>&lt;extension domain="org.gazebosim" version="1.0"&gt;
+  &lt;physics&gt;
+    &lt;engine&gt;ode&lt;/engine&gt;
+    &lt;max-step-size&gt;0.001&lt;/max-step-size&gt;
+    &lt;real-time-factor&gt;1.0&lt;/real-time-factor&gt;
+  &lt;/physics&gt;
+  &lt;plugin name="aerodynamics" filename="libAerodynamicsPlugin.so"&gt;
+    &lt;link&gt;frame&lt;/link&gt;
+    &lt;air-density&gt;1.225&lt;/air-density&gt;
+    &lt;forward-drag-coefficient&gt;0.05&lt;/forward-drag-coefficient&gt;
+    &lt;upward-drag-coefficient&gt;0.1&lt;/upward-drag-coefficient&gt;
+  &lt;/plugin&gt;
+  &lt;plugin name="motor_model" filename="libMotorModelPlugin.so"&gt;
+    &lt;motor&gt;prop_fl&lt;/motor&gt;
+    &lt;turning-direction&gt;ccw&lt;/turning-direction&gt;
+    &lt;time-constant-up&gt;0.0125&lt;/time-constant-up&gt;
+    &lt;time-constant-down&gt;0.025&lt;/time-constant-down&gt;
+    &lt;rotor-drag-coefficient&gt;0.00025&lt;/rotor-drag-coefficient&gt;
+    &lt;rolling-moment-coefficient&gt;1e-6&lt;/rolling-moment-coefficient&gt;
+  &lt;/plugin&gt;
+&lt;/extension&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- How to Register -->
+  <h2>How to Register a New Extension</h2>
+
+  <ol>
+    <li>Fork the <a href="https://github.com/CogniPilot/hcdformat">HCDF repository</a>.</li>
+    <li>Add your extension documentation to <code>docs/extensions/</code> (a markdown file
+    following the <a href="/extensions/imu-stability.html">IMU Stability</a> pattern).</li>
+    <li>Optionally add an XSD to <code>schema/extensions/</code>.</li>
+    <li>Add an entry to the extension registry in <code>docs/extensions/registry.md</code> with
+    your domain, version, description, and maintainer contact.</li>
+    <li>Submit a pull request. The HCDF maintainers will review for naming conflicts and
+    documentation completeness.</li>
+  </ol>
+
+  <div class="note">
+    <strong>Note:</strong> Registration is optional. Any reverse-DNS domain that you control can be
+    used as an extension domain without registration. Registration provides discoverability and
+    signals to tooling that the extension is documented and maintained.
+  </div>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

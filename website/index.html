@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HCDF | Hardware Configuration Descriptive Format</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>HCDF</h1>
+    <p class="tagline">Hardware Configuration Descriptive Format</p>
+    <p class="tagline">The first robot description format for cyber-physical systems</p>
+    <p class="version">Version 1.0.0</p>
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="cards">
+    <div class="card">
+      <h3>Physical Structure</h3>
+      <p>Joints, sensors, motors, geometry, kinematics, transmissions, materials, and collision models. Everything URDF does, plus inertial parameters, sensor noise models, motor curves, and propeller specs.</p>
+    </div>
+    <div class="card">
+      <h3>Cyber Infrastructure</h3>
+      <p>TSN networking with gPTP, Qbv schedules, MACsec, 802.3dm daisy-chains, EtherCAT, CAN-FD buses, power distribution, and device discovery. Describe the network that controls the robot, not just the robot itself.</p>
+    </div>
+    <div class="card">
+      <h3>Agent-Ready</h3>
+      <p>Stream profiles for deterministic traffic, YANG integration for network management, XSD validation, extension mechanism for ROS 2, Gazebo, and vendor-specific data. Built for AI agents to read, reason about, and configure.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- Vendor Distribution & SHA Verification -->
+  <div class="quickstart">
+    <h3>Verified Hardware Distribution</h3>
+    <p>Hardware vendors publish HCDF components describing their boards, complete with ports, sensors, firmware identity, and 3D models. Every file is SHA256-verified for integrity.</p>
+    <pre class="language-xml"><code>&lt;!-- Vendor-provided component: describes the board's capabilities --&gt;
+&lt;comp name="optical-flow" role="sensor"&gt;
+  &lt;board&gt;mr_mcxn_t1&lt;/board&gt;
+  &lt;software name="cerebri"&gt;
+    &lt;version&gt;1.2.3&lt;/version&gt;
+    &lt;hash&gt;b50403f7f1bfe13c72a7ddc0467f81cfe8c11612...&lt;/hash&gt;
+    &lt;firmware-manifest-uri&gt;https://firmware.cognipilot.org/mr_mcxn_t1/optical-flow&lt;/firmware-manifest-uri&gt;
+  &lt;/software&gt;
+  &lt;visual name="board"&gt;
+    &lt;model uri="models/d9507e38-optical_flow.glb" sha="d9507e38a1c4..."/&gt;
+  &lt;/visual&gt;
+  ...
+&lt;/comp&gt;
+
+&lt;!-- System integrator composes vendor components with SHA pinning --&gt;
+&lt;include uri="https://hcdf.cognipilot.org/mr_mcxn_t1/optical-flow/optical-flow.hcdf"
+         sha="d9507e38..." name="optical-flow-1"/&gt;</code></pre>
+    <p>SHA hashes enable <strong>cache deduplication</strong> (same content stored once), <strong>integrity verification</strong> (detect corrupted downloads), <strong>version pinning</strong> (specific SHA = specific version), and <strong>firmware matching</strong> (MCUboot image hash matches HCDF software hash, so an agent verifies the running firmware matches the description).</p>
+    <p>Learn more: <a href="/tools/">Tools &amp; Ecosystem</a></p>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- Quick Start -->
+  <div class="quickstart">
+    <h3>Quick Start</h3>
+    <p>Validate an HCDF file against the schema:</p>
+    <pre class="language-bash"><code>python tools/validate.py examples/drone-quadrotor.hcdf</code></pre>
+    <p>Browse the specification: <a href="/spec/core.html">Core Schema Spec Browser</a></p>
+    <p>View examples: <a href="/examples/">Humanoid Mobile Base</a> (2297 lines, 19-device system with 5 networks) | <a href="/examples/#drone">Drone Quadrotor</a></p>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- Links -->
+  <div class="cards">
+    <a class="card-link" href="/spec/">
+      <div class="card">
+        <h3>Specification</h3>
+        <p>142 types, 39 enums. Full schema reference with type hierarchy, attributes, and constraints.</p>
+      </div>
+    </a>
+    <a class="card-link" href="/examples/">
+      <div class="card">
+        <h3>Examples</h3>
+        <p>Complete HCDF files: humanoid mobile base, drone quadrotor, and minimal test. Real-world XML with syntax highlighting.</p>
+      </div>
+    </a>
+    <a class="card-link" href="https://github.com/CogniPilot/hcdformat">
+      <div class="card">
+        <h3>GitHub Repository</h3>
+        <p>Source code, schema, validator, examples, and design documents. Apache 2.0 license.</p>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

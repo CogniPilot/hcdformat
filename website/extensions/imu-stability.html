@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>IMU Stability Extension | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>HCDF Extension: IMU Stability Parameters</h1>
+  <p><span class="badge">org.cognipilot.imu-stability</span> <span class="badge">v1.0</span></p>
+
+  <hr class="section-divider"/>
+
+  <h2>Why This Is an Extension (Not Core)</h2>
+
+  <p>
+    Most HCDF users describe consumer/automotive MEMS IMUs (ICM45686, BMI088, BMI270) for mobile
+    robots. For these sensors, the core HCDF sensor model is sufficient:
+  </p>
+  <ul>
+    <li>Noise density (stddev in noise model) &mdash; what the filter actually uses</li>
+    <li>ODR, bandwidth, FIFO &mdash; control loop timing</li>
+    <li>Range, resolution &mdash; dynamic range</li>
+    <li>Driver + axis-align &mdash; Zephyr integration</li>
+  </ul>
+
+  <p>
+    <strong>Allan variance parameters</strong> (bias stability, scale factor error, g-sensitivity)
+    matter primarily for:
+  </p>
+  <ul>
+    <li>Tactical/navigation-grade IMUs ($1000+: ADIS16465, KVH1750, HG1700)</li>
+    <li>Aerospace and defense applications</li>
+    <li>Underwater navigation (GPS-denied for long periods)</li>
+    <li>INS/GNSS integration where dead reckoning matters over minutes/hours</li>
+  </ul>
+
+  <p>
+    For a mobile robot that re-observes landmarks every few seconds, the navigation filter
+    re-estimates bias faster than Allan variance specs become relevant. The core HCDF should not
+    carry fields that 99% of users do not need.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>How to Use the Extension</h2>
+
+  <p>
+    The <code>&lt;extension&gt;</code> element on a <code>&lt;comp&gt;</code> allows vendor-specific
+    or domain-specific data using a reverse-DNS domain identifier. An aerospace team can add IMU
+    stability data without modifying the HCDF core schema:
+  </p>
+
+<pre class="language-xml"><code>&lt;comp name="ins-nav-unit" role="sensor"&gt;
+  &lt;description&gt;Tactical-grade INS for GPS-denied navigation&lt;/description&gt;
+
+  &lt;sensor name="tactical_imu" update-rate="400"&gt;
+    &lt;inertial type="accel_gyro"&gt;
+      &lt;driver name="adis16465-2"/&gt;
+
+      &lt;accel&gt;
+        &lt;range unit="g"&gt;10&lt;/range&gt;
+        &lt;resolution unit="ug"&gt;0.25&lt;/resolution&gt;
+        &lt;odr unit="Hz"&gt;2000&lt;/odr&gt;
+        &lt;bandwidth unit="Hz"&gt;500&lt;/bandwidth&gt;
+        &lt;fifo depth="512" watermark="5"/&gt;
+        &lt;noise type="gaussian"&gt;
+          &lt;stddev&gt;0.000023&lt;/stddev&gt;
+          &lt;bias-mean&gt;0.004&lt;/bias-mean&gt;
+          &lt;bias-stddev&gt;0.001&lt;/bias-stddev&gt;
+        &lt;/noise&gt;
+      &lt;/accel&gt;
+
+      &lt;gyro&gt;
+        &lt;range unit="dps"&gt;500&lt;/range&gt;
+        &lt;resolution unit="dps"&gt;0.00625&lt;/resolution&gt;
+        &lt;odr unit="Hz"&gt;2000&lt;/odr&gt;
+        &lt;bandwidth unit="Hz"&gt;500&lt;/bandwidth&gt;
+        &lt;fifo depth="512" watermark="5"/&gt;
+        &lt;noise type="gaussian"&gt;
+          &lt;stddev&gt;0.0035&lt;/stddev&gt;
+          &lt;bias-mean&gt;0.02&lt;/bias-mean&gt;
+          &lt;bias-stddev&gt;0.005&lt;/bias-stddev&gt;
+        &lt;/noise&gt;
+      &lt;/gyro&gt;
+    &lt;/inertial&gt;
+  &lt;/sensor&gt;
+
+  &lt;!-- IMU stability extension: Allan variance and environmental sensitivity --&gt;
+  &lt;extension domain="org.cognipilot.imu-stability" version="1.0"&gt;
+    &lt;imu-stability sensor="tactical_imu"&gt;
+      &lt;!-- From Allan variance analysis --&gt;
+      &lt;accel-bias-stability unit="ug"&gt;3.6&lt;/accel-bias-stability&gt;
+      &lt;gyro-bias-stability unit="deg/hr"&gt;2.0&lt;/gyro-bias-stability&gt;
+
+      &lt;!-- Scale factor error (proportional measurement error) --&gt;
+      &lt;accel-scale-factor-error unit="ppm"&gt;1500&lt;/accel-scale-factor-error&gt;
+      &lt;gyro-scale-factor-error unit="ppm"&gt;100&lt;/gyro-scale-factor-error&gt;
+
+      &lt;!-- Cross-axis sensitivity (leakage between axes) --&gt;
+      &lt;cross-axis-sensitivity unit="percent"&gt;0.5&lt;/cross-axis-sensitivity&gt;
+
+      &lt;!-- Gyro sensitivity to linear acceleration (vibration rectification) --&gt;
+      &lt;gyro-g-sensitivity unit="deg/s/g"&gt;0.005&lt;/gyro-g-sensitivity&gt;
+
+      &lt;!-- Angular random walk (noise density from Allan variance) --&gt;
+      &lt;gyro-arw unit="deg/sqrt(hr)"&gt;0.16&lt;/gyro-arw&gt;
+      &lt;accel-vrw unit="m/s/sqrt(hr)"&gt;0.012&lt;/accel-vrw&gt;
+
+      &lt;!-- Temperature sensitivity --&gt;
+      &lt;gyro-temp-sensitivity unit="deg/s/degC"&gt;0.005&lt;/gyro-temp-sensitivity&gt;
+      &lt;accel-temp-sensitivity unit="mg/degC"&gt;0.1&lt;/accel-temp-sensitivity&gt;
+      &lt;operating-temp unit="degC" min="-40" max="105"/&gt;
+
+      &lt;!-- Allan variance test conditions --&gt;
+      &lt;allan-test&gt;
+        &lt;duration unit="hr"&gt;4&lt;/duration&gt;
+        &lt;temperature unit="degC"&gt;25&lt;/temperature&gt;
+        &lt;vibration&gt;none&lt;/vibration&gt;
+      &lt;/allan-test&gt;
+    &lt;/imu-stability&gt;
+  &lt;/extension&gt;
+
+  &lt;port name="spi0" iface="spi0" type="SPI"&gt;
+    &lt;capabilities&gt;
+      &lt;speed unit="MHz"&gt;15&lt;/speed&gt;
+    &lt;/capabilities&gt;
+  &lt;/port&gt;
+&lt;/comp&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>How an Agent Uses This</h2>
+
+  <p>A navigation engineer's agent would:</p>
+
+  <ol>
+    <li>
+      <strong>Check if the extension exists:</strong>
+      <code>Does comp have extension domain="org.cognipilot.imu-stability"?</code>
+    </li>
+    <li>
+      <strong>Extract stability parameters for filter tuning:</strong>
+      <ul>
+        <li><code>gyro-bias-stability</code> &rarr; sets the process noise floor for gyro bias state in EKF</li>
+        <li><code>gyro-arw</code> &rarr; validates the core noise model's stddev is consistent</li>
+        <li><code>gyro-g-sensitivity</code> &rarr; determines if vibration isolation is needed
+        (if g-sensitivity x expected vibration g &gt; acceptable drift rate)</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Predict dead-reckoning performance:</strong>
+      <ul>
+        <li>With <code>accel-bias-stability=3.6ug</code> and <code>gyro-bias-stability=2.0 deg/hr</code>:
+        position drift ~ 0.5 x accel_bias x t^2 after GPS loss</li>
+        <li>At 3.6ug: ~0.17m drift after 10 minutes &mdash; acceptable for GPS-denied transit</li>
+        <li>A consumer IMU at 1000ug: ~47m drift after 10 minutes &mdash; not acceptable</li>
+      </ul>
+    </li>
+    <li>
+      <strong>Validate operating environment:</strong>
+      <ul>
+        <li><code>operating-temp</code> vs expected environment</li>
+        <li><code>gyro-g-sensitivity</code> vs expected vibration profile of the robot base</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr class="section-divider"/>
+
+  <h2>Why Extension and Not Core</h2>
+
+  <table>
+    <thead>
+      <tr><th>Reason</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>99% don't need it</strong></td>
+        <td>Mobile robots with GNSS re-acquire position within seconds</td>
+      </tr>
+      <tr>
+        <td><strong>Requires lab testing</strong></td>
+        <td>Allan variance parameters come from 4+ hour static tests, not datasheets alone</td>
+      </tr>
+      <tr>
+        <td><strong>Domain-specific</strong></td>
+        <td>Aerospace, defense, underwater &mdash; not general robotics</td>
+      </tr>
+      <tr>
+        <td><strong>Filter handles it</strong></td>
+        <td>Modern EKFs estimate bias online &mdash; they don't need Allan specs as inputs</td>
+      </tr>
+      <tr>
+        <td><strong>Datasheet values vary</strong></td>
+        <td>Allan variance is temperature and environment dependent &mdash; a single number is misleading</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="section-divider"/>
+
+  <h2>Extension Schema Convention</h2>
+
+  <ul>
+    <li><strong>Domain:</strong> <code>org.cognipilot.imu-stability</code> (reverse-DNS, avoids conflicts)</li>
+    <li><strong>Version:</strong> <code>1.0</code> (allows evolution without breaking existing files)</li>
+    <li><strong>sensor attribute:</strong> References the sensor name this stability data applies to</li>
+    <li><strong>Units:</strong> Always explicit via <code>unit</code> attribute (no defaults &mdash;
+    these parameters have unusual units like <code>deg/sqrt(hr)</code> that should not be assumed)</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Other Extension Ideas</h2>
+
+  <p>The same pattern works for any domain-specific sensor data:</p>
+
+  <table>
+    <thead>
+      <tr><th>Extension Domain</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>org.cognipilot.imu-stability</code></td>
+        <td>Tactical IMU Allan variance</td>
+      </tr>
+      <tr>
+        <td><code>org.cognipilot.camera-calibration</code></td>
+        <td>Extrinsic calibration results, reprojection error</td>
+      </tr>
+      <tr>
+        <td><code>org.cognipilot.lidar-multipath</code></td>
+        <td>Multi-path rejection parameters for structured environments</td>
+      </tr>
+      <tr>
+        <td><code>com.vendor.radar-cfar</code></td>
+        <td>Radar CFAR detection threshold tuning</td>
+      </tr>
+      <tr>
+        <td><code>org.ros.sensor-msgs</code></td>
+        <td>ROS message type mapping for each sensor</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    The core HCDF schema stays clean and focused. Domain expertise lives in versioned extensions
+    that agents can optionally understand.
+  </p>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

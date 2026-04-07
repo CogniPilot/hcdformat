@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Specification | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Specification</h1>
+
+  <p>
+    The HCDF schema defines the complete vocabulary for describing cyber-physical robotic systems.
+    It covers physical structure (components, joints, geometry, kinematics), sensors and actuators
+    (noise models, motor curves, control modes, encoders), networking and connectivity (topology,
+    scheduling, security, power distribution), energy systems (batteries, fuel cells, charging),
+    embodiment intelligence (joint groups, named states, self-collision), human-machine interfaces,
+    dynamic surfaces, firmware identity, device discovery, and a structured extension mechanism
+    for vendor and domain-specific data.
+  </p>
+
+  <div class="note">
+    <strong>Validation:</strong> Use <code>python3 validate.py hcdf.xsd your-file.hcdf</code>
+    for XSD structural validation. The Rust CLI (<code>hcdf validate</code>) provides additional
+    cross-reference checking for port paths, joint references, and motor-encoder bindings.
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">142</div>
+      <div class="stat-label">Complex Types</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">39</div>
+      <div class="stat-label">Enumerations</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Schemas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">23</div>
+      <div class="stat-label">Validation Tests</div>
+    </div>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- Schema Cards -->
+  <h2>Schema Reference</h2>
+
+  <div class="cards">
+    <a class="card-link" href="/spec/core.html">
+      <div class="card">
+        <h3>Core Schema</h3>
+        <p>The main HCDF schema: components, joints, sensors (10 categories with noise models),
+        motors (with load curves and control modes), networking (topology, scheduling, security),
+        power systems, dynamic surfaces, HMI, and embodiment features (groups, states, self-collision).
+        142 complex types, 39 enumerations.</p>
+      </div>
+    </a>
+    <a class="card-link" href="/spec/stream-profile.html">
+      <div class="card">
+        <h3>Stream Profile</h3>
+        <p>Separate <code>.streams.xml</code> schema for declaring application-level data flows with
+        bandwidth, latency, and priority requirements. The same hardware can have multiple profiles
+        for different operational modes (operational, calibration, safe-mode).</p>
+      </div>
+    </a>
+  </div>
+
+  <h2>Extension Schemas</h2>
+
+  <div class="cards">
+    <a class="card-link" href="/spec/extensions/ros2.html">
+      <div class="card">
+        <h3>ROS 2 Extension <span class="badge">org.ros2</span></h3>
+        <p>Maps sensors and motors to ROS 2 topics with message types and QoS profiles.
+        Enables declarative topic configuration from the hardware description.</p>
+      </div>
+    </a>
+    <a class="card-link" href="/spec/extensions/gazebo.html">
+      <div class="card">
+        <h3>Gazebo Extension <span class="badge">org.gazebosim</span></h3>
+        <p>Simulation parameters: physics engine settings, plugin bindings, aerodynamics, and
+        contact properties for Gazebo-based simulation.</p>
+      </div>
+    </a>
+    <a class="card-link" href="/spec/extensions/1722.html">
+      <div class="card">
+        <h3>IEEE 1722 Extension <span class="badge">org.ieee.1722</span></h3>
+        <p>AVTP capabilities and per-stream framing configuration: audio, compressed and raw video,
+        and control protocol tunneling over Ethernet.</p>
+      </div>
+    </a>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <h2>Schema Architecture</h2>
+
+  <p>HCDF uses a single-root XML document with <code>&lt;hcdf version="1.0"&gt;</code> as the
+  document element. Top-level children:</p>
+
+  <ul>
+    <li><code>&lt;comp&gt;</code> Components: rigid bodies with ports, sensors, motors, switches, HMI, surfaces, power sources</li>
+    <li><code>&lt;joint&gt;</code> Kinematic connections between components (8 joint types, loop closure support)</li>
+    <li><code>&lt;group&gt;</code> Named joint collections for planning and control (hierarchical, composable)</li>
+    <li><code>&lt;state&gt;</code> Named kinematic configurations (home, transport, calibration)</li>
+    <li><code>&lt;self-collision-disable&gt;</code> Component pairs to skip for collision checking</li>
+    <li><code>&lt;network&gt;</code> Connectivity topology and configuration (links, buses, chains, meshes, scheduling, security)</li>
+    <li><code>&lt;transmission&gt;</code> Motor-to-joint mechanical power transfer (gear ratio, efficiency, backlash)</li>
+    <li><code>&lt;material&gt;</code> Shared material definitions (color, friction, restitution)</li>
+    <li><code>&lt;include&gt;</code> Verified file composition with SHA content addressing</li>
+  </ul>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

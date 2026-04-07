@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>About | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Origins &amp; History</h1>
+
+  <p>
+    HCDF (Hardware Configuration Descriptive Format) has been in development since 2020,
+    emerging from real-world experience building autonomous systems where existing robot
+    description formats could not capture the full picture. Over six years of work across
+    DARPA-funded research programs, automotive Ethernet development, and open-source
+    robotics, the need became clear: a single format that describes the complete
+    cyber-physical system, not just kinematics (URDF) or simulation worlds (SDF), but the
+    full stack including physical structure, sensors, actuators, networking, firmware, and
+    device identity.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>Motivation</h2>
+
+  <p>
+    Existing robot description formats (URDF, SDF, MJCF) describe the physical structure
+    of robots (joints, geometry, inertial properties) but a real robot is far more than
+    its kinematic tree. Modern robots have network topology connecting dozens of devices,
+    wired and wireless connectivity across multiple bus types, deterministic scheduling for
+    real-time control, link-level security, power distribution with batteries and fuel
+    systems, firmware running on every device, sensor hardware with specific noise
+    characteristics and sampling configurations, motors with electrical limits and thermal
+    constraints, and human-machine interfaces. None of this can be described in URDF or SDF.
+  </p>
+
+  <p>
+    AI agents and autonomous configuration tools need a complete embodiment description, not
+    just joint angles, but the full cyber-physical system: what sensors are connected via what
+    networks, at what data rates, with what power budget, running what firmware. The gap between
+    "robot description" and "system configuration" needed to be closed.
+  </p>
+
+  <ul>
+    <li>Existing formats describe physical structure but ignore networking, power, firmware, and device identity</li>
+    <li>Real robots have complex network topologies, multiple bus types, deterministic scheduling, and link security, none of which is describable in URDF/SDF</li>
+    <li>Sensors, motors, and energy systems have hardware-specific parameters (noise models, load curves, charging profiles) that simulation formats don't capture</li>
+    <li>AI agents need the complete picture (topology, data rates, power budgets, firmware versions) to reason about and configure a system</li>
+    <li>Hardware vendors need a verified way to distribute component descriptions that system integrators can compose into complete robots</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Key Features &amp; Innovations</h2>
+
+  <ul>
+    <li><strong>First format combining kinematics + networking + firmware + discovery in one schema.</strong>
+      HCDF puts physical structure, network topology, TSN scheduling, firmware identity, and device
+      discovery into a single XSD-validated XML file.</li>
+    <li><strong>SHA-based content addressing for model files and firmware.</strong>
+      Every referenced artifact (GLB models, firmware images, stream profiles, included components)
+      carries a SHA256 hash, enabling verified distribution and cache deduplication.</li>
+    <li><strong>Stream profiles separate application-level data flows from hardware topology.</strong>
+      A <code>.streams.xml</code> file defines traffic classes, bandwidth reservations, and Qbv
+      schedules independently of the physical wiring.</li>
+    <li><strong>Agent-ready design.</strong>
+      HCDF is designed for autonomous configuration by CNC/TSN agents using YANG. An agent can
+      read the HCDF file, determine what devices exist, what networks connect them, and what
+      schedules are needed, then configure the network accordingly.</li>
+    <li><strong>Extensible via XML namespaces and domain-versioned extensions.</strong>
+      The reverse-DNS extension mechanism (<code>org.ros2</code>, <code>org.gazebosim</code>,
+      <code>org.cognipilot.imu-stability</code>) allows vendor and community extensions without
+      schema conflicts.</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Ecosystem</h2>
+
+  <ul>
+    <li><strong>Dendrite:</strong> 3D visualization and HCDF builder tool for CogniPilot systems.
+      Fetches HCDF components from hcdf.cognipilot.org, renders GLB models, displays port locations
+      and network topology.</li>
+    <li><strong>MCUboot:</strong> Firmware versioning integrated via <code>&lt;software&gt;</code>/<code>&lt;hash&gt;</code>
+      elements. Devices report firmware identity so agents can verify running firmware and trigger
+      OTA updates when mismatches are detected.</li>
+    <li><strong>hcdf.cognipilot.org:</strong> Remote HCDF component hosting with SHA-based caching.
+      Hardware vendors publish components describing their boards; system integrators compose them
+      into full robot descriptions.</li>
+    <li><strong>Vendor distribution:</strong> Hardware vendors provide HCDF components describing
+      their boards. SHA verification ensures integrity. Components compose into system-level
+      descriptions via the <code>&lt;include&gt;</code> element.</li>
+  </ul>
+
+  <hr class="section-divider"/>
+
+  <h2>Acknowledgments</h2>
+
+  <p>
+    HCDF development has been supported by and inspired by collaborations with:
+  </p>
+
+  <ul>
+    <li><strong>DARPA:</strong> Research programs advancing autonomous systems</li>
+    <li><strong>NXP Semiconductors:</strong> Automotive Ethernet, TSN, S32 platform</li>
+    <li><strong>Purdue University:</strong> Robotics research</li>
+    <li><strong>AFRL:</strong> Air Force Research Laboratory</li>
+    <li><strong>Infineon Technologies</strong></li>
+    <li>The <a href="https://zephyrproject.org">Zephyr RTOS</a> community</li>
+    <li>And the broader <a href="https://cognipilot.org">CogniPilot</a> open-source community</li>
+  </ul>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="/assets/nav.js"></script>
+</body>
+</html>

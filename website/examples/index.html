@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Examples | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Examples</h1>
+
+  <p>
+    Complete HCDF files demonstrating the format's capabilities, from a full 19-device humanoid
+    system to a minimal test file that exercises every element type. Click a section header to
+    expand the code. Large examples show curated excerpts highlighting key features.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- ===== HUMANOID ===== -->
+  <div id="humanoid" class="collapsible">
+    <div class="collapsible-header">
+      <span>Humanoid Mobile Base <span class="badge">2297 lines</span></span>
+      <span class="indicator">+</span>
+    </div>
+    <div class="collapsible-body">
+
+      <p>
+        A 19-device humanoid system with dual 802.3dm arms, S32N79 central controller with
+        integrated TSN switch and Intel E810 25G uplinks, AGX Thor for perception/ML, S32J100
+        base zone controller, SPAD lidars, Cubtek 4D radar, ZLAC8015D differential drive, and
+        MR-BMS771 battery management. 5 separate networks: backbone, left-arm, right-arm, base, power.
+      </p>
+
+      <h3>Compute component with integrated TSN switch</h3>
+<pre class="language-xml"><code>&lt;comp name="s32n79" role="compute"&gt;
+  &lt;description&gt;NXP S32N79 — central motion control, CNC agent, integrated TSN switch.
+    Intel E810 on PCIe for 25G uplink to AGX Thor.&lt;/description&gt;
+  &lt;board&gt;nxp-s32n79-evb&lt;/board&gt;
+  &lt;inertial&gt;
+    &lt;mass&gt;0.8&lt;/mass&gt;
+    &lt;com&gt;0 0 0&lt;/com&gt;
+  &lt;/inertial&gt;
+
+  &lt;!-- Integrated TSN switch fabric: XFI + QXGMII ports are bridged --&gt;
+  &lt;switch chip="s32n79-integrated"&gt;
+    &lt;port name="xfi_left" iface="swp0" type="ethernet"&gt;
+      &lt;capabilities&gt;
+        &lt;speed-tx unit="Mbps"&gt;100&lt;/speed-tx&gt;
+        &lt;speed-rx unit="Mbps"&gt;10000&lt;/speed-rx&gt;
+        &lt;standard&gt;802.3dm&lt;/standard&gt;
+        &lt;phy role="master"/&gt;
+        &lt;tsn&gt;
+          &lt;gptp hw-timestamping="true" gm-capable="true"/&gt;
+          &lt;qbv traffic-classes="8" hw-queues="8" max-gcl-entries="512"/&gt;
+          &lt;cbs/&gt;
+          &lt;preemption min-fragment-size="64"/&gt;
+          &lt;psfp max-filters="256" max-gates="256" max-meters="128"/&gt;
+          &lt;frer seq-encoding="r-tag"/&gt;
+        &lt;/tsn&gt;
+        &lt;macsec&gt;&lt;cipher&gt;gcm-aes-128&lt;/cipher&gt;&lt;/macsec&gt;
+        &lt;eee supported="true"/&gt;
+      &lt;/capabilities&gt;
+    &lt;/port&gt;
+    &lt;!-- ... additional switch ports ... --&gt;
+  &lt;/switch&gt;
+&lt;/comp&gt;</code></pre>
+
+      <h3>Revolute joints and kinematic groups</h3>
+<pre class="language-xml"><code>&lt;joint name="l_shoulder_yaw" type="revolute"&gt;
+  &lt;parent comp="torso"/&gt;
+  &lt;child comp="mcn1-l"/&gt;
+  &lt;origin xyz="0 0.18 0.25" rpy="0 0 0"/&gt;
+  &lt;axis xyz="0 0 1"/&gt;
+  &lt;limit lower="-2.96" upper="2.96" effort="50" velocity="3.14"/&gt;
+  &lt;dynamics damping="0.5" friction="0.1"/&gt;
+&lt;/joint&gt;
+
+&lt;group name="left_arm" type="kinematic-chain"&gt;
+  &lt;description&gt;Left arm kinematic chain (shoulder to wrist)&lt;/description&gt;
+  &lt;joint ref="l_shoulder_yaw"/&gt;
+  &lt;joint ref="l_elbow"/&gt;
+  &lt;joint ref="l_wrist_pitch"/&gt;
+&lt;/group&gt;
+
+&lt;group name="left_manipulation"&gt;
+  &lt;description&gt;Left arm + hand for manipulation tasks&lt;/description&gt;
+  &lt;group ref="left_arm"/&gt;
+  &lt;group ref="left_hand"/&gt;
+&lt;/group&gt;</code></pre>
+
+      <h3>802.3dm daisy-chain network with camera spur</h3>
+<pre class="language-xml"><code>&lt;network name="left-arm"&gt;
+  &lt;description&gt;Left arm 802.3dm daisy-chain: S32N79 XFI -&gt; MCN1-L -&gt; MCN2-L
+    -&gt; MCN3-L -&gt; MCN4-L, camera spur at MCN3-L&lt;/description&gt;
+
+  &lt;chain name="left-arm-chain" type="802.3dm" mode="switched"&gt;
+    &lt;vlan id="10" pcp="5"/&gt;
+    &lt;macsec policy="must-secure" cipher="gcm-aes-128"
+            key-agreement="psk" key-ref="arm-left-keys"/&gt;
+    &lt;hop device="s32n79" port="xfi_left" role="root"/&gt;
+    &lt;hop device="mcn1-l" ingress="eth0" egress="eth1"/&gt;
+    &lt;hop device="mcn2-l" ingress="eth0" egress="eth1"/&gt;
+    &lt;hop device="mcn3-l" ingress="eth0" egress="eth1"&gt;
+      &lt;spur device="cam-l" port="eth0" via="eth2"&gt;
+        &lt;description&gt;Left wrist stereo camera (~7 Gbps upstream)&lt;/description&gt;
+        &lt;vlan id="20" pcp="3"/&gt;
+      &lt;/spur&gt;
+    &lt;/hop&gt;
+    &lt;hop device="mcn4-l" ingress="eth0" role="tail"/&gt;
+  &lt;/chain&gt;
+
+  &lt;gptp domain="1"&gt;
+    &lt;clock device="s32n79" port="xfi_left"
+           gm-capable="true" priority1="128" priority2="128"/&gt;
+    &lt;clock device="mcn1-l" port="eth0"
+           gm-capable="false" priority1="255" priority2="255"/&gt;
+    &lt;!-- ... --&gt;
+  &lt;/gptp&gt;
+
+  &lt;schedule name="arm-chain-1ms" cycle-time-us="1000"&gt;
+    &lt;gate tc-mask="0x80" duration-us="20"/&gt;
+    &lt;gate tc-mask="0x60" duration-us="80"/&gt;
+    &lt;gate tc-mask="0x10" duration-us="50"/&gt;
+    &lt;gate tc-mask="0x0F" duration-us="850"/&gt;
+  &lt;/schedule&gt;
+
+  &lt;macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk"&gt;
+    &lt;key-store type="secure-element" ref="se051"/&gt;
+  &lt;/macsec&gt;
+&lt;/network&gt;</code></pre>
+
+      <h3>Named states and self-collision</h3>
+<pre class="language-xml"><code>&lt;state name="home" default="true"&gt;
+  &lt;description&gt;Default home position — arms at sides, elbows slightly bent&lt;/description&gt;
+  &lt;joint-position joint="l_shoulder_yaw" value="0"/&gt;
+  &lt;joint-position joint="l_elbow" value="0.5"/&gt;
+  &lt;joint-position joint="l_wrist_pitch" value="0"/&gt;
+  &lt;joint-position joint="r_shoulder_yaw" value="0"/&gt;
+  &lt;joint-position joint="r_elbow" value="0.5"/&gt;
+  &lt;joint-position joint="r_wrist_pitch" value="0"/&gt;
+&lt;/state&gt;
+
+&lt;self-collision-disable&gt;
+  &lt;pair comp1="torso" comp2="mcn1-l" reason="adjacent"/&gt;
+  &lt;pair comp1="mcn1-l" comp2="mcn2-l" reason="adjacent"/&gt;
+  &lt;pair comp1="mcn1-l" comp2="mcn1-r" reason="unreachable"/&gt;
+  &lt;pair comp1="chassis" comp2="torso" reason="adjacent"/&gt;
+  &lt;pair comp1="chassis" comp2="s32n79" reason="mounted"/&gt;
+  &lt;!-- ... --&gt;
+&lt;/self-collision-disable&gt;</code></pre>
+
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>19 components across compute, actuator, sensor, and structural roles</li>
+        <li>5 networks: 25G backbone, dual 802.3dm arm chains, base zone with CAN-FD, power bus</li>
+        <li>802.3dm daisy-chains with camera spurs for asymmetric bandwidth (10G up / 100M down)</li>
+        <li>gPTP time synchronization per network domain</li>
+        <li>Qbv gate schedules with 1ms cycle for deterministic motion control</li>
+        <li>Kinematic groups: left/right arms, end-effectors, manipulation, locomotion</li>
+        <li>Named states: home, transport</li>
+        <li>Self-collision disable with reasons: adjacent, mounted, unreachable</li>
+      </ul>
+
+      <p><a href="https://github.com/CogniPilot/hcdformat/blob/main/examples/humanoid-mobile-base.hcdf">View full file on GitHub</a></p>
+    </div>
+  </div>
+
+  <!-- ===== DRONE ===== -->
+  <div id="drone" class="collapsible">
+    <div class="collapsible-header">
+      <span>Drone Quadrotor <span class="badge">947 lines</span></span>
+      <span class="indicator">+</span>
+    </div>
+    <div class="collapsible-body">
+
+      <p>
+        A quadrotor drone with NavQ95 flight controller (NXP i.MX 95), 4x AM32 ESCs with
+        2212-920KV brushless motors and propellers, MR-MCXN-T1 sensor boards (RTK GNSS,
+        optical flow, IMU, magnetometer, barometer), MIPI-CSI camera, LiPo battery, and
+        power distribution board. Includes ROS 2 and Gazebo extension blocks.
+      </p>
+
+      <h3>Thrust motor with propeller surface</h3>
+<pre class="language-xml"><code>&lt;comp name="motor_fl" role="actuator"&gt;
+  &lt;description&gt;2212-920KV brushless motor with 9x4.5 propeller — front-left (CCW)&lt;/description&gt;
+  &lt;inertial&gt;&lt;mass&gt;0.055&lt;/mass&gt;&lt;/inertial&gt;
+  &lt;port name="sig_in" type="SIGNAL"&gt;
+    &lt;capabilities&gt;
+      &lt;protocol&gt;3-phase-BLDC&lt;/protocol&gt;
+      &lt;connector&gt;3-pin bullet&lt;/connector&gt;
+    &lt;/capabilities&gt;
+  &lt;/port&gt;
+  &lt;motor name="prop_fl" type="thrust"&gt;
+    &lt;voltage unit="V" nominal="14.8" max="17.4"/&gt;
+    &lt;current unit="A" continuous="15" peak="25"/&gt;
+    &lt;velocity-constant unit="RPM/V"&gt;920&lt;/velocity-constant&gt;
+    &lt;max-speed unit="rpm"&gt;13616&lt;/max-speed&gt;
+    &lt;thrust-axis&gt;0 0 1&lt;/thrust-axis&gt;
+    &lt;max-thrust unit="N"&gt;15&lt;/max-thrust&gt;
+    &lt;control-modes&gt;
+      &lt;mode&gt;pwm&lt;/mode&gt;
+      &lt;mode&gt;velocity&lt;/mode&gt;
+    &lt;/control-modes&gt;
+  &lt;/motor&gt;
+  &lt;surface name="prop"&gt;
+    &lt;prop&gt;
+      &lt;diameter unit="in"&gt;9&lt;/diameter&gt;
+      &lt;pitch unit="in"&gt;4.5&lt;/pitch&gt;
+      &lt;blades&gt;2&lt;/blades&gt;
+      &lt;direction&gt;CCW&lt;/direction&gt;
+    &lt;/prop&gt;
+  &lt;/surface&gt;
+&lt;/comp&gt;</code></pre>
+
+      <h3>IMU sensor with noise model and FIFO</h3>
+<pre class="language-xml"><code>&lt;sensor name="imu0" update-rate="3200"&gt;
+  &lt;inertial type="accel_gyro"&gt;
+    &lt;driver name="icm45686"&gt;
+      &lt;axis-align x="X" y="Y" z="Z"/&gt;
+    &lt;/driver&gt;
+    &lt;accel&gt;
+      &lt;range unit="g"&gt;16&lt;/range&gt;
+      &lt;resolution unit="mg"&gt;0.488&lt;/resolution&gt;
+      &lt;odr unit="Hz"&gt;3200&lt;/odr&gt;
+      &lt;bandwidth unit="Hz"&gt;1600&lt;/bandwidth&gt;
+      &lt;fifo depth="256" watermark="8"/&gt;
+      &lt;noise type="gaussian"&gt;
+        &lt;mean&gt;0&lt;/mean&gt;
+        &lt;stddev&gt;0.003&lt;/stddev&gt;
+        &lt;bias-mean&gt;0.01&lt;/bias-mean&gt;
+        &lt;bias-stddev&gt;0.001&lt;/bias-stddev&gt;
+      &lt;/noise&gt;
+    &lt;/accel&gt;
+    &lt;gyro&gt;
+      &lt;range unit="dps"&gt;2000&lt;/range&gt;
+      &lt;resolution unit="dps"&gt;0.061&lt;/resolution&gt;
+      &lt;odr unit="Hz"&gt;3200&lt;/odr&gt;
+      &lt;bandwidth unit="Hz"&gt;1600&lt;/bandwidth&gt;
+      &lt;fifo depth="256" watermark="8"/&gt;
+      &lt;noise type="gaussian"&gt;
+        &lt;mean&gt;0&lt;/mean&gt;
+        &lt;stddev&gt;0.01&lt;/stddev&gt;
+        &lt;bias-mean&gt;0.005&lt;/bias-mean&gt;
+        &lt;bias-stddev&gt;0.0005&lt;/bias-stddev&gt;
+      &lt;/noise&gt;
+    &lt;/gyro&gt;
+  &lt;/inertial&gt;
+&lt;/sensor&gt;</code></pre>
+
+      <h3>ROS 2 extension (topic mapping)</h3>
+<pre class="language-xml"><code>&lt;extension domain="org.ros2" version="1.0"&gt;
+  &lt;topic-map&gt;
+    &lt;topic sensor="imu0" name="/imu/data"
+           type="sensor_msgs/msg/Imu" qos="sensor_data"/&gt;
+    &lt;topic sensor="mag0" name="/mag/data"
+           type="sensor_msgs/msg/MagneticField" qos="sensor_data"/&gt;
+    &lt;topic sensor="baro0" name="/baro/data"
+           type="sensor_msgs/msg/FluidPressure" qos="sensor_data"/&gt;
+    &lt;topic sensor="gnss0" name="/gnss/fix"
+           type="sensor_msgs/msg/NavSatFix" qos="sensor_data"/&gt;
+    &lt;topic sensor="optical_flow0" name="/optical_flow"
+           type="synapse_msgs/msg/OpticalFlow" qos="sensor_data"/&gt;
+    &lt;topic sensor="camera0" name="/camera/image_raw"
+           type="sensor_msgs/msg/Image" qos="sensor_data"/&gt;
+    &lt;topic motor="prop_fl" name="/esc/fl/command"
+           type="actuator_msgs/msg/MotorCommand" qos="reliable"/&gt;
+  &lt;/topic-map&gt;
+&lt;/extension&gt;</code></pre>
+
+      <h3>Gazebo extension (simulation plugins)</h3>
+<pre class="language-xml"><code>&lt;extension domain="org.gazebosim" version="1.0"&gt;
+  &lt;physics&gt;
+    &lt;engine&gt;ode&lt;/engine&gt;
+    &lt;max-step-size&gt;0.001&lt;/max-step-size&gt;
+    &lt;real-time-factor&gt;1.0&lt;/real-time-factor&gt;
+  &lt;/physics&gt;
+  &lt;plugin name="aerodynamics" filename="libAerodynamicsPlugin.so"&gt;
+    &lt;link&gt;frame&lt;/link&gt;
+    &lt;air-density&gt;1.225&lt;/air-density&gt;
+    &lt;forward-drag-coefficient&gt;0.05&lt;/forward-drag-coefficient&gt;
+    &lt;upward-drag-coefficient&gt;0.1&lt;/upward-drag-coefficient&gt;
+  &lt;/plugin&gt;
+  &lt;plugin name="motor_model" filename="libMotorModelPlugin.so"&gt;
+    &lt;motor&gt;prop_fl&lt;/motor&gt;
+    &lt;turning-direction&gt;ccw&lt;/turning-direction&gt;
+    &lt;time-constant-up&gt;0.0125&lt;/time-constant-up&gt;
+    &lt;time-constant-down&gt;0.025&lt;/time-constant-down&gt;
+    &lt;rotor-drag-coefficient&gt;0.00025&lt;/rotor-drag-coefficient&gt;
+    &lt;rolling-moment-coefficient&gt;1e-6&lt;/rolling-moment-coefficient&gt;
+  &lt;/plugin&gt;
+&lt;/extension&gt;</code></pre>
+
+      <h3>CAN bus and power distribution networks</h3>
+<pre class="language-xml"><code>&lt;network name="esc-bus"&gt;
+  &lt;description&gt;CAN bus connecting NavQ95 to all four ESCs for DShot motor commands&lt;/description&gt;
+  &lt;bus name="esc_can" type="CAN" topology="daisy-chain"&gt;
+    &lt;bitrate&gt;1000000&lt;/bitrate&gt;
+    &lt;protocol&gt;DShot&lt;/protocol&gt;
+    &lt;participant device="navq95" port="can0" role="controller"
+                 position="0" id="0x01" terminator="true"/&gt;
+    &lt;participant device="esc_fl" port="can0" role="sink"
+                 position="1" id="0x11"/&gt;
+    &lt;participant device="esc_fr" port="can0" role="sink"
+                 position="2" id="0x12"/&gt;
+    &lt;participant device="esc_rl" port="can0" role="sink"
+                 position="3" id="0x13"/&gt;
+    &lt;participant device="esc_rr" port="can0" role="sink"
+                 position="4" id="0x14" terminator="true"/&gt;
+  &lt;/bus&gt;
+&lt;/network&gt;</code></pre>
+
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Thrust motor type with propeller specs (diameter, pitch, blade count, rotation direction)</li>
+        <li>Multi-constellation RTK GNSS with accuracy specs and PPS</li>
+        <li>Camera with MIPI-CSI, intrinsics, data output bandwidth, H.265 compression</li>
+        <li>Battery with LiPo chemistry, cell configuration, energy/capacity, discharge rate</li>
+        <li>ROS 2 extension: sensor-to-topic mapping with QoS profiles</li>
+        <li>Gazebo extension: physics engine, aerodynamics plugin, motor model plugin</li>
+        <li>Star-topology power distribution: battery to PDB to ESCs and avionics</li>
+      </ul>
+
+      <p><a href="https://github.com/CogniPilot/hcdformat/blob/main/examples/drone-quadrotor.hcdf">View full file on GitHub</a></p>
+    </div>
+  </div>
+
+  <!-- ===== MINIMAL TEST ===== -->
+  <div id="minimal" class="collapsible">
+    <div class="collapsible-header">
+      <span>Minimal Test <span class="badge">353 lines</span></span>
+      <span class="indicator">+</span>
+    </div>
+    <div class="collapsible-body">
+
+      <p>
+        A compact test file that exercises every major element type in a single 2-component system:
+        switch with TSN/MACsec/EEE ports, CAN/SIGNAL/POWER ports, IMU with noise model, ToF sensor
+        with dual FOVs, encoder, hall effect, thermistor, BLDC motor with full electrical specs,
+        wheel surface, joint with dynamics, network with link/bus/chain/gPTP/schedule/MACsec,
+        transmission, material, and include.
+      </p>
+
+<pre class="language-xml"><code>&lt;?xml version="1.0"?&gt;
+&lt;hcdf version="1.0"&gt;
+
+  &lt;!-- Comp 1: board with switch, sensors, motor, surface, antenna, port --&gt;
+  &lt;comp name="test-board" role="actuator"&gt;
+    &lt;description&gt;Test component exercising all major child elements&lt;/description&gt;
+
+    &lt;inertial&gt;
+      &lt;mass&gt;0.5&lt;/mass&gt;
+      &lt;com&gt;0 0 0.005&lt;/com&gt;
+      &lt;inertia&gt;1.2e-5 0 0 1.1e-5 0 2.0e-5&lt;/inertia&gt;
+    &lt;/inertial&gt;
+
+    &lt;visual name="board"&gt;
+      &lt;pose&gt;0 0 0 0 0 0&lt;/pose&gt;
+      &lt;model uri="models/test-board.glb" sha="abc123def456"/&gt;
+    &lt;/visual&gt;
+
+    &lt;collision name="board_col"&gt;
+      &lt;pose&gt;0 0 -0.005 0 0 0&lt;/pose&gt;
+      &lt;geometry&gt;
+        &lt;box&gt;&lt;size&gt;0.048 0.044 0.012&lt;/size&gt;&lt;/box&gt;
+      &lt;/geometry&gt;
+      &lt;surface&gt;
+        &lt;friction static="0.6" dynamic="0.4"/&gt;
+        &lt;restitution&gt;0.2&lt;/restitution&gt;
+      &lt;/surface&gt;
+    &lt;/collision&gt;
+
+    &lt;frame name="sensor_origin" relative-to="test-board"&gt;
+      &lt;description&gt;Sensor reference frame&lt;/description&gt;
+      &lt;pose&gt;0 0 0.01 0 0 0&lt;/pose&gt;
+    &lt;/frame&gt;
+
+    &lt;switch chip="test-switch"&gt;
+      &lt;port name="eth0" iface="swp0" type="ethernet"&gt;
+        &lt;capabilities&gt;
+          &lt;speed-tx unit="Mbps"&gt;10000&lt;/speed-tx&gt;
+          &lt;speed-rx unit="Mbps"&gt;100&lt;/speed-rx&gt;
+          &lt;standard&gt;802.3dm&lt;/standard&gt;
+          &lt;phy role="master"/&gt;
+          &lt;tsn&gt;
+            &lt;gptp hw-timestamping="true" gm-capable="true"/&gt;
+            &lt;qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/&gt;
+            &lt;preemption min-fragment-size="64"/&gt;
+          &lt;/tsn&gt;
+          &lt;macsec&gt;&lt;cipher&gt;gcm-aes-128&lt;/cipher&gt;&lt;/macsec&gt;
+          &lt;eee supported="true"/&gt;
+          &lt;connector&gt;Micro-Lock Plus 2.0 4C&lt;/connector&gt;
+        &lt;/capabilities&gt;
+      &lt;/port&gt;
+      &lt;port name="eth1" iface="swp1" type="ethernet"&gt;
+        &lt;capabilities&gt;
+          &lt;speed unit="Mbps"&gt;1000&lt;/speed&gt;
+          &lt;standard&gt;1000BASE-T1&lt;/standard&gt;
+          &lt;phy role="slave"/&gt;
+        &lt;/capabilities&gt;
+      &lt;/port&gt;
+    &lt;/switch&gt;
+
+    &lt;sensor name="imu0" update-rate="1000"&gt;
+      &lt;inertial type="accel_gyro"&gt;
+        &lt;pose&gt;0.016 -0.001 -0.008 0 0 0&lt;/pose&gt;
+        &lt;driver name="icm45686"&gt;
+          &lt;axis-align x="Y" y="-X" z="Z"/&gt;
+        &lt;/driver&gt;
+        &lt;accel&gt;
+          &lt;range unit="g"&gt;16&lt;/range&gt;
+          &lt;resolution unit="mg"&gt;0.488&lt;/resolution&gt;
+          &lt;noise type="gaussian"&gt;
+            &lt;mean&gt;0&lt;/mean&gt;
+            &lt;stddev&gt;0.003&lt;/stddev&gt;
+            &lt;bias-mean&gt;0.01&lt;/bias-mean&gt;
+          &lt;/noise&gt;
+        &lt;/accel&gt;
+        &lt;gyro&gt;
+          &lt;range unit="dps"&gt;2000&lt;/range&gt;
+          &lt;noise type="gaussian"&gt;
+            &lt;stddev&gt;0.01&lt;/stddev&gt;
+          &lt;/noise&gt;
+        &lt;/gyro&gt;
+      &lt;/inertial&gt;
+    &lt;/sensor&gt;
+
+    &lt;motor name="foc_motor" type="bldc" encoder="motor_encoder"
+           hall="motor_hall" thermistor="motor_temp"&gt;
+      &lt;voltage unit="V" nominal="24" max="28"/&gt;
+      &lt;current unit="A" continuous="6.5" peak="19"/&gt;
+      &lt;resistance unit="ohm"&gt;0.5&lt;/resistance&gt;
+      &lt;torque-constant unit="Nm/A"&gt;0.29&lt;/torque-constant&gt;
+      &lt;velocity-constant unit="V/RPM"&gt;0.109&lt;/velocity-constant&gt;
+      &lt;max-speed unit="rpm"&gt;260&lt;/max-speed&gt;
+      &lt;stall-torque unit="Nm"&gt;19.76&lt;/stall-torque&gt;
+      &lt;no-load-speed unit="rpm"&gt;257.9&lt;/no-load-speed&gt;
+      &lt;no-load-current unit="A"&gt;0.974&lt;/no-load-current&gt;
+      &lt;max-power-out unit="W"&gt;158.8&lt;/max-power-out&gt;
+      &lt;max-efficiency unit="percent"&gt;68.4&lt;/max-efficiency&gt;
+      &lt;control-modes&gt;
+        &lt;mode&gt;velocity&lt;/mode&gt;
+        &lt;mode&gt;position&lt;/mode&gt;
+        &lt;mode&gt;torque&lt;/mode&gt;
+      &lt;/control-modes&gt;
+    &lt;/motor&gt;
+
+    &lt;surface name="wheel"&gt;
+      &lt;wheel type="driven"&gt;
+        &lt;radius unit="m"&gt;0.085&lt;/radius&gt;
+        &lt;width unit="m"&gt;0.041&lt;/width&gt;
+        &lt;friction static="0.9" dynamic="0.7"/&gt;
+      &lt;/wheel&gt;
+    &lt;/surface&gt;
+  &lt;/comp&gt;
+
+  &lt;!-- Network: link, bus, chain, gPTP, schedule, MACsec --&gt;
+  &lt;network name="test"&gt;
+    &lt;description&gt;Test network exercising all topology types&lt;/description&gt;
+
+    &lt;link name="test_link"&gt;
+      &lt;wired standard="802.3dm"&gt;
+        &lt;port&gt;parent-body/eth0&lt;/port&gt;
+        &lt;port&gt;test-board/eth0&lt;/port&gt;
+        &lt;vlan id="10" pcp="5"/&gt;
+        &lt;macsec policy="must-secure" cipher="gcm-aes-128"
+                key-agreement="psk" key-ref="test-key"/&gt;
+      &lt;/wired&gt;
+    &lt;/link&gt;
+
+    &lt;bus name="test_can" type="CAN" topology="daisy-chain"&gt;
+      &lt;bitrate&gt;5000000&lt;/bitrate&gt;
+      &lt;participant device="parent-body" port="can0"
+                   role="controller" position="1"/&gt;
+      &lt;participant device="test-board" port="can0"
+                   position="2" id="0x601" terminator="true"/&gt;
+    &lt;/bus&gt;
+
+    &lt;chain name="test-chain" type="802.3dm" mode="switched" topology="line"&gt;
+      &lt;vlan id="10" pcp="5"/&gt;
+      &lt;macsec policy="must-secure" cipher="gcm-aes-128"
+              key-agreement="psk"/&gt;
+      &lt;hop device="parent-body" port="eth0" role="root"/&gt;
+      &lt;hop device="test-board" ingress="eth0" role="tail"/&gt;
+    &lt;/chain&gt;
+
+    &lt;gptp domain="0"&gt;
+      &lt;clock device="parent-body" port="eth0"
+             gm-capable="true" priority1="128" priority2="128"/&gt;
+      &lt;clock device="test-board" port="eth0"
+             gm-capable="false" priority1="255" priority2="255"/&gt;
+      &lt;port-defaults log-sync-interval="-3"
+                     neighbor-prop-delay-thresh-ns="800"/&gt;
+    &lt;/gptp&gt;
+
+    &lt;schedule name="1ms-control" cycle-time-us="1000"&gt;
+      &lt;gate tc-mask="0x80" duration-us="50"/&gt;
+      &lt;gate tc-mask="0x60" duration-us="200"/&gt;
+      &lt;gate tc-mask="0x0F" duration-us="750"/&gt;
+    &lt;/schedule&gt;
+
+    &lt;stream-profile uri="profiles/operational.streams.xml" active="true"/&gt;
+
+    &lt;macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk"&gt;
+      &lt;key-store type="secure-element" ref="se051"/&gt;
+    &lt;/macsec&gt;
+  &lt;/network&gt;
+
+  &lt;transmission name="shoulder_transmission" type="planetary"&gt;
+    &lt;motor ref="foc_motor"/&gt;
+    &lt;joint ref="shoulder_yaw"/&gt;
+    &lt;reduction&gt;50&lt;/reduction&gt;
+    &lt;efficiency&gt;0.85&lt;/efficiency&gt;
+  &lt;/transmission&gt;
+
+  &lt;material name="rubber"&gt;
+    &lt;color rgba="0.1 0.1 0.1 1.0"/&gt;
+    &lt;surface&gt;
+      &lt;friction static="0.8" dynamic="0.6"/&gt;
+      &lt;restitution&gt;0.3&lt;/restitution&gt;
+    &lt;/surface&gt;
+  &lt;/material&gt;
+
+  &lt;include uri="components/sensor-module.hcdf" sha="abc123"
+           name="sensor-1" pose="0 0 0.1 0 0 0"/&gt;
+
+&lt;/hcdf&gt;</code></pre>
+
+      <p><strong>Key features:</strong></p>
+      <ul>
+        <li>Every major element type in one file: comp, joint, group, state, network, transmission, material, include</li>
+        <li>Switch with 802.3dm asymmetric ports and TSN capabilities (gPTP, Qbv, preemption, MACsec, EEE)</li>
+        <li>5 sensor categories: inertial (accel+gyro), optical (ToF with dual FOV), encoder, EM (hall), temperature</li>
+        <li>BLDC motor with full electrical specs and 3 control modes</li>
+        <li>Network with all 3 topology types: link, bus, chain</li>
+        <li>Planetary transmission with gear ratio and efficiency</li>
+        <li>Content-addressed include for modular composition</li>
+      </ul>
+
+      <p><a href="https://github.com/CogniPilot/hcdformat/blob/main/examples/test-minimal.hcdf">View full file on GitHub</a></p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

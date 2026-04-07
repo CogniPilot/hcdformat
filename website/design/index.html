@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Design | HCDF</title>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">HCDF</a>
+  <button class="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links">
+    <div class="dropdown">
+      <a>Specification &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/spec/">Overview</a>
+        <a href="/spec/core.html">Core Schema</a>
+        <a href="/spec/stream-profile.html">Stream Profile</a>
+        <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
+        <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
+      </div>
+    </div>
+    <div class="dropdown">
+      <a>Examples &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/examples/">All Examples</a>
+        <a href="/examples/#humanoid">Humanoid Mobile Base</a>
+        <a href="/examples/#drone">Drone Quadrotor</a>
+      </div>
+    </div>
+    <a href="/design/">Design</a>
+    <div class="dropdown">
+      <a>Extensions &#9662;</a>
+      <div class="dropdown-content">
+        <a href="/extensions/">Guide</a>
+        <a href="/extensions/imu-stability.html">IMU Stability</a>
+      </div>
+    </div>
+    <a href="/tools/">Tools</a>
+    <a href="/about/">About</a>
+    <a href="https://github.com/CogniPilot/hcdformat">GitHub</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <h1>Design Decisions</h1>
+
+  <p>
+    HCDF was designed to fill a gap: existing robot description formats (URDF, SDF, MJCF) describe
+    the physical structure of robots but ignore the cyber infrastructure that controls them. A real
+    robot is more than joints and geometry. It has network topology, wired and wireless connectivity,
+    deterministic scheduling, link security, power distribution and energy storage, firmware identity,
+    device discovery, sensor hardware with noise characteristics and sampling configuration, motor
+    datasheets with load curves and thermal limits, dynamic surfaces like propellers and control
+    surfaces, human-machine interfaces, and the ability for an autonomous agent to read, reason about,
+    and configure the entire system. HCDF describes all of this in a single validated schema: the
+    physical structure, the cyber infrastructure, the sensor and actuator hardware, the energy
+    architecture, and the operational configuration.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Why HCDF -->
+  <h2>Why HCDF?</h2>
+
+  <p>
+    URDF describes a kinematic tree of links and joints and is used broadly in ROS, not just for
+    simulation, but also for visualization (RViz), motion planning (MoveIt), control
+    (ros2_control), and real hardware drivers. SDF extends this with additional simulation features
+    such as sensors, plugins, and world models.
+    However, neither format describes the Ethernet switches, CAN buses, power buses, or network
+    schedules that a real robot needs. A humanoid with 19 devices and 5 networks has as much
+    complexity in its networking as in its kinematics. HCDF puts both in one file so that an agent
+    (human or AI) can reason about the complete system: "If I add a camera to the left wrist,
+    which switch port does it connect to, what bandwidth is available on that 802.3dm chain, and
+    does the Qbv schedule have room for the video stream?"
+  </p>
+
+  <p>
+    HCDF also addresses the "component" vs "link" problem. In URDF, a link is a rigid body in a
+    kinematic tree. In HCDF, a <code>&lt;comp&gt;</code> is a physical device: it has ports, sensors,
+    motors, switches, antennas, and firmware. A comp is more like a circuit board than a geometric
+    shape. Geometry (visual, collision) is optional; networking is first-class.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Topology Types -->
+  <h2>Topology Types</h2>
+
+  <p>
+    HCDF defines three network topology primitives that cover the wiring patterns found in real robots.
+    Each maps to different hardware and has different latency, bandwidth, and redundancy characteristics.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Topology</th><th>Element</th><th>Use Case</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Link</strong></td>
+        <td><code>&lt;link&gt;</code></td>
+        <td>Point-to-point connection between two ports</td>
+        <td>25G backbone between S32N79 and AGX Thor</td>
+      </tr>
+      <tr>
+        <td><strong>Bus</strong></td>
+        <td><code>&lt;bus&gt;</code></td>
+        <td>Shared medium with multiple participants</td>
+        <td>CAN-FD bus for wheel drives and BMS</td>
+      </tr>
+      <tr>
+        <td><strong>Chain</strong></td>
+        <td><code>&lt;chain&gt;</code></td>
+        <td>Daisy-chain with switched hops (pass-through or bridged)</td>
+        <td>802.3dm arm chain with camera spurs</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Chains are the most novel element. An 802.3dm chain carries 10G upstream and 100M downstream
+    on a single twisted pair, with each hop containing a bridging switch. This is how modern
+    automotive and robotics Ethernet works: you don't run a separate cable to every actuator.
+    Spurs branch off the chain (e.g., a camera at the wrist with a different VLAN and QoS class).
+  </p>
+
+<pre class="language-xml"><code>&lt;chain name="left-arm-chain" type="802.3dm" mode="switched"&gt;
+  &lt;vlan id="10" pcp="5"/&gt;
+  &lt;hop device="s32n79" port="xfi_left" role="root"/&gt;
+  &lt;hop device="mcn1-l" ingress="eth0" egress="eth1"/&gt;
+  &lt;hop device="mcn2-l" ingress="eth0" egress="eth1"/&gt;
+  &lt;hop device="mcn3-l" ingress="eth0" egress="eth1"&gt;
+    &lt;spur device="cam-l" port="eth0" via="eth2"&gt;
+      &lt;vlan id="20" pcp="3"/&gt;
+    &lt;/spur&gt;
+  &lt;/hop&gt;
+  &lt;hop device="mcn4-l" ingress="eth0" role="tail"/&gt;
+&lt;/chain&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- Network Architecture -->
+  <h2>Network Architecture</h2>
+
+  <p>
+    A <code>&lt;network&gt;</code> is a self-contained networking domain. It groups the physical
+    topology (links, buses, chains) with the configuration that runs on that topology: gPTP time
+    synchronization, traffic class definitions, Qbv gate schedules, MACsec security policy, EEE
+    energy savings policy, and stream profile references. A robot typically has multiple networks
+    (backbone, arm chains, base peripherals, power distribution) that are configured independently.
+  </p>
+
+  <p>
+    This design matches how real network stacks work. Each network has its own gPTP domain, its own
+    set of schedules, its own MACsec key store. The S32N79 switch fabric bridges between networks
+    at the hardware level; HCDF describes the logical separation.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Sensor Model -->
+  <h2>Sensor Model</h2>
+
+  <p>
+    HCDF sensors are categorized by measurement principle, not by product type. The sensor model
+    covers 10 categories: inertial (accelerometer, gyroscope), optical (camera, thermal, ToF, LiDAR,
+    optical flow), electromagnetic (magnetometer, Hall effect, fluxgate), RF (radar, GNSS, UWB,
+    radio altimeter), force (pressure, strain, torque, load cell), chemical (gas, pH, humidity),
+    encoder (incremental, absolute, linear: optical, magnetic, inductive), temperature (thermistor,
+    RTD, thermocouple, IR), radiation (Geiger, scintillation, neutron, dosimeter), and audio
+    (microphone, ultrasonic, sonar, hydrophone).
+  </p>
+
+  <p>
+    Each sensor type carries its own parameters. An IMU has range, resolution, ODR, bandwidth,
+    FIFO depth, noise model (Gaussian with mean, stddev, bias), and driver info (chip name,
+    axis alignment). A camera has intrinsics (fx, fy, cx, cy), FOV geometry (frustum shape),
+    data output bandwidth, and camera-specific params (shutter type, HDR, compression, trigger mode).
+    These parameters are what navigation filters and perception pipelines actually need.
+  </p>
+
+<pre class="language-xml"><code>&lt;sensor name="imu0" update-rate="1000"&gt;
+  &lt;inertial type="accel_gyro"&gt;
+    &lt;driver name="icm45686"&gt;
+      &lt;axis-align x="Y" y="-X" z="Z"/&gt;
+    &lt;/driver&gt;
+    &lt;accel&gt;
+      &lt;range unit="g"&gt;16&lt;/range&gt;
+      &lt;noise type="gaussian"&gt;
+        &lt;stddev&gt;0.003&lt;/stddev&gt;
+        &lt;bias-mean&gt;0.01&lt;/bias-mean&gt;
+      &lt;/noise&gt;
+    &lt;/accel&gt;
+  &lt;/inertial&gt;
+&lt;/sensor&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- Visualization and Materials -->
+  <h2>Visualization and Materials</h2>
+
+  <p>
+    HCDF delegates visual rendering to glTF/GLB, the industry standard for 3D assets supported
+    by Bevy, Three.js, Godot, Blender, and USD. A <code>&lt;visual&gt;</code> element on a component
+    references a GLB file (with SHA verification) that carries the full rendering data: meshes,
+    PBR materials, textures, normal maps, and LOD. This avoids duplicating what glTF already does
+    well. HCDF does not define its own PBR material system, texture pipeline, or shader model.
+  </p>
+
+  <p>
+    The <code>&lt;material&gt;</code> element in HCDF serves a different purpose: it defines
+    <strong>physical surface properties</strong> (friction coefficients, restitution, contact stiffness)
+    and a basic color for fallback rendering. These are the properties that physics engines and
+    simulation exporters need, not what renderers need. When converting HCDF to SDF or USD for
+    simulation, the material's friction and color transfer to the simulator; the GLB's PBR textures
+    transfer separately through glTF import.
+  </p>
+
+  <p>
+    For components without a GLB model (early design, procedural geometry), HCDF provides
+    <code>&lt;geometry&gt;</code> primitives (box, cylinder, sphere, capsule, cone, ellipsoid, mesh,
+    frustum) that can be used for both collision bounds and fallback visualization. Geometry
+    primitives on <code>&lt;collision&gt;</code> define the physics boundary; on
+    <code>&lt;visual&gt;</code> they provide a placeholder shape until a proper 3D model is available.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Embodiment Description -->
+  <h2>Embodiment Description</h2>
+
+  <p>
+    Beyond the kinematic tree (joints connecting comps), HCDF provides three mechanisms for
+    describing how a robot is intended to be used. <strong>Groups</strong> name collections of
+    joints for planning: a "left_arm" kinematic chain, a "left_hand" end-effector, a "locomotion"
+    set. Groups can contain other groups for composition ("left_manipulation" = left_arm + left_hand).
+    <strong>States</strong> define named joint configurations (home, transport, inspection) that
+    agents can command. <strong>Self-collision disable</strong> lists pairs of components that
+    cannot collide, with reasons (adjacent, mounted, unreachable), so collision checkers skip
+    unnecessary tests.
+  </p>
+
+<pre class="language-xml"><code>&lt;group name="left_manipulation"&gt;
+  &lt;description&gt;Left arm + hand for manipulation tasks&lt;/description&gt;
+  &lt;group ref="left_arm"/&gt;
+  &lt;group ref="left_hand"/&gt;
+&lt;/group&gt;
+
+&lt;state name="transport"&gt;
+  &lt;description&gt;Compact transport position — arms folded tight&lt;/description&gt;
+  &lt;joint-position joint="l_shoulder_yaw" value="0"/&gt;
+  &lt;joint-position joint="l_elbow" value="2.4"/&gt;
+  &lt;joint-position joint="l_wrist_pitch" value="1.0"/&gt;
+&lt;/state&gt;
+
+&lt;self-collision-disable&gt;
+  &lt;pair comp1="torso" comp2="mcn1-l" reason="adjacent"/&gt;
+  &lt;pair comp1="mcn1-l" comp2="mcn1-r" reason="unreachable"/&gt;
+&lt;/self-collision-disable&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <!-- Extensions -->
+  <h2>Extensions</h2>
+
+  <p>
+    HCDF uses a reverse-DNS domain system for extensions: <code>&lt;extension domain="org.ros2" version="1.0"&gt;</code>.
+    The schema allows <code>xs:any</code> with <code>processContents="lax"</code> inside the
+    extension element, so any well-formed XML is valid. Versioning allows evolution without breaking
+    existing files. The domain identifier prevents conflicts between vendors.
+  </p>
+
+  <p>
+    Registered extensions include <code>org.ros2</code> (topic mapping), <code>org.gazebosim</code>
+    (simulation parameters), and <code>org.cognipilot.imu-stability</code> (Allan variance for
+    tactical IMUs). See the <a href="/extensions/">Extensions Guide</a> for details on writing and
+    registering new extensions.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Comparison Table -->
+  <h2>Comparison</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>HCDF</th>
+        <th>OpenUSD</th>
+        <th>URDF</th>
+        <th>SDF</th>
+        <th>MJCF</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="6"><strong>Physical Structure</strong></td></tr>
+      <tr>
+        <td>Kinematic tree</td>
+        <td>Yes (tree + loops)</td>
+        <td>Yes</td>
+        <td>Yes (tree only)</td>
+        <td>Yes</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Joint types</td>
+        <td>8 (revolute, ball, universal, screw, ...)</td>
+        <td>Via UsdPhysics</td>
+        <td>6</td>
+        <td>9</td>
+        <td>Many</td>
+      </tr>
+      <tr>
+        <td>Collision geometry</td>
+        <td>8 primitives + mesh</td>
+        <td>Full</td>
+        <td>5 primitives + mesh</td>
+        <td>9 primitives + mesh</td>
+        <td>Primitives + mesh</td>
+      </tr>
+      <tr>
+        <td>Visual / materials</td>
+        <td>GLB/glTF refs + color</td>
+        <td>Full PBR (native)</td>
+        <td>Color + texture</td>
+        <td>PBR</td>
+        <td>Basic</td>
+      </tr>
+      <tr>
+        <td>Named states / keyframes</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No (SRDF separate)</td>
+        <td>No</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Joint groups</td>
+        <td>Yes (hierarchical)</td>
+        <td>No</td>
+        <td>No (SRDF separate)</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+
+      <tr><td colspan="6"><strong>Sensors &amp; Actuators</strong></td></tr>
+      <tr>
+        <td>Sensor categories</td>
+        <td>10 (inertial, optical, RF, audio, radiation, ...)</td>
+        <td>No</td>
+        <td>2 (camera, ray)</td>
+        <td>15+</td>
+        <td>Several</td>
+      </tr>
+      <tr>
+        <td>Sensor noise models</td>
+        <td>Yes (gaussian, bias, per-axis)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>Gaussian only</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Motor specifications</td>
+        <td>Full (curves, pole-pairs, thermal, control modes)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>Partial</td>
+      </tr>
+      <tr>
+        <td>HMI (displays, buttons, LEDs)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Dynamic surfaces (wings, wheels, props)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>Via plugins</td>
+        <td>No</td>
+      </tr>
+
+      <tr><td colspan="6"><strong>Networking &amp; Connectivity</strong></td></tr>
+      <tr>
+        <td>Network topology</td>
+        <td>Yes (link, bus, chain, mesh)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Bus protocols (CAN, I2C, SPI, EtherCAT)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Deterministic networking (TSN)</td>
+        <td>Yes (gPTP, Qbv, FRER, stream profiles)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Network security</td>
+        <td>Yes (MACsec, key management)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Wireless (WiFi, BLE, Thread mesh)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+
+      <tr><td colspan="6"><strong>Power &amp; Energy</strong></td></tr>
+      <tr>
+        <td>Power distribution</td>
+        <td>Yes (buses, voltage rails, budgeting)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Energy sources (battery, fuel cell, tank)</td>
+        <td>Yes (chemistry, capacity, charging, flow)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+
+      <tr><td colspan="6"><strong>Cyber Infrastructure</strong></td></tr>
+      <tr>
+        <td>Device identity &amp; discovery</td>
+        <td>Yes (hwid, IP, firmware hash)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Firmware versioning</td>
+        <td>Yes (SHA, MCUboot, OTA manifests)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Agent configuration (YANG)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Verified distribution (SHA)</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+        <td>No</td>
+      </tr>
+
+      <tr><td colspan="6"><strong>Format &amp; Tooling</strong></td></tr>
+      <tr>
+        <td>Schema validation</td>
+        <td>XSD + JSON Schema</td>
+        <td>USD Schema</td>
+        <td>XSD</td>
+        <td>Embedded schema</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Formats</td>
+        <td>XML + JSON (bidirectional)</td>
+        <td>USD binary + ASCII</td>
+        <td>XML</td>
+        <td>XML</td>
+        <td>XML</td>
+      </tr>
+      <tr>
+        <td>Extension mechanism</td>
+        <td>Reverse-DNS domains + XSD</td>
+        <td>Vendor schemas</td>
+        <td>Gazebo tag (lax)</td>
+        <td>Plugins</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td>Composition</td>
+        <td>Include + SHA verification</td>
+        <td>Layers + Payloads</td>
+        <td>xacro (preprocessor)</td>
+        <td>Include</td>
+        <td>Include</td>
+      </tr>
+      <tr>
+        <td>Simulation export</td>
+        <td>Planned (converters)</td>
+        <td>Native</td>
+        <td>Native</td>
+        <td>Native</td>
+        <td>Native</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    HCDF is not anti-simulation; it is a superset that also covers the cyber infrastructure
+    that URDF, SDF, MJCF, and OpenUSD cannot describe. Converters from HCDF to URDF, SDF, and USD
+    will enable HCDF-described robots to be simulated in Gazebo, MuJoCo, Isaac Sim, and other tools.
+    The Gazebo extension (<code>org.gazebosim</code>) carries simulation-specific parameters that
+    survive the round trip. HCDF is designed to be the single source of truth for both the real
+    hardware and its simulation counterpart.
+  </p>
+
+  <p>
+    For full design rationale, see the design documents in
+    <a href="https://github.com/CogniPilot/hcdformat/tree/main/docs/design">docs/design/</a>.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- OpenUSD Relationship -->
+  <h2>Relationship with OpenUSD</h2>
+
+  <p>
+    OpenUSD is gaining traction in robotics simulation (Isaac Sim, Gazebo). USD excels at scene
+    composition, visual fidelity (PBR), physics (UsdPhysics), and multi-tool interoperability. But
+    as the <a href="https://github.com/RobotecAI/wip-openusd-interoperability-rep">RobotecAI REP</a>
+    acknowledges: <em>"OpenUSD lacks native schemas for domain-specific data (e.g., URDF transmission,
+    MJCF actuator), conversions are inherently lossy."</em>
+  </p>
+
+  <p>
+    HCDF and USD are complementary (see the comparison table above). USD handles visual/simulation;
+    HCDF handles everything else (networking, power, firmware, device identity, agent configuration).
+    An HCDF-to-USD converter extracts visual meshes, collision geometry, joints, and physics
+    properties for simulation. The cyber infrastructure stays in HCDF where it belongs.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Simulation Interoperability -->
+  <h2>Simulation Interoperability (Planned)</h2>
+
+  <p>
+    HCDF files will be convertible to simulation formats:
+  </p>
+
+  <ul>
+    <li><strong>HCDF → URDF</strong>: Extract kinematic tree, inertial properties, visual/collision
+      geometry, joint limits</li>
+    <li><strong>HCDF → SDF</strong>: Same plus sensors, plugins, materials, closed loops</li>
+    <li><strong>HCDF → USD</strong>: Visual meshes, physics joints, collision geometry via
+      UsdPhysics</li>
+    <li><strong>URDF → HCDF</strong>: Import existing URDF models, add networking and cyber
+      infrastructure</li>
+  </ul>
+
+  <p>
+    These converters enable using HCDF as the single source of truth while still supporting
+    existing simulation tools (Gazebo, Isaac Sim, MuJoCo, Drake).
+  </p>
+
+  <hr class="section-divider"/>
+
+  <!-- Versioning -->
+  <h2>Versioning</h2>
+
+  <p>
+    HCDF uses semantic versioning (MAJOR.MINOR) for the schema. Minor versions add optional
+    elements, attributes, or enumeration values and are always backward compatible. Major
+    versions may remove, rename, or change existing elements.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Change</th><th>Version bump</th><th>Backward compatible?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>New optional element or attribute</td><td>Minor (1.0 &rarr; 1.1)</td><td>Yes</td></tr>
+      <tr><td>New enumeration value</td><td>Minor</td><td>Yes</td></tr>
+      <tr><td>New extension XSD</td><td>None</td><td>Yes</td></tr>
+      <tr><td>Change optional to required</td><td><strong>Major</strong> (1.x &rarr; 2.0)</td><td>No</td></tr>
+      <tr><td>Remove or rename element</td><td><strong>Major</strong></td><td>No</td></tr>
+      <tr><td>Change element type</td><td><strong>Major</strong></td><td>No</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Parsers should ignore unknown elements and attributes so that an HCDF 1.0 parser can
+    read a 1.3 file without rejecting it. The <code>&lt;hcdf version="1.0"&gt;</code> root
+    attribute declares which schema version the file was authored against.
+  </p>
+
+  <p>
+    Each released version is archived in the <code>versions/</code> directory. Extensions
+    and stream profiles are versioned independently. For the full policy, see
+    <a href="https://github.com/CogniPilot/hcdformat/blob/main/docs/design/versioning.md">docs/design/versioning.md</a>.
+  </p>
+
+</div>
+
+<footer>
+  <p>HCDF is a project of the <a href="https://cognipilot.org">CogniPilot Foundation</a>. Licensed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="/assets/nav.js"></script>
+</body>
+</html>
