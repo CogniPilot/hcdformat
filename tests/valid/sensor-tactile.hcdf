@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!-- Valid: tactile sensors on a humanoid hand -->
+<hcdf version="1.0" name="tactile-sensor-test">
+  <comp name="hand" role="sensor">
+    <sensor name="fingertip_touch">
+      <!-- Capacitive fingertip array (e.g., PPS TakkTile) -->
+      <tactile type="capacitive">
+        <driver name="takktile-v2"/>
+        <rows>4</rows>
+        <cols>4</cols>
+        <taxels>16</taxels>
+        <spatial-resolution unit="mm">2.5</spatial-resolution>
+        <pressure-range min="0.1" max="100" unit="kPa"/>
+        <sensing-area unit="mm2">100</sensing-area>
+      </tactile>
+    </sensor>
+    <sensor name="palm_skin">
+      <!-- Barometric palm patch (e.g., XELA uSkin) -->
+      <tactile type="barometric">
+        <driver name="xela-uskin-16"/>
+        <taxels>16</taxels>
+        <spatial-resolution unit="mm">7</spatial-resolution>
+        <pressure-range min="0.5" max="200" unit="kPa"/>
+        <sensing-area unit="cm2">12</sensing-area>
+      </tactile>
+      <!-- Optical gel sensor on thumb (e.g., GelSight Mini) -->
+      <tactile type="optical">
+        <driver name="gelsight-mini"/>
+        <range unit="mm">5</range>
+        <resolution unit="um">25</resolution>
+        <sensing-area unit="mm2">314</sensing-area>
+      </tactile>
+    </sensor>
+  </comp>
+</hcdf>

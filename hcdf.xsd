@@ -439,6 +439,17 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="TactileSensorType">
+    <xs:annotation><xs:documentation>Tactile sensor sub-type. Tactile sensors measure contact, pressure, or deformation distributed across a surface area, as distinct from force sensors which measure at a single point. capacitive: measures pressure via capacitance change between conductive layers — high sensitivity, good spatial resolution, common in robot fingertips and e-skin (e.g., PPS TakkTile, SynTouch BioTac). resistive: force-sensitive resistor (FSR) arrays or piezoresistive films — lower cost, simpler electronics, used in gripper pads and pressure mats (e.g., Interlink FSR, Tekscan FlexiForce). piezoelectric: generates voltage from mechanical deformation — measures dynamic contact events (slip, vibration, texture) rather than static pressure, used for slip detection in dexterous hands. barometric: array of barometric pressure sensors under a deformable membrane — robust to wear, high dynamic range, used in soft grippers and compliant fingers (e.g., XELA uSkin). optical: uses internal cameras and deformable gel to measure contact geometry via image analysis — provides rich 3D contact shape and shear force data (e.g., GelSight, DIGIT, GelSlim).</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="capacitive"/>
+      <xs:enumeration value="resistive"/>
+      <xs:enumeration value="piezoelectric"/>
+      <xs:enumeration value="barometric"/>
+      <xs:enumeration value="optical"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- ================================================================ -->
   <!-- LEAF TYPES (Values, Geometry, Pose, Noise)                      -->
   <!-- ================================================================ -->
@@ -2039,8 +2050,39 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="tactile_sensor">
+    <xs:annotation><xs:documentation>Tactile sensor for distributed contact/pressure measurement across a surface. Unlike force sensors (single-point measurement), tactile sensors provide spatially distributed pressure data across an array of sensing elements (taxels). Used on robot fingertips, palms, grippers, and body skin for grasp planning, slip detection, object recognition by touch, and safe physical interaction. Extends sensor_base with tactile-specific parameters: array dimensions, taxel count, spatial resolution, and pressure range.</xs:documentation></xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="sensor_base">
+        <xs:sequence>
+          <xs:element name="rows" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Number of rows in the taxel array. Defines the spatial layout along one axis of the sensing surface. Example: 4 rows x 4 cols = 16 taxels in a fingertip pad.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="cols" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Number of columns in the taxel array. Together with rows, defines the rectangular grid of sensing elements.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="taxels" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Total number of individual tactile sensing elements (taxels). For regular grids, taxels = rows x cols. For irregular layouts (e.g., curved fingertip, hexagonal packing), specify taxels directly when rows/cols do not apply. Example: 160 taxels on a SynTouch BioTac, 32 on a XELA uSkin patch.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="spatial-resolution" type="measured_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Center-to-center spacing between adjacent taxels. Unit: "mm". Determines the minimum feature size the sensor can resolve through touch. Example: 2.5 mm for a fingertip array, 10 mm for a body-skin patch. Smaller spacing = finer spatial detail but more wiring and processing.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="pressure-range" type="range_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Measurable contact pressure range per taxel. Unit: "kPa" or "N". min = minimum detectable pressure (sensitivity threshold), max = saturation pressure. Example: min="0.1" max="100" unit="kPa" for a capacitive fingertip. Light touch is ~1 kPa, firm grip is 10-50 kPa, maximum grip can exceed 100 kPa.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="sensing-area" type="measured_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Total active sensing area of the tactile surface. Unit: "mm2" or "cm2". Example: 314 mm2 for a circular fingertip pad (20mm diameter), 2500 mm2 for a 50x50 palm patch.</xs:documentation></xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="TactileSensorType" use="required">
+          <xs:annotation><xs:documentation>Tactile sensor technology type (capacitive, resistive, piezoelectric, barometric, optical). Required. Determines the sensing principle and typical characteristics: capacitive and barometric are best for static pressure, piezoelectric for dynamic events (slip, texture), optical for rich 3D contact geometry.</xs:documentation></xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="sensor">
-    <xs:annotation><xs:documentation>Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), and audio (microphone, ultrasonic, sonar, hydrophone) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), audio (microphone, ultrasonic, sonar, hydrophone), and tactile (capacitive, resistive, piezoelectric, barometric, optical) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="inertial" type="inertial_sensor" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Inertial measurement unit(s) — accelerometers and/or gyroscopes.</xs:documentation></xs:annotation>
@@ -2071,6 +2113,9 @@
       </xs:element>
       <xs:element name="audio" type="audio_sensor" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Audio/acoustic sensor(s) — microphones, ultrasonic transducers, sonar, hydrophones.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="tactile" type="tactile_sensor" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Tactile/contact sensor(s) — capacitive arrays, FSR pads, piezoelectric skins, barometric patches, optical gel sensors. Provides spatially distributed pressure/contact data for grasp planning, slip detection, and safe interaction.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">

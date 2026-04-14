@@ -357,6 +357,16 @@
         "radio_altimeter"
       ]
     },
+    "TactileSensorType": {
+      "type": "string",
+      "enum": [
+        "capacitive",
+        "resistive",
+        "piezoelectric",
+        "barometric",
+        "optical"
+      ]
+    },
     "TemperatureSensorType": {
       "type": "string",
       "enum": [
@@ -3870,6 +3880,14 @@
           },
           "description": "Audio/acoustic sensor(s) — microphones, ultrasonic transducers, sonar, hydrophones."
         },
+        "tactile": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tactile_sensor",
+            "description": "Tactile/contact sensor(s) — capacitive arrays, FSR pads, piezoelectric skins, barometric patches, optical gel sensors. Provides spatially distributed pressure/contact data for grasp planning, slip detection, and safe interaction."
+          },
+          "description": "Tactile/contact sensor(s) — capacitive arrays, FSR pads, piezoelectric skins, barometric patches, optical gel sensors. Provides spatially distributed pressure/contact data for grasp planning, slip detection, and safe interaction."
+        },
         "name": {
           "type": "string",
           "description": "Unique name for this sensor group within the component (e.g., \"imu_main\", \"front_camera_suite\"). Required."
@@ -3882,7 +3900,7 @@
       "required": [
         "name"
       ],
-      "description": "Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), and audio (microphone, ultrasonic, sonar, hydrophone) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model."
+      "description": "Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), audio (microphone, ultrasonic, sonar, hydrophone), and tactile (capacitive, resistive, piezoelectric, barometric, optical) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model."
     },
     "sensor_base": {
       "type": "object",
@@ -4239,6 +4257,74 @@
         }
       },
       "description": "TSN capabilities of a switch fabric (as opposed to per-port capabilities). Declares which TSN sub-standards the switch ASIC supports globally across all its bridged ports."
+    },
+    "tactile_sensor": {
+      "type": "object",
+      "properties": {
+        "pose": {
+          "type": "string",
+          "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
+        },
+        "driver": {
+          "$ref": "#/$defs/sensor_driver",
+          "description": "Driver IC identification and axis alignment configuration."
+        },
+        "range": {
+          "$ref": "#/$defs/measured_value",
+          "description": "Full-scale measurement range with unit."
+        },
+        "resolution": {
+          "$ref": "#/$defs/measured_value",
+          "description": "Measurement resolution — smallest detectable change."
+        },
+        "noise": {
+          "$ref": "#/$defs/noise",
+          "description": "Noise model for the sensor output."
+        },
+        "data-output": {
+          "$ref": "#/$defs/data_output",
+          "description": "Output bandwidth and frame size for network planning. Only needed for sensors that transmit significant data over the network (cameras, lidars, radars)."
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry",
+          "description": "Visualization geometry for the sensor."
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of rows in the taxel array. Defines the spatial layout along one axis of the sensing surface. Example: 4 rows x 4 cols = 16 taxels in a fingertip pad."
+        },
+        "cols": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of columns in the taxel array. Together with rows, defines the rectangular grid of sensing elements."
+        },
+        "taxels": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of individual tactile sensing elements (taxels). For regular grids, taxels = rows x cols. For irregular layouts (e.g., curved fingertip, hexagonal packing), specify taxels directly when rows/cols do not apply. Example: 160 taxels on a SynTouch BioTac, 32 on a XELA uSkin patch."
+        },
+        "spatial-resolution": {
+          "$ref": "#/$defs/measured_value",
+          "description": "Center-to-center spacing between adjacent taxels. Unit: \"mm\". Determines the minimum feature size the sensor can resolve through touch. Example: 2.5 mm for a fingertip array, 10 mm for a body-skin patch. Smaller spacing = finer spatial detail but more wiring and processing."
+        },
+        "pressure-range": {
+          "$ref": "#/$defs/range_value",
+          "description": "Measurable contact pressure range per taxel. Unit: \"kPa\" or \"N\". min = minimum detectable pressure (sensitivity threshold), max = saturation pressure. Example: min=\"0.1\" max=\"100\" unit=\"kPa\" for a capacitive fingertip. Light touch is ~1 kPa, firm grip is 10-50 kPa, maximum grip can exceed 100 kPa."
+        },
+        "sensing-area": {
+          "$ref": "#/$defs/measured_value",
+          "description": "Total active sensing area of the tactile surface. Unit: \"mm2\" or \"cm2\". Example: 314 mm2 for a circular fingertip pad (20mm diameter), 2500 mm2 for a 50x50 palm patch."
+        },
+        "type": {
+          "$ref": "#/$defs/TactileSensorType",
+          "description": "Tactile sensor technology type (capacitive, resistive, piezoelectric, barometric, optical). Required. Determines the sensing principle and typical characteristics: capacitive and barometric are best for static pressure, piezoelectric for dynamic events (slip, texture), optical for rich 3D contact geometry."
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "Tactile sensor for distributed contact/pressure measurement across a surface. Unlike force sensors (single-point measurement), tactile sensors provide spatially distributed pressure data across an array of sensing elements (taxels). Used on robot fingertips, palms, grippers, and body skin for grasp planning, slip detection, object recognition by touch, and safe physical interaction. Extends sensor_base with tactile-specific parameters: array dimensions, taxel count, spatial resolution, and pressure range."
     },
     "tank_source": {
       "type": "object",
