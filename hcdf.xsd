@@ -1422,8 +1422,68 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:complexType name="solar_source">
+    <xs:annotation><xs:documentation>Solar panel energy source — converts sunlight to electricity via photovoltaic cells. Used on agricultural robots, exploration rovers, long-endurance UAS, outdoor monitoring platforms, and space systems. Solar provides continuous power during daylight but output varies with irradiance, temperature, panel orientation, and shading. An agent combines solar peak-power with battery capacity to estimate sustained runtime: during daylight the panel charges the battery and powers the system, at night the battery alone provides power.</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="cell-type" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Photovoltaic cell technology: "monocrystalline" (highest efficiency 20-24%, rigid panels), "polycrystalline" (lower cost, 15-20% efficiency), "thin-film" (flexible, lightweight, 10-15% efficiency, can conform to curved surfaces), "gaas" (gallium arsenide, 28-30% efficiency, used in space — expensive), "perovskite" (emerging, potentially low cost). Determines efficiency, weight, flexibility, and cost tradeoffs.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="peak-power" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Peak power output under Standard Test Conditions (STC: 1000 W/m2 irradiance, 25 degC cell temperature, AM1.5 spectrum). Unit: "W" or "Wp" (watts-peak). Real-world output is typically 60-80% of peak due to non-ideal conditions. Example: 100 Wp panel produces ~60-80W in typical outdoor conditions.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="area" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total panel area. Unit: "m2" or "cm2". Used with efficiency to cross-check peak-power: peak_power = area x 1000W/m2 x efficiency. Also used for physical packaging constraints on the robot body.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="efficiency" type="xs:double" minOccurs="0">
+        <xs:annotation><xs:documentation>Solar cell conversion efficiency as a fraction (0-1). The ratio of electrical power output to incident solar power. Monocrystalline: 0.20-0.24. Polycrystalline: 0.15-0.20. Thin-film: 0.10-0.15. GaAs: 0.28-0.30.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="voltage-mpp" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Voltage at Maximum Power Point (Vmpp) under STC. Unit: "V". The MPPT charge controller operates the panel at this voltage to extract maximum power. Example: 18V for a nominal 12V panel, 36V for a nominal 24V panel.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="current-mpp" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Current at Maximum Power Point (Impp) under STC. Unit: "A". peak-power = voltage-mpp x current-mpp.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="open-circuit-voltage" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Open-circuit voltage (Voc) under STC. Unit: "V". The maximum voltage the panel produces with no load. Always higher than voltage-mpp. Used for charge controller input voltage rating.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="mppt" type="xs:boolean" minOccurs="0">
+        <xs:annotation><xs:documentation>Whether the associated charge controller uses Maximum Power Point Tracking. true = MPPT controller (extracts 15-30% more energy than PWM in varying conditions). false = PWM or direct connection. An agent factors this into energy harvest estimates.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="supercapacitor_source">
+    <xs:annotation><xs:documentation>Supercapacitor (ultracapacitor) energy source — stores energy electrostatically rather than chemically. Compared to batteries: much higher power density (fast charge/discharge in seconds), much lower energy density (stores less total energy), and near-unlimited cycle life (millions of cycles vs hundreds for batteries). Used for peak power buffering (absorbs regenerative braking energy, provides burst current for motor acceleration), bridge power during battery hot-swap, and smoothing pulsed loads. An agent combines supercapacitor burst capability with battery sustained power for complete power budget analysis.</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="capacitance" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total capacitance. Unit: "F" (farads). Supercapacitors typically range from 1F to 3000F per cell. Series/parallel configurations adjust the effective capacitance and voltage. Energy stored = 0.5 x C x V^2.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-voltage" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum rated voltage. Unit: "V". Individual cells are typically 2.5-2.7V; series stacks reach 12V, 24V, 48V or higher. Exceeding max voltage causes gas generation and permanent damage.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="esr" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Equivalent Series Resistance. Unit: "mohm" (milliohms). Determines power loss during charge/discharge and maximum current capability: I_max approx V / ESR. Lower ESR = higher power capability. Typical: 0.3-50 mohm depending on size.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-current" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum continuous discharge current. Unit: "A". Supercapacitors can deliver very high currents (hundreds of amps) for short durations. Limited by ESR heating.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="peak-current" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Peak (burst) current for short pulses. Unit: "A". Can be significantly higher than max-current for pulses under 1 second.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="energy" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total stored energy at max voltage. Unit: "Wh" or "J". Computed from 0.5 x C x V^2 but useful to state explicitly. Much less than batteries of similar volume: a 3000F/2.7V cell stores ~3 Wh vs ~50 Wh for a similar-sized Li-ion cell.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cells-series" type="xs:unsignedInt" minOccurs="0">
+        <xs:annotation><xs:documentation>Number of cells in series. Determines pack voltage: max-voltage = cells x cell-voltage. Requires balancing circuitry.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cycle-life" type="xs:unsignedInt" minOccurs="0">
+        <xs:annotation><xs:documentation>Rated cycle life — number of charge/discharge cycles to 80% capacitance retention. Supercapacitors typically last 500,000 to 1,000,000+ cycles, far exceeding batteries.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
   <xs:complexType name="power_source">
-    <xs:annotation><xs:documentation>Energy source on a component. Contains one or more source types (battery, tank, fuel-cell). An agent computes runtime, power budget, and weight impact from this data. The component's POWER port defines the electrical output; the power-source defines the stored energy.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Energy source on a component. Contains one or more source types (battery, tank, fuel-cell, solar, supercapacitor). An agent computes runtime, power budget, and weight impact from this data. The component's POWER port defines the electrical output; the power-source defines the stored or generated energy.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="battery" type="battery_source" minOccurs="0">
         <xs:annotation><xs:documentation>Rechargeable battery energy source.</xs:documentation></xs:annotation>
@@ -1433,6 +1493,12 @@
       </xs:element>
       <xs:element name="fuel-cell" type="fuel_cell" minOccurs="0">
         <xs:annotation><xs:documentation>Fuel cell energy converter (PEM, DMFC, SOFC). Generates electricity from fuel continuously.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="solar" type="solar_source" minOccurs="0">
+        <xs:annotation><xs:documentation>Solar panel energy source. Generates electricity from sunlight via photovoltaic cells.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="supercapacitor" type="supercapacitor_source" minOccurs="0">
+        <xs:annotation><xs:documentation>Supercapacitor for peak power buffering, regenerative braking energy capture, and pulsed load smoothing.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">

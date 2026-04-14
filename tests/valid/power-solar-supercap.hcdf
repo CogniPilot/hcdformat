@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!-- Valid: solar panel and supercapacitor power sources -->
+<hcdf version="1.0" name="solar-supercap-test">
+  <!-- Agricultural robot with solar + battery + supercapacitor -->
+  <comp name="chassis" role="parent">
+    <!-- Primary: LiFePO4 battery pack -->
+    <power-source name="main-battery" role="primary">
+      <battery>
+        <chemistry>LiFePO4</chemistry>
+        <cells-series>8</cells-series>
+        <cells-parallel>2</cells-parallel>
+        <nominal-voltage unit="V">25.6</nominal-voltage>
+        <capacity unit="Ah">24</capacity>
+        <energy unit="Wh">614</energy>
+      </battery>
+    </power-source>
+    <!-- Solar panel on top surface for continuous charging -->
+    <power-source name="roof-solar" role="primary">
+      <solar>
+        <cell-type>monocrystalline</cell-type>
+        <peak-power unit="Wp">200</peak-power>
+        <area unit="m2">0.9</area>
+        <efficiency>0.22</efficiency>
+        <voltage-mpp unit="V">36</voltage-mpp>
+        <current-mpp unit="A">5.56</current-mpp>
+        <open-circuit-voltage unit="V">42</open-circuit-voltage>
+        <mppt>true</mppt>
+      </solar>
+    </power-source>
+    <!-- Supercapacitor bank for regenerative braking and motor bursts -->
+    <power-source name="burst-cap" role="primary" group="motor-power">
+      <supercapacitor>
+        <capacitance unit="F">500</capacitance>
+        <max-voltage unit="V">48</max-voltage>
+        <esr unit="mohm">3.2</esr>
+        <max-current unit="A">150</max-current>
+        <peak-current unit="A">400</peak-current>
+        <energy unit="Wh">160</energy>
+        <cells-series>18</cells-series>
+        <cycle-life>1000000</cycle-life>
+      </supercapacitor>
+    </power-source>
+  </comp>
+</hcdf>
