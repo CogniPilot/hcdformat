@@ -64,13 +64,14 @@
   </xs:simpleType>
 
   <xs:simpleType name="MotorType">
-    <xs:annotation><xs:documentation>Motor or actuator technology type. bldc: brushless DC motor. brushed: brushed DC motor. stepper: stepper motor. servo: hobby/industrial servo. linear: linear actuator. hydraulic: hydraulic actuator. pneumatic: pneumatic actuator. thrust: thrust motor (propeller, jet, rocket). ice: internal combustion engine (gasoline, diesel — for generators or direct mechanical drive).</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Motor or actuator technology type. bldc: brushless DC motor. brushed: brushed DC motor. stepper: stepper motor. servo: hobby/industrial servo. linear: linear actuator (proportional control over stroke length). solenoid: electromagnetic on/off linear actuator (binary pull/push action with no proportional position control — used for valves, latches, locks, pin releases, landing gear, and gripper release mechanisms). hydraulic: hydraulic actuator. pneumatic: pneumatic actuator. thrust: thrust motor (propeller, jet, rocket). ice: internal combustion engine (gasoline, diesel — for generators or direct mechanical drive).</xs:documentation></xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="bldc"/>
       <xs:enumeration value="brushed"/>
       <xs:enumeration value="stepper"/>
       <xs:enumeration value="servo"/>
       <xs:enumeration value="linear"/>
+      <xs:enumeration value="solenoid"/>
       <xs:enumeration value="hydraulic"/>
       <xs:enumeration value="pneumatic"/>
       <xs:enumeration value="thrust"/>

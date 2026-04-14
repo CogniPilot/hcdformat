@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- Valid: solenoid motor type for binary on/off actuation -->
+<hcdf version="1.0" name="solenoid-test">
+  <comp name="gripper" role="actuator">
+    <!-- Solenoid-actuated gripper release pin -->
+    <motor name="release_pin" type="solenoid">
+      <voltage nominal="12"/>
+      <current continuous="0.8" peak="2.5"/>
+      <stroke unit="mm">10</stroke>
+    </motor>
+    <!-- Solenoid valve for pneumatic gripper -->
+    <motor name="air_valve" type="solenoid">
+      <voltage nominal="24"/>
+      <current continuous="0.3"/>
+    </motor>
+  </comp>
+</hcdf>
