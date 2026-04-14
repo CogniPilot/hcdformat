@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- Valid: components with IP rating and operating temperature range -->
+<hcdf version="1.0" name="ip-rating-temp-test">
+  <!-- Automotive-grade SoC: IP67, wide temp range -->
+  <comp name="auto-soc" role="compute" ip-rating="IP67">
+    <board>nxp-s32n79-evb</board>
+    <operating-temp min="-40" max="105" unit="degC"/>
+  </comp>
+  <!-- Commercial-grade compute: no IP rating, standard temp -->
+  <comp name="compute" role="compute">
+    <operating-temp min="0" max="70" unit="degC"/>
+  </comp>
+  <!-- Mil-spec sealed actuator -->
+  <comp name="actuator" role="actuator" ip-rating="IP69K">
+    <operating-temp min="-55" max="125" unit="degC"/>
+  </comp>
+  <!-- Underwater housing with NEMA rating -->
+  <comp name="pressure-housing" role="parent" ip-rating="NEMA-6P"/>
+</hcdf>

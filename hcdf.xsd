@@ -3171,6 +3171,9 @@
       <xs:element name="board" type="xs:string" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Board or hardware platform identifier (e.g., "jetson-agx-orin-64gb", "nxp-s32n79-evb", "custom-motor-driver-v3"). Used for BOM generation and hardware matching.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="operating-temp" type="range_value" minOccurs="0" maxOccurs="1">
+        <xs:annotation><xs:documentation>Operating temperature range of this component. Use min and max attributes for the rated limits. Unit: "degC" (default). Example: min="-40" max="85" for automotive grade, min="0" max="70" for commercial grade, min="-40" max="125" for mil-spec. An agent uses this to validate that all components in a system can operate in the target environment. If the robot operates outdoors in winter (-20 degC), every component's operating-temp range must include that temperature. Components without operating-temp are assumed to have no specific constraint (or the constraint is unknown).</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="inertial" type="inertial_properties" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Inertial properties (mass, center of mass, inertia tensor) for dynamics simulation.</xs:documentation></xs:annotation>
       </xs:element>
@@ -3228,6 +3231,9 @@
     </xs:attribute>
     <xs:attribute name="struct-type" type="xs:string">
       <xs:annotation><xs:documentation>Structural classification of this component: fuselage, wing, boom, mast, hull, chassis, frame, arm, leg, tail, nacelle, pod. Optional — provides semantic context for the component's role in the robot's body architecture. Used by agents for high-level reasoning about robot morphology.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ip-rating" type="xs:string">
+      <xs:annotation><xs:documentation>Ingress Protection rating per IEC 60529 (e.g., "IP67", "IP68", "IP54") or NEMA enclosure type (e.g., "NEMA-4X", "NEMA-6P"). The two-digit IP code indicates protection against solids (first digit, 0-6) and liquids (second digit, 0-9K): IP54 = dust-protected + splash-proof. IP65 = dust-tight + water jets. IP67 = dust-tight + temporary immersion (1m, 30min). IP68 = dust-tight + continuous immersion (depth/duration defined by manufacturer). IP69K = dust-tight + high-pressure steam cleaning. An agent uses this to validate that all components meet the environmental requirements for the target deployment (outdoor, underwater, washdown). Components without ip-rating are assumed to have no specific protection (or the rating is unknown). Optional; free-form string to support both IP and NEMA systems.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 

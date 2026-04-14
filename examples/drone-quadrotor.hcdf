@@ -36,9 +36,10 @@
   </comp>
 
   <!-- Flight controller + compute: NXP NavQ95 (i.MX95) -->
-  <comp name="navq95" role="compute">
+  <comp name="navq95" role="compute" ip-rating="IP54">
     <description>NXP NavQ95 companion computer (i.MX 95 SoC) — flight controller and autonomy compute</description>
     <board>navq95</board>
+    <operating-temp min="-40" max="85" unit="degC"/>
     <inertial>
       <mass>0.045</mass>
       <com>0 0 0</com>

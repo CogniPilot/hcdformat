@@ -60,9 +60,10 @@
   </comp>
 
   <!-- S32N79: central motion control + CNC agent + integrated TSN switch + E810 PCIe -->
-  <comp name="s32n79" role="compute">
+  <comp name="s32n79" role="compute" ip-rating="IP54">
     <description>NXP S32N79 — central motion control, CNC agent, integrated TSN switch. Intel E810 on PCIe for 25G uplink to AGX Thor.</description>
     <board>nxp-s32n79-evb</board>
+    <operating-temp min="-40" max="105" unit="degC"/>
     <inertial>
       <mass>0.8</mass>
       <com>0 0 0</com>
@@ -201,9 +202,10 @@
   </comp>
 
   <!-- S32J100: base zone controller — bridges Ethernet to CAN-FD + peripherals -->
-  <comp name="s32j100" role="compute">
+  <comp name="s32j100" role="compute" ip-rating="IP54">
     <description>NXP S32J100 — base zone controller. Bridges Ethernet to CAN-FD (wheels, BMS) and base peripherals (lidars, radar, head). Decapsulates 1722+CAN from S32N79.</description>
     <board>nxp-s32j100-rdb</board>
+    <operating-temp min="-40" max="125" unit="degC"/>
     <inertial>
       <mass>0.3</mass>
       <com>0 0 0</com>
