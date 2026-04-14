@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!-- Valid: gripper surface types on a manipulation platform -->
+<hcdf version="1.0" name="gripper-surface-test">
+  <!-- Two-finger parallel gripper with compliant pads -->
+  <comp name="finger-left" role="actuator">
+    <surface name="finger_pad">
+      <gripper type="mechanical">
+        <grip-force unit="N">40</grip-force>
+        <contact-area unit="mm2">400</contact-area>
+        <payload unit="kg">5</payload>
+        <shore-hardness>A30</shore-hardness>
+        <friction static="0.9" dynamic="0.7"/>
+      </gripper>
+    </surface>
+  </comp>
+
+  <!-- Vacuum pick-and-place end-effector -->
+  <comp name="vacuum-gripper" role="actuator">
+    <surface name="suction_array">
+      <gripper type="suction">
+        <grip-force unit="N">150</grip-force>
+        <contact-area unit="cm2">50</contact-area>
+        <payload unit="kg">15</payload>
+        <shore-hardness>A50</shore-hardness>
+        <vacuum-level unit="kPa">-65</vacuum-level>
+      </gripper>
+    </surface>
+  </comp>
+
+  <!-- Electromagnetic gripper for steel parts -->
+  <comp name="mag-gripper" role="actuator">
+    <surface name="magnet_face">
+      <gripper type="magnetic">
+        <magnetic-force unit="N">500</magnetic-force>
+        <contact-area unit="cm2">100</contact-area>
+        <payload unit="kg">25</payload>
+      </gripper>
+    </surface>
+  </comp>
+
+  <!-- Gecko-inspired adhesive pad -->
+  <comp name="climbing-foot" role="actuator">
+    <surface name="gecko_pad">
+      <gripper type="adhesive">
+        <grip-force unit="N">10</grip-force>
+        <contact-area unit="cm2">25</contact-area>
+        <payload unit="kg">2</payload>
+      </gripper>
+    </surface>
+  </comp>
+</hcdf>

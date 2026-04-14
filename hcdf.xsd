@@ -1278,9 +1278,39 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:complexType name="gripper_surface">
+    <xs:annotation><xs:documentation>Gripper or end-effector contact surface that interacts with grasped objects. Describes the physical interface between the robot's gripper and the objects it manipulates. Different gripper types use fundamentally different physics: mechanical fingers squeeze via friction, suction cups use vacuum, magnetic grippers use electromagnetic force, and adhesive surfaces use van der Waals or chemical bonding. An agent uses this to determine grasp feasibility: can this gripper pick up a given object based on weight, material, surface finish, and geometry?</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="grip-force" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum grip or holding force. Unit: "N". For mechanical fingers: the squeeze force at the fingertip. For suction: the pull-off force (vacuum area x pressure differential). For magnetic: the breakaway force at contact. An agent compares this against object weight x safety factor to determine if a grasp is secure.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="contact-area" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Active contact area of the gripper surface. Unit: "mm2" or "cm2". For suction cups: the sealing area. For finger pads: the pad face area. For magnetic grippers: the pole face area. Larger contact area generally means more stable grasps and better force distribution.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="payload" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum payload the gripper can reliably hold. Unit: "kg" or "N". This is the practical limit accounting for orientation, acceleration, and safety margin — typically less than grip-force / (gravity x safety_factor). Example: 5 kg for a two-finger gripper, 20 kg for a large vacuum gripper array.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="shore-hardness" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Shore durometer hardness of the contact surface material (for compliant finger pads and suction cups). Format: scale + value, e.g., "A30" (soft silicone finger pad), "A50" (medium rubber), "A70" (firm polyurethane). Shore A scale: 0=very soft gel, 30=soft rubber, 50=pencil eraser, 70=tire tread, 90=hard plastic. Softer pads conform to irregular surfaces for better grip; harder pads are more durable. Only applicable for mechanical and suction types.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="vacuum-level" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Vacuum pressure for suction grippers. Unit: "kPa" (negative gauge pressure). Example: -60 kPa for a standard Venturi generator, -85 kPa for a vacuum pump. Pull-off force = vacuum_level x sealing_area. Only applicable for type="suction".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="magnetic-force" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Magnetic holding force at contact. Unit: "N". For permanent magnets: the breakaway force with a flat mild steel surface. For electromagnets: the force at rated current. Only applicable for type="magnetic".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="friction" type="friction" minOccurs="0">
+        <xs:annotation><xs:documentation>Friction coefficients between the gripper surface and a reference material (typically smooth steel or ABS plastic). Used for grasp stability analysis: tangential holding force = normal_force x friction_coefficient.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="type" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Gripper contact mechanism: "mechanical" (friction-based finger pads — the gripper squeezes the object, holding force comes from normal force x friction), "suction" (vacuum cup — single or array of cups creating negative pressure seal, works on smooth non-porous surfaces), "magnetic" (permanent or electromagnetic — works only on ferromagnetic materials), "adhesive" (gecko-inspired dry adhesive or chemical adhesive — uses van der Waals or chemical bonding, works on smooth surfaces regardless of material), "jamming" (granular jamming gripper — conforms to object shape then stiffens via vacuum, handles irregular geometries). Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- Surface container: one or more dynamic surfaces on a component -->
   <xs:complexType name="surface_element">
-    <xs:annotation><xs:documentation>Dynamic surface that interacts with the environment (air, water, or ground). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), and ground contact surfaces (wheels, tracks). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Dynamic surface that interacts with the environment (air, water, ground, or grasped objects). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), ground contact surfaces (wheels, tracks), and gripper contact surfaces (mechanical pads, suction cups, magnetic, adhesive). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="prop" type="prop_surface" minOccurs="0">
         <xs:annotation><xs:documentation>Propeller surface — thrust from rotation.</xs:documentation></xs:annotation>
@@ -1299,6 +1329,9 @@
       </xs:element>
       <xs:element name="track" type="track_surface" minOccurs="0">
         <xs:annotation><xs:documentation>Tracked vehicle surface (tank treads).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="gripper" type="gripper_surface" minOccurs="0">
+        <xs:annotation><xs:documentation>Gripper or end-effector contact surface — mechanical finger pads, suction cups, magnetic grippers, adhesive surfaces, granular jamming.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
