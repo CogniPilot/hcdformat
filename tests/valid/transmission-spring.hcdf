@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<!-- Valid: compliant actuator spring configurations in transmissions -->
+<hcdf version="1.0" name="transmission-spring-test">
+  <comp name="arm" role="actuator">
+    <sensor name="motor_enc">
+      <encoder type="absolute" principle="magnetic" interface="spi"/>
+    </sensor>
+    <sensor name="output_enc">
+      <encoder type="absolute" principle="magnetic" interface="spi"/>
+    </sensor>
+    <motor name="main_bldc" type="bldc" encoder="motor_enc">
+      <voltage nominal="48"/>
+      <torque-constant unit="Nm/A">0.033</torque-constant>
+    </motor>
+    <motor name="eq_motor" type="brushed">
+      <voltage nominal="12"/>
+    </motor>
+  </comp>
+  <comp name="link_a"/>
+  <comp name="link_b"/>
+  <comp name="link_c"/>
+  <comp name="link_d"/>
+  <comp name="link_e"/>
+
+  <!-- All joints -->
+  <joint name="shoulder" type="revolute">
+    <parent comp="link_a"/>
+    <child comp="link_b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="30" velocity="2"/>
+  </joint>
+  <joint name="elbow" type="revolute">
+    <parent comp="link_b"/>
+    <child comp="link_c"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.5" effort="20" velocity="1.5"/>
+  </joint>
+  <joint name="knee" type="revolute">
+    <parent comp="link_c"/>
+    <child comp="link_d"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.0" upper="0" effort="40" velocity="3"/>
+  </joint>
+  <joint name="hip" type="revolute">
+    <parent comp="link_d"/>
+    <child comp="link_e"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="60" velocity="2"/>
+  </joint>
+  <joint name="ankle" type="revolute">
+    <parent comp="link_a"/>
+    <child comp="link_e"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.5" upper="0.5" effort="50" velocity="2"/>
+  </joint>
+
+  <!-- SEA: Series Elastic Actuator (e.g., HEBI X8-9) -->
+  <transmission name="shoulder_sea" type="harmonic" encoder="output_enc">
+    <motor ref="arm.main_bldc"/>
+    <joint ref="shoulder"/>
+    <reduction>272</reduction>
+    <efficiency>0.60</efficiency>
+    <backlash unit="rad">0.0002</backlash>
+    <spring placement="series" type="torsion-bar" torque-sensing="spring-deflection">
+      <stiffness unit="Nm/rad">4.5</stiffness>
+      <max-deflection unit="rad">0.15</max-deflection>
+    </spring>
+  </transmission>
+
+  <!-- PEA: Parallel Elastic Actuator (gravity compensation) -->
+  <transmission name="elbow_pea" type="cycloidal">
+    <motor ref="arm.main_bldc"/>
+    <joint ref="elbow"/>
+    <reduction>80</reduction>
+    <efficiency>0.85</efficiency>
+    <spring placement="parallel" type="coil">
+      <stiffness unit="Nm/rad">15.0</stiffness>
+      <equilibrium unit="rad">1.2</equilibrium>
+    </spring>
+  </transmission>
+
+  <!-- CPEA: Clutchable Parallel Elastic Actuator -->
+  <transmission name="knee_cpea" type="planetary">
+    <motor ref="arm.main_bldc"/>
+    <joint ref="knee"/>
+    <reduction>100</reduction>
+    <efficiency>0.90</efficiency>
+    <spring placement="parallel" clutch="electromagnetic">
+      <stiffness unit="Nm/rad">25.0</stiffness>
+      <equilibrium unit="rad">-0.35</equilibrium>
+      <clutch-power unit="W">2.5</clutch-power>
+      <engage-time unit="ms">5</engage-time>
+    </spring>
+  </transmission>
+
+  <!-- AE-PEA: Adjustable Equilibrium Parallel Elastic Actuator -->
+  <transmission name="hip_aepea" type="harmonic">
+    <motor ref="arm.main_bldc"/>
+    <joint ref="hip"/>
+    <reduction>120</reduction>
+    <efficiency>0.70</efficiency>
+    <spring placement="parallel" equilibrium-actuator="arm.eq_motor">
+      <stiffness unit="Nm/rad">30.0</stiffness>
+      <equilibrium-range min="-1.57" max="0.0" unit="rad"/>
+    </spring>
+  </transmission>
+
+  <!-- SEA + PEA combined (series for force sensing, parallel for gravity comp) -->
+  <transmission name="ankle_combo" type="cycloidal">
+    <motor ref="arm.main_bldc"/>
+    <joint ref="ankle"/>
+    <reduction>50</reduction>
+    <efficiency>0.88</efficiency>
+    <spring placement="series" type="torsion-bar" torque-sensing="spring-deflection">
+      <stiffness unit="Nm/rad">200</stiffness>
+      <max-deflection unit="rad">0.05</max-deflection>
+    </spring>
+    <spring placement="parallel" clutch="mechanical-latch">
+      <stiffness unit="Nm/rad">30</stiffness>
+      <equilibrium unit="rad">0.0</equilibrium>
+      <clutch-power unit="W">0.5</clutch-power>
+      <engage-time unit="ms">25</engage-time>
+    </spring>
+  </transmission>
+</hcdf>

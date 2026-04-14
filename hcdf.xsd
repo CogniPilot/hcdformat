@@ -2341,9 +2341,54 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="transmission">
-    <xs:annotation><xs:documentation>Mechanical power transmission connecting a motor to a joint. Defines the gear reduction ratio, efficiency, and backlash for the mechanical coupling between motor output and joint input.</xs:documentation></xs:annotation>
+  <xs:complexType name="transmission_spring">
+    <xs:annotation><xs:documentation>Compliant element (spring) in a transmission drivetrain. The presence of a spring element is what distinguishes compliant actuators from rigid ones. A spring in series between the gearbox and the joint output creates a Series Elastic Actuator (SEA) — enabling torque sensing via deflection measurement, impact absorption, backdrivability through high-ratio gearboxes, and inherent safety for human interaction. A spring in parallel with the motor creates a Parallel Elastic Actuator (PEA) — providing passive gravity compensation to reduce motor effort. Multiple spring elements are allowed: an SEA+PEA combination uses one series spring for force sensing and one parallel spring for gravity compensation. Advanced variants add a clutch (CPEA — clutchable PEA, engages/disengages the parallel spring on demand), an equilibrium motor (AE-PEA — adjustable equilibrium PEA, shifts the spring rest position at runtime), or a stiffness motor (VSA — variable stiffness actuator, changes spring stiffness at runtime via a second motor).</xs:documentation></xs:annotation>
     <xs:all>
+      <xs:element name="stiffness" type="range_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Spring stiffness (rate). Unit: "Nm/rad" for rotary, "N/m" for linear. For fixed-stiffness springs (SEA, PEA, CPEA, AE-PEA): specify the text content as the single stiffness value. For variable-stiffness actuators (VSA): use min and max attributes for the adjustable range. Example: 4.5 Nm/rad for HEBI X8-9 SEA, or min="5" max="500" unit="Nm/rad" for a VSA. This is the defining parameter of a compliant actuator — it determines force control bandwidth, impact energy absorption, and torque measurement resolution (torque = stiffness x deflection).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-deflection" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum spring deflection before mechanical hard stop. Unit: "rad" for rotary, "m" for linear. Defines the torque saturation limit: max_torque = stiffness x max_deflection. Beyond this deflection the actuator behaves rigidly. Example: 0.15 rad for a typical SEA torsion spring. Also determines maximum stored elastic energy: E = 0.5 x stiffness x max_deflection^2.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="damping" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Viscous damping in the spring element. Unit: "Nm.s/rad" for rotary, "N.s/m" for linear. Most springs have minimal inherent damping; this captures any intentional damping added to the compliant element. Affects oscillation settling time and force control stability.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="equilibrium" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Fixed spring rest position (equilibrium point) for PEA configurations. Unit: "rad" for rotary, "m" for linear. The joint angle at which the parallel spring exerts zero force. Typically tuned to the most common operating posture for optimal gravity compensation. For AE-PEA (adjustable equilibrium), use equilibrium-range instead.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="equilibrium-range" type="range_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Adjustable equilibrium range for AE-PEA configurations. Unit: "rad" for rotary, "m" for linear. min and max define the range over which the equilibrium motor can shift the spring rest position. The equilibrium-actuator attribute identifies the motor that performs this adjustment. Example: min="-1.57" max="0.0" for a knee joint that needs gravity compensation anywhere from full flexion to standing.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="clutch-power" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Electrical power required to operate the clutch mechanism for CPEA configurations. Unit: "W". For electromagnetic clutches: power to hold engaged (typically 1-5W). For mechanical latches: power for the actuation pulse only (zero holding power). Only applicable when the clutch attribute is set.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="engage-time" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Clutch engagement/disengagement latency for CPEA configurations. Unit: "ms". Time from command to full engagement. Electromagnetic clutches: 2-10 ms. Mechanical latches: 10-50 ms. Affects how quickly the system can switch between compliant and rigid behavior (e.g., switching between stance and swing phase in walking).</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="placement" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Where the spring sits in the drivetrain relative to the gearbox and motor. "series": between gearbox output and joint output (SEA) — the spring deflects under load, enabling force sensing via dual-encoder deflection measurement and providing inherent compliance. "parallel": alongside the motor, between a fixed anchor and the joint output (PEA) — the spring provides a passive torque that assists or opposes the motor, typically tuned for gravity compensation. Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="xs:string">
+      <xs:annotation><xs:documentation>Physical spring construction: "torsion-bar" (solid or tubular bar that twists — compact, common in SEAs), "leaf" (flat spring that bends — easy to manufacture), "coil" (helical compression/extension spring — common in linear actuators), "cable-linear" (cable-driven with linear spring in tension), "gas" (gas spring — provides near-constant force over stroke), "custom" (application-specific design). Optional.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="torque-sensing" type="xs:string">
+      <xs:annotation><xs:documentation>How joint torque is measured using this spring. "spring-deflection": torque derived from the angular difference between motor-side and output-side encoders multiplied by spring stiffness (torque = k x delta_theta) — the standard SEA approach, requires two encoders. "strain-gauge": dedicated strain gauge or load cell on the spring element (e.g., Franka Panda joint torque sensors). "current": torque estimated from motor current (torque = Kt x I) — less accurate, no spring needed but listed here for completeness. "none": no torque sensing. Optional; only applicable for series springs.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="clutch" type="xs:string">
+      <xs:annotation><xs:documentation>Clutch mechanism for engaging/disengaging a parallel spring (CPEA). "electromagnetic": fast switching (2-10 ms), requires continuous power to hold engaged. "mechanical-latch": zero holding power, slower switching (10-50 ms), uses a bistable mechanism. "one-way": ratchet or sprag clutch that locks in one direction and freewheels in the other. "none" or omit: no clutch, spring is permanently engaged. Only applicable for parallel springs.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="equilibrium-actuator" type="xs:string">
+      <xs:annotation><xs:documentation>Reference to a motor (dotted path "comp.motor") that adjusts the spring equilibrium position for AE-PEA configurations. This second motor is typically small and slow — it only moves when the operating posture changes, shifting where the parallel spring exerts zero force for optimal gravity compensation at any joint angle. Only applicable for parallel springs with equilibrium-range.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="stiffness-actuator" type="xs:string">
+      <xs:annotation><xs:documentation>Reference to a motor (dotted path "comp.motor") that adjusts spring stiffness at runtime for Variable Stiffness Actuator (VSA) configurations. The second motor changes the effective lever arm or preload on the spring, varying stiffness between the min and max values specified in the stiffness element. Only applicable for series springs with variable stiffness range.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="transmission">
+    <xs:annotation><xs:documentation>Mechanical power transmission connecting a motor to a joint. Defines the gear reduction ratio, efficiency, backlash, and optional compliant elements (springs) for the mechanical coupling between motor output and joint input. A transmission without spring elements is a rigid actuator. Adding a series spring creates a Series Elastic Actuator (SEA). Adding a parallel spring creates a Parallel Elastic Actuator (PEA). Both can be combined. Advanced variants (CPEA, AE-PEA, VSA) are expressed through spring attributes (clutch, equilibrium-actuator, stiffness-actuator).</xs:documentation></xs:annotation>
+    <xs:sequence>
       <xs:element name="motor" type="transmission_endpoint" minOccurs="0">
         <xs:annotation><xs:documentation>Reference to the motor that drives this transmission. Uses dotted path "comp_name.motor_name".</xs:documentation></xs:annotation>
       </xs:element>
@@ -2359,7 +2404,10 @@
       <xs:element name="backlash" type="measured_value" minOccurs="0">
         <xs:annotation><xs:documentation>Mechanical backlash (dead zone) at the joint output. Unit: typically "rad" for rotary or "m" for linear transmissions.</xs:documentation></xs:annotation>
       </xs:element>
-    </xs:all>
+      <xs:element name="spring" type="transmission_spring" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Compliant spring element(s) in the drivetrain. Zero springs = rigid actuator. One series spring = SEA. One parallel spring = PEA. One of each = SEA+PEA combination. Springs with clutch/equilibrium-actuator/stiffness-actuator attributes express CPEA, AE-PEA, and VSA architectures respectively.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this transmission (e.g., "shoulder_trans", "wheel_fl_belt"). Required.</xs:documentation></xs:annotation>
     </xs:attribute>
