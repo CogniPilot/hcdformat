@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Invalid: name attribute is required on hcdf root element -->
+<hcdf version="1.0">
+  <comp name="x"/>
+</hcdf>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<hcdf version="1.0">
+<hcdf version="1.0" name="duplicate-root-children">
   <joint name="j1" type="fixed">
     <parent comp="a"/>
     <child comp="b"/>

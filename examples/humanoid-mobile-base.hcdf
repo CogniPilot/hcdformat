@@ -7,7 +7,11 @@
 
   5 separate networks: backbone, left-arm, right-arm, base, power
 -->
-<hcdf version="1.0">
+<hcdf version="1.0" name="cogni-humanoid-mobile-base" body-frame="FLU" world-frame="ENU">
+  <description>CogniPilot humanoid mobile base: S32N79 + E810 spine, AGX Thor compute, dual 802.3dm 7-DOF arms, S32J100 base zone, i.MX95 head, TSN backbone with MACsec</description>
+  <author>CogniPilot Foundation</author>
+  <license>Apache-2.0</license>
+  <url>https://github.com/CogniPilot/hcdformat</url>
 
   <!-- ================================================================ -->
   <!-- COMPONENTS                                                       -->

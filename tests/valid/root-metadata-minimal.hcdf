@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Valid: root element with only required name attribute, no optional metadata -->
+<hcdf version="1.0" name="minimal-metadata-test">
+  <comp name="x"/>
+</hcdf>

@@ -37,6 +37,13 @@
         "-Z"
       ]
     },
+    "BodyFrame": {
+      "type": "string",
+      "enum": [
+        "FLU",
+        "FRD"
+      ]
+    },
     "BusParticipantRole": {
       "type": "string",
       "enum": [
@@ -380,6 +387,13 @@
         "raw"
       ]
     },
+    "WorldFrame": {
+      "type": "string",
+      "enum": [
+        "ENU",
+        "NED"
+      ]
+    },
     "aerofoil_surface": {
       "type": "object",
       "properties": {
@@ -471,9 +485,9 @@
           "type": "array",
           "items": {
             "type": "string",
-            "description": "Higher-layer wireless protocol (e.g., \"DroneCAN\", \"MAVLink\", \"ROS2-DDS\"). Multiple protocol elements for multi-protocol capability."
+            "description": "Higher-layer wireless protocol (e.g., \"DroneCAN\", \"MAVLink\", \"DDS\", \"Zenoh\"). Multiple protocol elements for multi-protocol capability."
           },
-          "description": "Higher-layer wireless protocol (e.g., \"DroneCAN\", \"MAVLink\", \"ROS2-DDS\"). Multiple protocol elements for multi-protocol capability."
+          "description": "Higher-layer wireless protocol (e.g., \"DroneCAN\", \"MAVLink\", \"DDS\", \"Zenoh\"). Multiple protocol elements for multi-protocol capability."
         },
         "gain": {
           "$ref": "#/$defs/measured_value",
@@ -716,7 +730,7 @@
         "name",
         "type"
       ],
-      "description": "Shared medium network where all participants are electrically connected and see all traffic simultaneously. No per-hop forwarding -- latency is the same for all participants. Use for CAN, I2C, SPI, UART (multi-drop), 10BASE-T1S, servo buses (STS/Dynamixel), and power distribution."
+      "description": "Shared medium network where all participants are electrically connected and see all traffic simultaneously. No per-hop forwarding — latency is the same for all participants. Use for CAN, I2C, SPI, UART (multi-drop), 10BASE-T1S, servo buses (STS/Dynamixel), and power distribution."
     },
     "bus_participant": {
       "type": "object",
@@ -1443,7 +1457,7 @@
           "description": "ISO 8601 timestamp of when the device was last seen online (e.g., \"2026-04-05T10:30:00Z\"). Populated at runtime by discovery agents."
         }
       },
-      "description": "Runtime discovery state for a component. Populated by device discovery agents (mDNS, LLDP, EtherCAT scan) at runtime. Not typically authored by hand -- updated automatically by HCDF tooling after network scanning."
+      "description": "Runtime discovery state for a component. Populated by device discovery agents (mDNS, LLDP, EtherCAT scan) at runtime. Not typically authored by hand — updated automatically by HCDF tooling after network scanning."
     },
     "eee_capability": {
       "type": "object",
@@ -1703,7 +1717,7 @@
         },
         "type": {
           "type": "string",
-          "description": "Frame purpose type: \"tcp\" (Tool Center Point for end-effector control), \"sensor-origin\" (sensor reference frame), \"attachment\" (mechanical mounting point), \"optical\" (camera optical frame, Z-forward per REP 103). Optional — omit for general-purpose frames."
+          "description": "Frame purpose type: \"tcp\" (Tool Center Point for end-effector control), \"sensor-origin\" (sensor reference frame), \"attachment\" (mechanical mounting point), \"optical\" (camera optical frame, Z-forward convention). Optional — omit for general-purpose frames."
         }
       },
       "required": [
@@ -2725,7 +2739,7 @@
       "required": [
         "policy"
       ],
-      "description": "IEEE 802.1AE MACsec network-wide default security policy. Individual links and chains can override. No actual keys -- only policy intent. Keys are provisioned at runtime via the key-store reference."
+      "description": "IEEE 802.1AE MACsec network-wide default security policy. Individual links and chains can override. No actual keys — only policy intent. Keys are provisioned at runtime via the key-store reference."
     },
     "macsec_policy": {
       "type": "object",
@@ -2757,7 +2771,7 @@
       "required": [
         "policy"
       ],
-      "description": "Per-link or per-chain IEEE 802.1AE MACsec security policy. Overrides the network-wide macsec default when present. Specifies policy intent only -- actual keys are provisioned at runtime."
+      "description": "Per-link or per-chain IEEE 802.1AE MACsec security policy. Overrides the network-wide macsec default when present. Specifies policy intent only — actual keys are provisioned at runtime."
     },
     "material_global": {
       "type": "object",
@@ -3771,81 +3785,81 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/inertial_sensor",
-            "description": "Inertial measurement unit(s) -- accelerometers and/or gyroscopes."
+            "description": "Inertial measurement unit(s) — accelerometers and/or gyroscopes."
           },
-          "description": "Inertial measurement unit(s) -- accelerometers and/or gyroscopes."
+          "description": "Inertial measurement unit(s) — accelerometers and/or gyroscopes."
         },
         "em": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/em_sensor",
-            "description": "Electromagnetic sensor(s) -- magnetometers, metal detectors, eddy current probes."
+            "description": "Electromagnetic sensor(s) — magnetometers, metal detectors, eddy current probes."
           },
-          "description": "Electromagnetic sensor(s) -- magnetometers, metal detectors, eddy current probes."
+          "description": "Electromagnetic sensor(s) — magnetometers, metal detectors, eddy current probes."
         },
         "optical": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/optical_sensor",
-            "description": "Optical sensor(s) -- cameras, lidars, ToF sensors, optical flow sensors."
+            "description": "Optical sensor(s) — cameras, lidars, ToF sensors, optical flow sensors."
           },
-          "description": "Optical sensor(s) -- cameras, lidars, ToF sensors, optical flow sensors."
+          "description": "Optical sensor(s) — cameras, lidars, ToF sensors, optical flow sensors."
         },
         "rf": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/rf_sensor",
-            "description": "Radio-frequency sensor(s) -- GNSS receivers, UWB rangers, radars, radio altimeters."
+            "description": "Radio-frequency sensor(s) — GNSS receivers, UWB rangers, radars, radio altimeters."
           },
-          "description": "Radio-frequency sensor(s) -- GNSS receivers, UWB rangers, radars, radio altimeters."
+          "description": "Radio-frequency sensor(s) — GNSS receivers, UWB rangers, radars, radio altimeters."
         },
         "chemical": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/chemical_sensor",
-            "description": "Chemical/environmental sensor(s) -- gas detectors, pH sensors, humidity sensors."
+            "description": "Chemical/environmental sensor(s) — gas detectors, pH sensors, humidity sensors."
           },
-          "description": "Chemical/environmental sensor(s) -- gas detectors, pH sensors, humidity sensors."
+          "description": "Chemical/environmental sensor(s) — gas detectors, pH sensors, humidity sensors."
         },
         "force": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/force_sensor",
-            "description": "Force/torque sensor(s) -- strain gauges, pressure transducers, torque sensors, load cells."
+            "description": "Force/torque sensor(s) — strain gauges, pressure transducers, torque sensors, load cells."
           },
-          "description": "Force/torque sensor(s) -- strain gauges, pressure transducers, torque sensors, load cells."
+          "description": "Force/torque sensor(s) — strain gauges, pressure transducers, torque sensors, load cells."
         },
         "encoder": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/encoder_sensor",
-            "description": "Position/velocity encoder(s) -- motor-side, joint-side, wheel, or linear. Optical, magnetic, inductive, capacitive, or resistive principle."
+            "description": "Position/velocity encoder(s) — motor-side, joint-side, wheel, or linear. Optical, magnetic, inductive, capacitive, or resistive principle."
           },
-          "description": "Position/velocity encoder(s) -- motor-side, joint-side, wheel, or linear. Optical, magnetic, inductive, capacitive, or resistive principle."
+          "description": "Position/velocity encoder(s) — motor-side, joint-side, wheel, or linear. Optical, magnetic, inductive, capacitive, or resistive principle."
         },
         "temperature": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/temperature_sensor",
-            "description": "Temperature sensor(s) -- thermistors, RTDs, thermocouples, IR. Common: motor winding temp, battery cell temp, ambient."
+            "description": "Temperature sensor(s) — thermistors, RTDs, thermocouples, IR. Common: motor winding temp, battery cell temp, ambient."
           },
-          "description": "Temperature sensor(s) -- thermistors, RTDs, thermocouples, IR. Common: motor winding temp, battery cell temp, ambient."
+          "description": "Temperature sensor(s) — thermistors, RTDs, thermocouples, IR. Common: motor winding temp, battery cell temp, ambient."
         },
         "radiation": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/radiation_sensor",
-            "description": "Radiation sensor(s) -- Geiger counters, scintillation detectors, neutron sensors, dosimeters."
+            "description": "Radiation sensor(s) — Geiger counters, scintillation detectors, neutron sensors, dosimeters."
           },
-          "description": "Radiation sensor(s) -- Geiger counters, scintillation detectors, neutron sensors, dosimeters."
+          "description": "Radiation sensor(s) — Geiger counters, scintillation detectors, neutron sensors, dosimeters."
         },
         "audio": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/audio_sensor",
-            "description": "Audio/acoustic sensor(s) -- microphones, ultrasonic transducers, sonar, hydrophones."
+            "description": "Audio/acoustic sensor(s) — microphones, ultrasonic transducers, sonar, hydrophones."
           },
-          "description": "Audio/acoustic sensor(s) -- microphones, ultrasonic transducers, sonar, hydrophones."
+          "description": "Audio/acoustic sensor(s) — microphones, ultrasonic transducers, sonar, hydrophones."
         },
         "name": {
           "type": "string",
@@ -4798,6 +4812,23 @@
   },
   "type": "object",
   "properties": {
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this HCDF file describes. For a top-level robot: the robot's purpose and key characteristics (e.g., \"CogniPilot humanoid mobile base research platform with dual 7-DOF arms and TSN backbone\"). For a reusable sub-assembly: the module's function and interface (e.g., \"7-DOF manipulator arm with HEBI X8-series SEA actuators, 802.3dm daisy-chain, and force/torque sensing at wrist\"). Helps humans and AI agents understand the file's contents without parsing the full document."
+    },
+    "author": {
+      "type": "string",
+      "description": "Author or organization that created this HCDF file (e.g., \"CogniPilot Foundation\", \"HEBI Robotics\", \"Jane Doe\"). For composed systems, each included file retains its own author, allowing BOM tools to trace which vendor or team provided each sub-assembly. Optional."
+    },
+    "license": {
+      "type": "string",
+      "description": "License governing use of this HCDF file and the design it describes. Use SPDX license identifiers when possible (e.g., \"Apache-2.0\", \"BSD-3-Clause\", \"MIT\", \"CERN-OHL-S-2.0\" for open hardware, \"LicenseRef-Proprietary\" for closed designs). For composed systems, each included file can carry a different license, enabling mixed open-source and proprietary sub-assemblies. Optional."
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical URL for this HCDF file's project, documentation, or source repository (e.g., \"https://github.com/CogniPilot/hcdformat\"). Provides a stable reference for humans and tooling to find updates, issues, and related resources. Optional."
+    },
     "comp": {
       "type": "array",
       "items": {
@@ -4866,10 +4897,25 @@
       },
       "description": "External HCDF file includes for model composition."
     },
+    "name": {
+      "type": "string",
+      "description": "Name of the robot, platform, or sub-assembly described by this file. Required. For top-level robot descriptions, this is the robot's model name (e.g., \"cogni-humanoid-v2\", \"quadrotor-x500\"). For reusable sub-assemblies, this is the module name (e.g., \"7dof-arm\", \"stereo-head-v2\", \"hebi-x8-9\"). When a file is imported via include, the include's name attribute provides the instance name (e.g., \"left_arm\"), while this attribute provides the module identity. Use lowercase-with-hyphens by convention."
+    },
     "version": {
       "type": "string",
-      "description": "HCDF schema version. Current: 1.0.",
+      "description": "HCDF schema version this file conforms to. Current: 1.0. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility.",
       "default": "1.0"
+    },
+    "body-frame": {
+      "$ref": "#/$defs/BodyFrame",
+      "description": "Body-frame axis convention for all pose values in this file. FLU (X-forward, Y-left, Z-up): common in ground robotics and humanoid platforms. FRD (X-forward, Y-right, Z-down): common in aerospace and flight controllers. All xyz and rpy values in this document are expressed in the specified body-frame convention. Optional; when omitted, consumers should not assume a default and must either infer from context or require explicit specification. Semantic rule: all files in an include chain must use the same body-frame."
+    },
+    "world-frame": {
+      "$ref": "#/$defs/WorldFrame",
+      "description": "World-frame (navigation/map frame) axis convention for global coordinates. ENU (X-east, Y-north, Z-up): common in GIS, surveying, and ground robotics. NED (X-north, Y-east, Z-down): common in aerospace, marine navigation, and flight controllers. Determines how global poses, waypoints, and map-relative coordinates are interpreted. Independent of body-frame. Optional; when omitted, consumers should not assume a default. Semantic rule: all files in an include chain must use the same world-frame."
     }
-  }
+  },
+  "required": [
+    "name"
+  ]
 }

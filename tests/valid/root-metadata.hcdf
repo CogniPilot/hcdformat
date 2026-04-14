@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Valid: root element with all metadata attributes and child elements -->
+<hcdf version="1.0" name="metadata-test-robot" body-frame="FLU" world-frame="ENU">
+  <description>Test robot exercising all root metadata elements</description>
+  <author>HCDF Test Suite</author>
+  <license>Apache-2.0</license>
+  <url>https://github.com/CogniPilot/hcdformat</url>
+  <comp name="body"/>
+</hcdf>

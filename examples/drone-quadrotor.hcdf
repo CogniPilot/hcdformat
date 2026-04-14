@@ -5,7 +5,10 @@
   MR-MCXN-T1 sensor boards (RTK GNSS + optical flow/IMU/mag/baro),
   MIPI-CSI camera, LiPo battery, power distribution board.
 -->
-<hcdf version="1.0">
+<hcdf version="1.0" name="cogni-quadrotor" body-frame="FRD" world-frame="NED">
+  <description>CogniPilot quadrotor drone: NavQ95 flight controller, 4x AM32 ESCs with DShot600, F9P RTK GNSS, optical flow, MIPI-CSI camera, LiPo battery</description>
+  <author>CogniPilot Foundation</author>
+  <license>Apache-2.0</license>
 
   <!-- ============================================================ -->
   <!-- COMPONENTS                                                    -->

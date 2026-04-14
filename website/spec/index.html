@@ -145,10 +145,25 @@
 
   <h2>Schema Architecture</h2>
 
-  <p>HCDF uses a single-root XML document with <code>&lt;hcdf version="1.0"&gt;</code> as the
-  document element. Top-level children:</p>
+  <p>HCDF uses a single-root XML document with <code>&lt;hcdf&gt;</code> as the document element.
+  Every HCDF file is a self-describing module: standalone robot descriptions and reusable sub-assemblies
+  share the same root element with the same metadata. When composed via <code>&lt;include&gt;</code>,
+  each file retains its own name, author, and license for provenance tracking.</p>
 
+  <h3>Root attributes</h3>
   <ul>
+    <li><code>name</code> (required) Robot or module name (e.g., "cogni-humanoid-v2", "7dof-arm")</li>
+    <li><code>version</code> HCDF schema version (default: "1.0")</li>
+    <li><code>body-frame</code> Body-frame axis convention: <code>FLU</code> (X-forward, Y-left, Z-up; ground robotics) or <code>FRD</code> (X-forward, Y-right, Z-down; aerospace)</li>
+    <li><code>world-frame</code> World-frame axis convention: <code>ENU</code> (X-east, Y-north, Z-up; GIS/ground robotics) or <code>NED</code> (X-north, Y-east, Z-down; aerospace/marine)</li>
+  </ul>
+
+  <h3>Root child elements</h3>
+  <ul>
+    <li><code>&lt;description&gt;</code> Human-readable description of this file's contents</li>
+    <li><code>&lt;author&gt;</code> Creator or organization (tracked per sub-assembly in composed systems)</li>
+    <li><code>&lt;license&gt;</code> SPDX license identifier (e.g., "Apache-2.0", "CERN-OHL-S-2.0")</li>
+    <li><code>&lt;url&gt;</code> Canonical project or documentation URL</li>
     <li><code>&lt;comp&gt;</code> Components: rigid bodies with ports, sensors, motors, switches, HMI, surfaces, power sources</li>
     <li><code>&lt;joint&gt;</code> Kinematic connections between components (8 joint types, loop closure support)</li>
     <li><code>&lt;group&gt;</code> Named joint collections for planning and control (hierarchical, composable)</li>

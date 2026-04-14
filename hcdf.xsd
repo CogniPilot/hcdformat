@@ -18,6 +18,7 @@
     - Chain hop port references must match device port definitions
     - EtherCAT FMMU offset+size ranges must not overlap
     - Mimic joint references must name an existing joint
+    - All files in an include chain must use the same body-frame and world-frame
 
   IMPORTANT: Do NOT use xs:choice with minOccurs="0" maxOccurs="unbounded".
   This causes exponential backtracking in libxml2 (xmllint hangs).
@@ -31,6 +32,22 @@
   <!-- ================================================================ -->
   <!-- SIMPLE TYPES (Enumerations)                                     -->
   <!-- ================================================================ -->
+
+  <xs:simpleType name="BodyFrame">
+    <xs:annotation><xs:documentation>Body-frame axis convention describing how the robot's local coordinate axes are oriented relative to its physical body. The three-letter code specifies the direction each axis points: first letter = X, second = Y, third = Z. F=Forward, B=Back, L=Left, R=Right, U=Up, D=Down. FLU (X-forward, Y-left, Z-up): common in ground robotics, humanoids, and wheeled platforms. Positive X faces the direction the robot drives or walks. FRD (X-forward, Y-right, Z-down): common in aerospace, aviation, and flight controllers. Matches the aircraft body-frame convention where Z points toward the ground. Choosing a convention affects how all pose xyz and rpy values in the document are interpreted. Semantic rule for composition: all files in an include chain must use the same body-frame convention. Tooling should validate this at include-resolve time.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FLU"/>
+      <xs:enumeration value="FRD"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="WorldFrame">
+    <xs:annotation><xs:documentation>World-frame (navigation frame) axis convention describing how global/map coordinate axes are oriented. ENU (X-east, Y-north, Z-up): common in geographic information systems, ground robotics, and surveying. Z-up aligns with gravity opposition, making vertical reasoning intuitive. NED (X-north, Y-east, Z-down): common in aerospace, aviation, marine navigation, and most inertial navigation systems. Z-down aligns with gravity direction, matching accelerometer sign conventions in flight controllers. The world-frame convention determines how global poses, waypoints, and map coordinates are interpreted. Independent of body-frame: a ground robot may use body-frame=FLU with world-frame=ENU, while a drone may use body-frame=FRD with world-frame=NED. Semantic rule for composition: all files in an include chain must use the same world-frame convention.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ENU"/>
+      <xs:enumeration value="NED"/>
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:simpleType name="JointType">
     <xs:annotation><xs:documentation>Enumeration of kinematic joint types. revolute: bounded single-axis rotation. continuous: unbounded single-axis rotation. prismatic: bounded linear translation. fixed: rigid (zero DOF). ball: 3-DOF spherical. universal: 2-DOF (requires axis + axis2). planar: 2-DOF translation on a plane. screw: helical (requires thread_pitch).</xs:documentation></xs:annotation>
@@ -791,7 +808,7 @@
       <xs:annotation><xs:documentation>Name of another frame that this frame's pose is relative to. If omitted, the pose is relative to the component origin.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
-      <xs:annotation><xs:documentation>Frame purpose type: "tcp" (Tool Center Point for end-effector control), "sensor-origin" (sensor reference frame), "attachment" (mechanical mounting point), "optical" (camera optical frame, Z-forward per REP 103). Optional — omit for general-purpose frames.</xs:documentation></xs:annotation>
+      <xs:annotation><xs:documentation>Frame purpose type: "tcp" (Tool Center Point for end-effector control), "sensor-origin" (sensor reference frame), "attachment" (mechanical mounting point), "optical" (camera optical frame, Z-forward convention). Optional — omit for general-purpose frames.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -1090,7 +1107,7 @@
         <xs:annotation><xs:documentation>Wireless standard supported (e.g., "802.11ax", "bluetooth-5.3", "lora-1.0.4"). Multiple standards for multi-standard radios.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="protocol" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation><xs:documentation>Higher-layer wireless protocol (e.g., "DroneCAN", "MAVLink", "ROS2-DDS"). Multiple protocol elements for multi-protocol capability.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Higher-layer wireless protocol (e.g., "DroneCAN", "MAVLink", "DDS", "Zenoh"). Multiple protocol elements for multi-protocol capability.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="gain" type="measured_value" minOccurs="0">
         <xs:annotation><xs:documentation>Antenna gain in dBi (decibels relative to isotropic). Higher gain = more directional.</xs:documentation></xs:annotation>
@@ -3315,8 +3332,22 @@
 
   <xs:element name="hcdf">
     <xs:complexType>
-      <xs:annotation><xs:documentation>Root element of an HCDF cyber-physical robot description. Contains components (rigid bodies), joints (kinematic connections), joint groups, named kinematic states, self-collision configuration, networks (connectivity + TSN), transmissions (motor-to-joint), materials, and model composition includes.</xs:documentation></xs:annotation>
+      <xs:annotation><xs:documentation>Root element of an HCDF cyber-physical robot description. Every HCDF file is a self-describing module: standalone robot descriptions and reusable sub-assemblies (arms, sensor heads, wheel modules) all use the same root element with the same metadata. When files are composed via include, each file retains its own name, author, and license, allowing tooling to trace provenance per sub-assembly and generate accurate bills of materials. Contains metadata, components (rigid bodies), joints (kinematic connections), joint groups, named kinematic states, self-collision configuration, networks (connectivity + TSN), transmissions (motor-to-joint), materials, and model composition includes.</xs:documentation></xs:annotation>
       <xs:sequence>
+        <!-- Metadata: document-level information about this HCDF file -->
+        <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Human-readable description of what this HCDF file describes. For a top-level robot: the robot's purpose and key characteristics (e.g., "CogniPilot humanoid mobile base research platform with dual 7-DOF arms and TSN backbone"). For a reusable sub-assembly: the module's function and interface (e.g., "7-DOF manipulator arm with HEBI X8-series SEA actuators, 802.3dm daisy-chain, and force/torque sensing at wrist"). Helps humans and AI agents understand the file's contents without parsing the full document.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="author" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Author or organization that created this HCDF file (e.g., "CogniPilot Foundation", "HEBI Robotics", "Jane Doe"). For composed systems, each included file retains its own author, allowing BOM tools to trace which vendor or team provided each sub-assembly. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="license" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>License governing use of this HCDF file and the design it describes. Use SPDX license identifiers when possible (e.g., "Apache-2.0", "BSD-3-Clause", "MIT", "CERN-OHL-S-2.0" for open hardware, "LicenseRef-Proprietary" for closed designs). For composed systems, each included file can carry a different license, enabling mixed open-source and proprietary sub-assemblies. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="url" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Canonical URL for this HCDF file's project, documentation, or source repository (e.g., "https://github.com/CogniPilot/hcdformat"). Provides a stable reference for humans and tooling to find updates, issues, and related resources. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <!-- Structure -->
         <xs:element name="comp" type="comp" minOccurs="0" maxOccurs="unbounded">
           <xs:annotation><xs:documentation>Component definitions (rigid bodies / hardware assemblies).</xs:documentation></xs:annotation>
         </xs:element>
@@ -3345,8 +3376,17 @@
           <xs:annotation><xs:documentation>External HCDF file includes for model composition.</xs:documentation></xs:annotation>
         </xs:element>
       </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required">
+        <xs:annotation><xs:documentation>Name of the robot, platform, or sub-assembly described by this file. Required. For top-level robot descriptions, this is the robot's model name (e.g., "cogni-humanoid-v2", "quadrotor-x500"). For reusable sub-assemblies, this is the module name (e.g., "7dof-arm", "stereo-head-v2", "hebi-x8-9"). When a file is imported via include, the include's name attribute provides the instance name (e.g., "left_arm"), while this attribute provides the module identity. Use lowercase-with-hyphens by convention.</xs:documentation></xs:annotation>
+      </xs:attribute>
       <xs:attribute name="version" type="xs:string" default="1.0">
-        <xs:annotation><xs:documentation>HCDF schema version. Current: 1.0.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>HCDF schema version this file conforms to. Current: 1.0. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="body-frame" type="BodyFrame">
+        <xs:annotation><xs:documentation>Body-frame axis convention for all pose values in this file. FLU (X-forward, Y-left, Z-up): common in ground robotics and humanoid platforms. FRD (X-forward, Y-right, Z-down): common in aerospace and flight controllers. All xyz and rpy values in this document are expressed in the specified body-frame convention. Optional; when omitted, consumers should not assume a default and must either infer from context or require explicit specification. Semantic rule: all files in an include chain must use the same body-frame.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="world-frame" type="WorldFrame">
+        <xs:annotation><xs:documentation>World-frame (navigation/map frame) axis convention for global coordinates. ENU (X-east, Y-north, Z-up): common in GIS, surveying, and ground robotics. NED (X-north, Y-east, Z-down): common in aerospace, marine navigation, and flight controllers. Determines how global poses, waypoints, and map-relative coordinates are interpreted. Independent of body-frame. Optional; when omitted, consumers should not assume a default. Semantic rule: all files in an include chain must use the same world-frame.</xs:documentation></xs:annotation>
       </xs:attribute>
     </xs:complexType>
   </xs:element>

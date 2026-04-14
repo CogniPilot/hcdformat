@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
-<hcdf version="1.0">
+<hcdf version="1.0" name="minimal-comp-test">
   <comp name="x"/>
 </hcdf>

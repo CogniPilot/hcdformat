@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- Invalid: body-frame must be FLU or FRD -->
+<hcdf version="1.0" name="bad-frame" body-frame="XYZ">
+  <comp name="x"/>
+</hcdf>

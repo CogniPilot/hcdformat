@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<hcdf version="1.0">
+<hcdf version="1.0" name="bad-element-order">
   <network name="net1"/>
   <joint name="j1" type="fixed">
     <parent comp="a"/>

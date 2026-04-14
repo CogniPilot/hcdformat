@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<hcdf version="1.0">
+<hcdf version="1.0" name="test-minimal">
 
   <!-- Comp 1: board with switch, sensors, motor, surface, antenna, port -->
   <comp name="test-board" role="actuator">

@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
-<hcdf version="1.0">
+<hcdf version="1.0" name="wrong-version-type">
   <comp name="broken">
 </hcdf>
