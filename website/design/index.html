@@ -172,12 +172,13 @@
 
   <p>
     HCDF sensors are categorized by measurement principle, not by product type. The sensor model
-    covers 10 categories: inertial (accelerometer, gyroscope), optical (camera, thermal, ToF, LiDAR,
+    covers 11 categories: inertial (accelerometer, gyroscope), optical (camera, thermal, ToF, LiDAR,
     optical flow), electromagnetic (magnetometer, Hall effect, fluxgate), RF (radar, GNSS, UWB,
     radio altimeter), force (pressure, strain, torque, load cell), chemical (gas, pH, humidity),
     encoder (incremental, absolute, linear: optical, magnetic, inductive), temperature (thermistor,
-    RTD, thermocouple, IR), radiation (Geiger, scintillation, neutron, dosimeter), and audio
-    (microphone, ultrasonic, sonar, hydrophone).
+    RTD, thermocouple, IR), radiation (Geiger, scintillation, neutron, dosimeter), audio
+    (microphone, ultrasonic, sonar, hydrophone), and tactile (capacitive, resistive, piezoelectric,
+    barometric, optical gel).
   </p>
 
   <p>
@@ -314,7 +315,7 @@
       </tr>
       <tr>
         <td>Joint types</td>
-        <td>8 (revolute, ball, universal, screw, ...)</td>
+        <td>10 (revolute, cylindrical, ball, free, ...)</td>
         <td>Via UsdPhysics</td>
         <td>6</td>
         <td>9</td>
@@ -356,7 +357,7 @@
       <tr><td colspan="6"><strong>Sensors &amp; Actuators</strong></td></tr>
       <tr>
         <td>Sensor categories</td>
-        <td>10 (inertial, optical, RF, audio, radiation, ...)</td>
+        <td>11 (inertial, optical, RF, tactile, audio, ...)</td>
         <td>No</td>
         <td>2 (camera, ray)</td>
         <td>15+</td>
@@ -387,7 +388,7 @@
         <td>No</td>
       </tr>
       <tr>
-        <td>Dynamic surfaces (wings, wheels, props)</td>
+        <td>Dynamic surfaces (wings, wheels, props, grippers)</td>
         <td>Yes</td>
         <td>No</td>
         <td>No</td>
@@ -447,8 +448,8 @@
         <td>No</td>
       </tr>
       <tr>
-        <td>Energy sources (battery, fuel cell, tank)</td>
-        <td>Yes (chemistry, capacity, charging, flow)</td>
+        <td>Energy sources (battery, fuel cell, tank, solar, supercapacitor)</td>
+        <td>Yes (chemistry, capacity, charging, flow, MPPT, ESR)</td>
         <td>No</td>
         <td>No</td>
         <td>No</td>

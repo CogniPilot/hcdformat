@@ -73,11 +73,11 @@
   <!-- Stats -->
   <div class="stats">
     <div class="stat">
-      <div class="stat-value">142</div>
+      <div class="stat-value">147</div>
       <div class="stat-label">Complex Types</div>
     </div>
     <div class="stat">
-      <div class="stat-value">39</div>
+      <div class="stat-value">42</div>
       <div class="stat-label">Enumerations</div>
     </div>
     <div class="stat">
@@ -85,7 +85,7 @@
       <div class="stat-label">Schemas</div>
     </div>
     <div class="stat">
-      <div class="stat-value">23</div>
+      <div class="stat-value">43</div>
       <div class="stat-label">Validation Tests</div>
     </div>
   </div>
@@ -99,10 +99,11 @@
     <a class="card-link" href="/spec/core.html">
       <div class="card">
         <h3>Core Schema</h3>
-        <p>The main HCDF schema: components, joints, sensors (10 categories with noise models),
-        motors (with load curves and control modes), networking (topology, scheduling, security),
-        power systems, dynamic surfaces, HMI, and embodiment features (groups, states, self-collision).
-        142 complex types, 39 enumerations.</p>
+        <p>The main HCDF schema: components, joints (10 types including cylindrical and free), sensors (11 categories with noise models),
+        motors (with load curves, control modes, and solenoids), compliant actuators (SEA/PEA/CPEA/AE-PEA/VSA via spring elements),
+        networking (topology, scheduling, security), power systems (battery, tank, fuel cell, solar, supercapacitor),
+        dynamic surfaces (including gripper), HMI, and embodiment features (groups, states, self-collision).
+        147 complex types, 42 enumerations.</p>
       </div>
     </a>
     <a class="card-link" href="/spec/stream-profile.html">
@@ -165,12 +166,12 @@
     <li><code>&lt;license&gt;</code> SPDX license identifier (e.g., "Apache-2.0", "CERN-OHL-S-2.0")</li>
     <li><code>&lt;url&gt;</code> Canonical project or documentation URL</li>
     <li><code>&lt;comp&gt;</code> Components: rigid bodies with ports, sensors, motors, switches, HMI, surfaces, power sources</li>
-    <li><code>&lt;joint&gt;</code> Kinematic connections between components (8 joint types, loop closure support)</li>
+    <li><code>&lt;joint&gt;</code> Kinematic connections between components (10 joint types, loop closure support)</li>
     <li><code>&lt;group&gt;</code> Named joint collections for planning and control (hierarchical, composable)</li>
     <li><code>&lt;state&gt;</code> Named kinematic configurations (home, transport, calibration)</li>
     <li><code>&lt;self-collision-disable&gt;</code> Component pairs to skip for collision checking</li>
     <li><code>&lt;network&gt;</code> Connectivity topology and configuration (links, buses, chains, meshes, scheduling, security)</li>
-    <li><code>&lt;transmission&gt;</code> Motor-to-joint mechanical power transfer (gear ratio, efficiency, backlash)</li>
+    <li><code>&lt;transmission&gt;</code> Motor-to-joint mechanical power transfer (gear ratio, efficiency, backlash, compliant springs)</li>
     <li><code>&lt;material&gt;</code> Shared material definitions (color, friction, restitution)</li>
     <li><code>&lt;include&gt;</code> Verified file composition with SHA content addressing</li>
   </ul>

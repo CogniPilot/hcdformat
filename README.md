@@ -8,14 +8,16 @@ both domains in a single validated schema.
 
 ## Key Features
 
-- **Kinematic tree** with 8 joint types (revolute, continuous, prismatic, fixed, ball, universal, planar, screw)
-- **Sensors** with noise models, driver identification, and axis alignment (IMU, camera, lidar, radar, encoder, temperature, and more)
-- **Motors** with full electrical/mechanical specs (voltage, current, torque constant, velocity constant, load curve)
+- **Kinematic tree** with 10 joint types (revolute, continuous, prismatic, fixed, ball, universal, planar, screw, cylindrical, free)
+- **Sensors** across 11 categories with noise models, driver identification, and axis alignment (inertial, optical, EM, RF, force, chemical, encoder, temperature, radiation, audio, tactile)
+- **Motors** with full electrical/mechanical specs (voltage, current, torque constant, velocity constant, load curve, solenoids)
+- **Compliant actuators** with spring elements supporting SEA, PEA, CPEA, AE-PEA, and VSA architectures
 - **Networking** with topology types (links, buses, chains, meshes), deterministic scheduling, clock synchronization, and link security
 - **Connectivity** across point-to-point links, shared buses (CAN, I2C, SPI), bridged daisy-chains, and wireless meshes
-- **Power budget** with port-level voltage/current/power capabilities, battery sources, fuel cells, and charging profiles
+- **Power budget** with battery, fuel cell, tank, solar panel, and supercapacitor sources
+- **Dynamic surfaces** including aerofoils, propellers, wheels, tracks, and gripper contact surfaces
 - **Geometry** with box, cylinder, sphere, capsule, cone, ellipsoid, mesh (GLB), and frustum (sensor FOV)
-- **Model composition** via `<include>` with SHA integrity verification
+- **Model composition** via `<include>` with SHA integrity, per-file metadata (name, author, license), and frame conventions (FLU/FRD, ENU/NED)
 - **XSD validation** with full schema documentation on every element and attribute
 
 ## Files

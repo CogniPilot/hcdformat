@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0 (2026-04-14)
+
+Schema completeness additions based on deep review.
+
+### Schema
+- Root metadata: required name attribute, optional description/author/license/url elements
+- Frame conventions: body-frame (FLU, FRD) and world-frame (ENU, NED) attributes on root
+- Component: ip-rating attribute (IEC 60529 / NEMA), operating-temp element (range with min/max)
+- Solenoid added to MotorType enum for on/off actuators (valves, latches, locks)
+- Tactile sensor category (11th): capacitive, resistive, piezoelectric, barometric, optical
+- Solar panel and supercapacitor power sources alongside battery, tank, fuel cell
+- Cylindrical joint (rotation + translation on same axis) and free joint (6-DOF unconstrained)
+- Gripper surface type: mechanical, suction, magnetic, adhesive, jamming
+- Spring element in transmission for compliant actuators (SEA, PEA, CPEA, AE-PEA, VSA)
+- Removed framework-specific references (PX4, ArduPilot, ROS REP) from annotations
+- 147 complex types, 42 enumerations (up from 142/39)
+
 ## 1.0.0 (2026-04-07)
 
 Initial release of the Hardware Configuration Descriptive Format.
@@ -23,8 +40,8 @@ Initial release of the Hardware Configuration Descriptive Format.
 - Interactive spec browser generator (20 tabs)
 - XML/JSON bidirectional converter (Python + Rust)
 - JSON Schema generator
-- Test suite (23 tests: valid, invalid, roundtrip)
+- Test suite (43 tests: valid, invalid, roundtrip)
 
 ### Examples
-- Humanoid mobile base (2297 lines, 5 networks, 19 devices)
-- Drone quadrotor (947 lines, ROS 2 + Gazebo extensions)
+- Humanoid mobile base (5 networks, 19 devices)
+- Drone quadrotor (ROS 2 + Gazebo extensions)

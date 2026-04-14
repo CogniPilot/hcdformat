@@ -70,6 +70,12 @@ Maintain CHANGELOG.md at the repo root with entries for each version:
 - Added: <new-element> for describing X
 - Added: "new-value" to SomeType enum
 
+## 1.1 (2026-04-14)
+- Root metadata, frame conventions, IP rating, operating temp
+- Solenoid motor, tactile sensor, solar/supercapacitor power
+- Cylindrical/free joints, gripper surface, compliant actuator springs
+- 147 complex types, 42 enumerations
+
 ## 1.0 (2026-04-07)
 - Initial release
 - 142 complex types, 39 enumerations
