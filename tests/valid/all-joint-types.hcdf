@@ -50,4 +50,18 @@
     <child comp="b"/>
     <axis xyz="0 0 1"/>
   </joint>
+
+  <!-- Cylindrical: rotation + translation on same axis (e.g., piston that can also rotate) -->
+  <joint name="j_cylindrical" type="cylindrical">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.3" effort="50" velocity="0.2"/>
+  </joint>
+
+  <!-- Free: 6-DOF unconstrained (mobile robot base, free-flying body) -->
+  <joint name="j_free" type="free">
+    <parent comp="a"/>
+    <child comp="b"/>
+  </joint>
 </hcdf>

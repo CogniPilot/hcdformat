@@ -222,7 +222,9 @@
         "ball",
         "universal",
         "planar",
-        "screw"
+        "screw",
+        "cylindrical",
+        "free"
       ]
     },
     "KeyAgreement": {
@@ -2354,7 +2356,7 @@
         },
         "axis": {
           "$ref": "#/$defs/axis",
-          "description": "Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, universal, and screw joints. Forbidden for fixed joints."
+          "description": "Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, cylindrical, universal, and screw joints. Forbidden for fixed and free joints. For cylindrical joints, this single axis defines both the rotation and translation direction."
         },
         "axis2": {
           "$ref": "#/$defs/axis",
@@ -2362,7 +2364,7 @@
         },
         "limit": {
           "$ref": "#/$defs/joint_limit",
-          "description": "Position, velocity, effort, acceleration, and jerk limits. Required for revolute and prismatic joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed."
+          "description": "Position, velocity, effort, acceleration, and jerk limits. Required for revolute, prismatic, and cylindrical joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed and free. For cylindrical joints, lower/upper define the translation range (meters) and a separate semantic constraint defines the rotation range (enforced by tooling)."
         },
         "dynamics": {
           "$ref": "#/$defs/joint_dynamics",
@@ -2399,7 +2401,7 @@
         "parent",
         "type"
       ],
-      "description": "Kinematic connection between two components defining degrees of freedom. Supports 8 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), and screw (helical). Semantic rule: revolute/prismatic require axis + limit; fixed forbids them; universal requires axis + axis2."
+      "description": "Kinematic connection between two components defining degrees of freedom. Supports 10 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), screw (helical), cylindrical (rotation + translation on same axis), and free (6-DOF unconstrained). Semantic rules: revolute/prismatic/cylindrical require axis + limit; fixed and free forbid axis and limit; universal requires axis + axis2; screw requires axis + thread_pitch."
     },
     "joint_calibration": {
       "type": "object",

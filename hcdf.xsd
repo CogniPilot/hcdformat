@@ -11,7 +11,7 @@
   Licensed under Apache-2.0
 
   Semantic constraints not expressible in XSD 1.0 (enforced by tooling):
-    - Revolute/prismatic joints require axis + limit; fixed joints forbid them
+    - Revolute/prismatic/cylindrical joints require axis + limit; fixed/free forbid them
     - speed-tx/speed-rx mutually exclusive with speed on ports
     - T1 links: one PHY master, one PHY slave per link
     - Schedule gate durations must sum to cycle-time-us
@@ -50,7 +50,7 @@
   </xs:simpleType>
 
   <xs:simpleType name="JointType">
-    <xs:annotation><xs:documentation>Enumeration of kinematic joint types. revolute: bounded single-axis rotation. continuous: unbounded single-axis rotation. prismatic: bounded linear translation. fixed: rigid (zero DOF). ball: 3-DOF spherical. universal: 2-DOF (requires axis + axis2). planar: 2-DOF translation on a plane. screw: helical (requires thread_pitch).</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Enumeration of kinematic joint types. revolute: bounded single-axis rotation. continuous: unbounded single-axis rotation. prismatic: bounded linear translation (sliding). fixed: rigid (zero DOF). ball: 3-DOF spherical. universal: 2-DOF (requires axis + axis2). planar: 2-DOF translation on a plane. screw: helical (requires thread_pitch). cylindrical: 2-DOF combined rotation and translation on the same axis (like a piston that can also rotate — requires axis, limit defines both rotation and translation bounds). free: 6-DOF unconstrained (all translation and rotation allowed — used for the root body of mobile robots, free-flying spacecraft, and any body not kinematically constrained to a parent; axis and limit are forbidden).</xs:documentation></xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="revolute"/>
       <xs:enumeration value="continuous"/>
@@ -60,6 +60,8 @@
       <xs:enumeration value="universal"/>
       <xs:enumeration value="planar"/>
       <xs:enumeration value="screw"/>
+      <xs:enumeration value="cylindrical"/>
+      <xs:enumeration value="free"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -2447,7 +2449,7 @@
   </xs:complexType>
 
   <xs:complexType name="joint">
-    <xs:annotation><xs:documentation>Kinematic connection between two components defining degrees of freedom. Supports 8 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), and screw (helical). Semantic rule: revolute/prismatic require axis + limit; fixed forbids them; universal requires axis + axis2.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Kinematic connection between two components defining degrees of freedom. Supports 10 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), screw (helical), cylindrical (rotation + translation on same axis), and free (6-DOF unconstrained). Semantic rules: revolute/prismatic/cylindrical require axis + limit; fixed and free forbid axis and limit; universal requires axis + axis2; screw requires axis + thread_pitch.</xs:documentation></xs:annotation>
     <xs:all>
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of the joint's purpose (e.g., "left shoulder pitch", "front-left wheel spin").</xs:documentation></xs:annotation>
@@ -2462,13 +2464,13 @@
         <xs:annotation><xs:documentation>Pose of the joint frame relative to the parent component's origin. Defines where the joint is located and how it is oriented on the parent body.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="axis" type="axis" minOccurs="0">
-        <xs:annotation><xs:documentation>Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, universal, and screw joints. Forbidden for fixed joints.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, cylindrical, universal, and screw joints. Forbidden for fixed and free joints. For cylindrical joints, this single axis defines both the rotation and translation direction.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="axis2" type="axis" minOccurs="0">
         <xs:annotation><xs:documentation>Secondary axis for universal joints (2-DOF). Defines the second rotation axis, which must be perpendicular to the primary axis. Only used when type="universal".</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="limit" type="joint_limit" minOccurs="0">
-        <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits. Required for revolute and prismatic joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits. Required for revolute, prismatic, and cylindrical joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed and free. For cylindrical joints, lower/upper define the translation range (meters) and a separate semantic constraint defines the rotation range (enforced by tooling).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="dynamics" type="joint_dynamics" minOccurs="0">
         <xs:annotation><xs:documentation>Damping, friction, and spring parameters for simulation.</xs:documentation></xs:annotation>
