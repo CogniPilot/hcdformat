@@ -79,7 +79,7 @@ of every element, attribute, type, and enumeration in the HCDF schema.
 
 ## Version
 
-1.0.0
+1.0
 
 ## License
 
