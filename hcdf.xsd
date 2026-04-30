@@ -499,6 +499,21 @@
   </xs:complexType>
 
   <!-- Pose: HCDF convention is string content "x y z roll pitch yaw" -->
+  <xs:simpleType name="HcdfVersion">
+    <xs:annotation><xs:documentation>HCDF schema version as MAJOR.MINOR (e.g. "1.0"). Validating pattern (replaces the former unvalidated xs:string) so a document declaring an unknown version shape is rejected, and same-version-string drift is caught by binding the converter to the canonical hcdf.xsd by content hash.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]+\.[0-9]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Quat4">
+    <xs:annotation><xs:documentation>Orientation quaternion as exactly four space-separated doubles "x y z w" (Hamilton convention, scalar-last). The fixed length-4 list rejects malformed 3- or 7-value strings that the former bare xs:string allowed.</xs:documentation></xs:annotation>
+    <xs:restriction>
+      <xs:simpleType><xs:list itemType="xs:double"/></xs:simpleType>
+      <xs:length value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="pose">
     <xs:annotation><xs:documentation>6-DOF pose (position + orientation) of an element relative to its parent frame. Specify position via xyz and orientation via either rpy (Euler angles) or quat (quaternion). If both rpy and quat are given, quat takes precedence.</xs:documentation></xs:annotation>
     <xs:attribute name="xyz" type="xs:string" default="0 0 0">
@@ -507,8 +522,8 @@
     <xs:attribute name="rpy" type="xs:string" default="0 0 0">
       <xs:annotation><xs:documentation>Orientation as three space-separated Euler angles "roll pitch yaw" in radians (XYZ extrinsic convention). Default: "0 0 0" (no rotation).</xs:documentation></xs:annotation>
     </xs:attribute>
-    <xs:attribute name="quat" type="xs:string">
-      <xs:annotation><xs:documentation>Orientation as quaternion "x y z w" (Hamilton convention, scalar-last). Optional; if present, overrides rpy.</xs:documentation></xs:annotation>
+    <xs:attribute name="quat" type="Quat4">
+      <xs:annotation><xs:documentation>Orientation as quaternion "x y z w" (Hamilton convention, scalar-last), exactly four doubles. Optional; if present, overrides rpy (quat-wins precedence).</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -588,6 +603,12 @@
     </xs:attribute>
     <xs:attribute name="scale" type="xs:string" default="1 1 1">
       <xs:annotation><xs:documentation>Scale factors as three space-separated doubles "sx sy sz" applied to the mesh. Default: "1 1 1" (no scaling).</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sha" type="xs:string">
+      <xs:annotation><xs:documentation>SHA-256 hash of the mesh file for content integrity and content-addressed caching. Optional but recommended for reproducible builds. Mirrors model_ref/@sha so primitive mesh refs are integrity-checkable too.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="source-uri" type="xs:anyURI">
+      <xs:annotation><xs:documentation>URI of the original pre-conversion asset (e.g. the STL/DAE/OBJ this mesh was converted from when targeting GLB/glTF). Optional; lets tooling reuse the source for a higher-fidelity reverse conversion.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -690,8 +711,8 @@
       <xs:element name="mass" type="xs:double" minOccurs="0">
         <xs:annotation><xs:documentation>Total mass of the component in kilograms (kg).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="com" type="xs:string" minOccurs="0">
-        <xs:annotation><xs:documentation>Center of mass position as "x y z" in meters relative to the component origin.</xs:documentation></xs:annotation>
+      <xs:element name="inertia_origin" type="pose" minOccurs="0">
+        <xs:annotation><xs:documentation>Origin of the inertial frame (center-of-mass position plus optional orientation) as a structured pose relative to the component origin. The inertia tensor below is expressed IN this frame, so a rotated inertial frame (URDF inertial/origin/@rpy) is preserved with no tensor pre-rotation. Replaces the former bare-string &lt;com&gt; (position only) in the clean 1.0 reset; the center of mass is inertia_origin/@xyz.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="inertia" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Rotational inertia tensor as "ixx ixy ixz iyy iyz izz" in kg*m^2. Six unique components of the symmetric 3x3 inertia matrix about the center of mass.</xs:documentation></xs:annotation>
@@ -722,18 +743,34 @@
   </xs:complexType>
 
   <!-- Visual: 3D model reference. <model> is primary, <geometry> is fallback. -->
+  <xs:simpleType name="NameOrigin">
+    <xs:annotation><xs:documentation>Provenance of a visual/collision name: "authored" = meaningful, human/source-supplied (round-trips, emitted to URDF where the URDF schema allows it); "synthesized" = generated by a converter to satisfy HCDF's required-name rule (stripped on URDF export so the output stays byte-clean). Absence is interpreted as "authored" by the companion validator.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="authored"/>
+      <xs:enumeration value="synthesized"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="visual">
     <xs:annotation><xs:documentation>Visual representation of a component for rendering. Contains either a high-fidelity 3D model reference or a geometry primitive fallback (or both, where model is preferred and geometry is the fallback). Multiple visuals per component are allowed for multi-part rendering.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the visual relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity (no offset).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="model" type="model_ref" minOccurs="0">
-        <xs:annotation><xs:documentation>High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name="geometry" type="geometry" minOccurs="0">
-        <xs:annotation><xs:documentation>Geometry primitive fallback for rendering when no 3D model is available.</xs:documentation></xs:annotation>
-      </xs:element>
+      <xs:choice minOccurs="1">
+        <xs:annotation><xs:documentation>A visual MUST carry a model and/or a geometry (the empty-visual case is invalid in the clean 1.0 reset). When both are present, model (GLB/glTF) is the high-fidelity form and geometry is the primitive fallback.</xs:documentation></xs:annotation>
+        <xs:sequence>
+          <xs:element name="model" type="model_ref">
+            <xs:annotation><xs:documentation>High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="geometry" type="geometry" minOccurs="0">
+            <xs:annotation><xs:documentation>Optional geometry primitive fallback rendered when the 3D model cannot be loaded.</xs:documentation></xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:element name="geometry" type="geometry">
+          <xs:annotation><xs:documentation>Geometry primitive (used when no 3D model is provided).</xs:documentation></xs:annotation>
+        </xs:element>
+      </xs:choice>
       <xs:element name="material" type="material_inline" minOccurs="0">
         <xs:annotation><xs:documentation>Material properties (color, texture) for this visual. Overrides any material in the referenced model.</xs:documentation></xs:annotation>
       </xs:element>
@@ -743,6 +780,9 @@
     </xs:attribute>
     <xs:attribute name="toggle" type="xs:string">
       <xs:annotation><xs:documentation>Toggle group name. Visuals sharing the same toggle group can be shown/hidden together at runtime (e.g., "leds", "covers").</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name-origin" type="NameOrigin">
+      <xs:annotation><xs:documentation>Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. A converter importing URDF (whose visuals have no name) sets this to "synthesized" so the name can be stripped on URDF export.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -789,7 +829,7 @@
   <xs:complexType name="collision">
     <xs:annotation><xs:documentation>Collision geometry for physics simulation and proximity detection. Typically a simplified version of the visual geometry (bounding box, convex hull, or low-poly mesh). Multiple collision elements per component are allowed for complex shapes.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the collision geometry relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="1">
@@ -802,6 +842,12 @@
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this collision shape within the component. Required.</xs:documentation></xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name-origin" type="NameOrigin">
+      <xs:annotation><xs:documentation>Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. URDF collision @name is optional, so an unnamed URDF collision imports as "synthesized" and is stripped on export.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verbose" type="xs:boolean">
+      <xs:annotation><xs:documentation>URDF-compat: the per-collision URDF &lt;verbose&gt; flag (zero CPS meaning), kept per-collision (not on the comp-level urdf-compat) so each collision round-trips its own flag. Optional; omit for native HCDF.</xs:documentation></xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- Frame -->
@@ -811,7 +857,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of the frame's purpose (e.g., "camera mount point", "tool center point").</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the frame relative to the component origin (or to the frame named in relative-to) as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
@@ -1084,7 +1130,7 @@
       <xs:element name="capabilities" type="port_capabilities" minOccurs="0">
         <xs:annotation><xs:documentation>Hardware capabilities of this port (speeds, protocols, TSN features, power). Optional; omit for ports whose capabilities are implied by type (e.g., simple JTAG/SWD debug ports).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Physical location of the port connector on the component as "x y z roll pitch yaw" (meters and radians) relative to the component origin.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1139,7 +1185,7 @@
       <xs:element name="capabilities" type="antenna_capabilities" minOccurs="0">
         <xs:annotation><xs:documentation>Wireless capabilities of this antenna (bands, standards, gain, polarization).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Physical location and orientation of the antenna on the component as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1577,7 +1623,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of this HMI element.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Position and orientation relative to component origin.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1685,7 +1731,7 @@
   <xs:complexType name="sensor_base">
     <xs:annotation><xs:documentation>Base sensor type with elements common to ALL sensor subtypes: pose, driver, range, resolution, noise, data output, and geometry. Extended by em, rf, chemical, force, and encoder sensor types. ODR/bandwidth/FIFO are NOT included here — those are specific to high-rate inertial sensors and live in sensor_params (accel/gyro blocks).</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the sensor relative to the component origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -1811,7 +1857,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of this FoV (e.g., "left stereo camera", "forward-facing depth").</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the FoV origin relative to the sensor origin as "x y z roll pitch yaw" (meters and radians). For stereo cameras, this encodes the baseline offset.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1877,6 +1923,22 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="lidar_scan_axis">
+    <xs:annotation><xs:documentation>One axis of a lidar/ray angular scan pattern, matching a URDF ray &lt;horizontal&gt;/&lt;vertical&gt; element (samples, angular resolution, and min/max sweep angle). This is the lossless target for a converted URDF ray sensor; it complements the aggregate fields (channels, fov) which describe the device rather than the per-axis sampling.</xs:documentation></xs:annotation>
+    <xs:attribute name="samples" type="xs:unsignedInt">
+      <xs:annotation><xs:documentation>Number of samples (beams) along this axis. URDF ray horizontal/vertical @samples.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resolution" type="xs:double">
+      <xs:annotation><xs:documentation>Angular resolution multiplier along this axis. URDF ray @resolution.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="min-angle" type="xs:double">
+      <xs:annotation><xs:documentation>Minimum sweep angle in radians. URDF ray @min_angle.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="max-angle" type="xs:double">
+      <xs:annotation><xs:documentation>Maximum sweep angle in radians. URDF ray @max_angle.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <xs:complexType name="lidar_params">
     <xs:annotation><xs:documentation>Lidar-specific parameters defining scan geometry, point cloud density, and environmental robustness. Applies to optical sensors with type="lidar".</xs:documentation></xs:annotation>
     <xs:sequence>
@@ -1903,6 +1965,19 @@
       </xs:element>
       <xs:element name="vertical-fov" type="range_value" minOccurs="0">
         <xs:annotation><xs:documentation>Vertical field of view as min/max angle. Example: min="-25" max="15" unit="deg".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="scan-pattern" minOccurs="0">
+        <xs:annotation><xs:documentation>Per-axis angular scan pattern (samples/resolution/min-angle/max-angle for the horizontal and vertical axes), the lossless target for a converted URDF ray/LaserRay sensor. Optional; complements the aggregate channels/fov fields above.</xs:documentation></xs:annotation>
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="horizontal" type="lidar_scan_axis" minOccurs="0">
+              <xs:annotation><xs:documentation>Horizontal scan axis (URDF ray/horizontal).</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="vertical" type="lidar_scan_axis" minOccurs="0">
+              <xs:annotation><xs:documentation>Vertical scan axis (URDF ray/vertical).</xs:documentation></xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:complexType>
@@ -1980,7 +2055,7 @@
   <xs:complexType name="inertial_sensor">
     <xs:annotation><xs:documentation>Inertial measurement sensor (accelerometer, gyroscope, or combined IMU). Contains pose, driver identification, and separate parameter blocks for accelerometer and gyroscope axes.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the inertial sensor relative to the sensor group origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -2015,7 +2090,7 @@
   <xs:complexType name="optical_sensor">
     <xs:annotation><xs:documentation>Optical sensor (camera, lidar, ToF, optical flow). Contains one or more field-of-view definitions, each with its own intrinsics, distortion, and noise model.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the optical sensor module relative to the sensor group origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -2243,7 +2318,7 @@
   <xs:complexType name="motor">
     <xs:annotation><xs:documentation>Motor or actuator with electrical, mechanical, and thermal parameters. Voltage and current use rated_value type with nominal/continuous/peak/max ratings. Connected to joints via transmission elements.</xs:documentation></xs:annotation>
     <xs:all>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the motor relative to the component origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="voltage" type="rated_value" minOccurs="0">
@@ -2450,13 +2525,39 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- URDF-compat: a closed set of zero-CPS URDF-only fields, typed but quarantined
+       from the clean cyber-physical core. All optional; omit for native HCDF authoring. -->
+  <xs:complexType name="safety_controller">
+    <xs:annotation><xs:documentation>URDF joint safety_controller (soft-limit controller). Zero cyber-physical meaning; carried for lossless URDF round-trip only. Mirrors urdf.xsd safety_controller (k_velocity required).</xs:documentation></xs:annotation>
+    <xs:attribute name="soft_lower_limit" type="xs:double"/>
+    <xs:attribute name="soft_upper_limit" type="xs:double"/>
+    <xs:attribute name="k_position" type="xs:double"/>
+    <xs:attribute name="k_velocity" type="xs:double" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="urdf_compat_comp">
+    <xs:annotation><xs:documentation>Container for URDF-only, zero-CPS fields on a component, kept out of the clean core. Optional; omit for native HCDF authoring.</xs:documentation></xs:annotation>
+    <xs:attribute name="link-type" type="xs:string">
+      <xs:annotation><xs:documentation>The URDF link/@type (an undocumented PR2-era attribute). Preserved verbatim for URDF round-trip; no HCDF semantics.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="urdf_compat_joint">
+    <xs:annotation><xs:documentation>Container for URDF-only, zero-CPS fields on a joint, kept out of the clean core. Optional; omit for native HCDF authoring.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name="safety_controller" type="safety_controller" minOccurs="0">
+        <xs:annotation><xs:documentation>URDF safety_controller, preserved for round-trip. Only meaningful on joints that map to URDF revolute/prismatic.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="joint_limit">
     <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits for a joint. Required for revolute and prismatic joints. Units depend on joint type: radians and Nm for revolute, meters and N for prismatic.</xs:documentation></xs:annotation>
-    <xs:attribute name="lower" type="xs:double" default="0">
-      <xs:annotation><xs:documentation>Lower position limit. Radians for revolute joints, meters for prismatic. Default: 0.</xs:documentation></xs:annotation>
+    <xs:attribute name="lower" type="xs:double">
+      <xs:annotation><xs:documentation>Lower position limit. Radians for revolute joints, meters for prismatic. Optional; ABSENCE means unbounded (no schema default is injected) — continuous joints MUST omit lower/upper. A 0 resting value must be written explicitly.</xs:documentation></xs:annotation>
     </xs:attribute>
-    <xs:attribute name="upper" type="xs:double" default="0">
-      <xs:annotation><xs:documentation>Upper position limit. Radians for revolute joints, meters for prismatic. Default: 0. Semantic rule: upper must be greater than or equal to lower for non-continuous joints.</xs:documentation></xs:annotation>
+    <xs:attribute name="upper" type="xs:double">
+      <xs:annotation><xs:documentation>Upper position limit. Radians for revolute joints, meters for prismatic. Optional; absence means unbounded. Validator rule: upper &gt;= lower for non-continuous joints; continuous joints omit both.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="effort" type="xs:double" default="0">
       <xs:annotation><xs:documentation>Maximum joint effort (torque for revolute in Nm, force for prismatic in N). Default: 0 (unlimited if not specified by tooling).</xs:documentation></xs:annotation>
@@ -2469,6 +2570,9 @@
     </xs:attribute>
     <xs:attribute name="jerk" type="xs:double">
       <xs:annotation><xs:documentation>Maximum joint jerk (rad/s^3 for revolute, m/s^3 for prismatic). Optional; used for smooth trajectory generation.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="deceleration" type="xs:double">
+      <xs:annotation><xs:documentation>Maximum joint deceleration (rad/s^2 for revolute, m/s^2 for prismatic). Optional; distinct from acceleration for asymmetric motion profiles. Mirrors urdfdom_headers JointLimits::deceleration. Has no URDF schema field (URDF-compat: reported in the loss manifest on HCDF-&gt;URDF export).</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -2564,6 +2668,12 @@
       </xs:element>
       <xs:element name="loop" type="loop_closure" minOccurs="0">
         <xs:annotation><xs:documentation>Loop closure marker. Present when this joint closes a kinematic loop (parallel mechanism). The kinematic tree parser should treat this joint as a constraint, not a parent-child relationship. Used for four-bar linkages, delta robots, Stewart platforms.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="extension" type="extension" minOccurs="0">
+        <xs:annotation><xs:documentation>Vendor/domain-specific extension data for this joint. Used (among other things) as the lax home for a joint-anchored URDF &lt;gazebo reference="joint"&gt; block on the byte-faithful import path. At most one per joint (xs:all); collect multiple domains as separate children inside it if needed.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="urdf-compat" type="urdf_compat_joint" minOccurs="0">
+        <xs:annotation><xs:documentation>URDF-only, zero-CPS fields for this joint (e.g. safety_controller). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:all>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -3411,6 +3521,9 @@
       <xs:element name="discovered" type="discovered" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Runtime discovery state (IP, port, last-seen). Populated by discovery agents, not authored by hand.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="urdf-compat" type="urdf_compat_comp" minOccurs="0" maxOccurs="1">
+        <xs:annotation><xs:documentation>URDF-only, zero-CPS fields for this component (e.g. the PR2 link/@type). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF.</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="extension" type="extension" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Vendor or domain-specific extension data for this component.</xs:documentation></xs:annotation>
       </xs:element>
@@ -3576,12 +3689,15 @@
         <xs:element name="include" type="include" minOccurs="0" maxOccurs="unbounded">
           <xs:annotation><xs:documentation>External HCDF file includes for model composition.</xs:documentation></xs:annotation>
         </xs:element>
+        <xs:element name="extension" type="extension" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation><xs:documentation>Document-level vendor/domain-specific extension data. Used (among other things) as the lax home for model-level (reference-less) URDF &lt;gazebo&gt; blocks and for top-level non-URDF-schema elements quarantined on import (e.g. &lt;ros2_control&gt; under domain "org.ros2.control"), preserving them byte-faithfully for round-trip without polluting the typed core.</xs:documentation></xs:annotation>
+        </xs:element>
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required">
         <xs:annotation><xs:documentation>Name of the robot, platform, or sub-assembly described by this file. Required. For top-level robot descriptions, this is the robot's model name (e.g., "cogni-humanoid-v2", "quadrotor-x500"). For reusable sub-assemblies, this is the module name (e.g., "7dof-arm", "stereo-head-v2", "hebi-x8-9"). When a file is imported via include, the include's name attribute provides the instance name (e.g., "left_arm"), while this attribute provides the module identity. Use lowercase-with-hyphens by convention.</xs:documentation></xs:annotation>
       </xs:attribute>
-      <xs:attribute name="version" type="xs:string" default="1.0">
-        <xs:annotation><xs:documentation>HCDF schema version this file conforms to. Current: 1.0. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility.</xs:documentation></xs:annotation>
+      <xs:attribute name="version" type="HcdfVersion" default="1.0">
+        <xs:annotation><xs:documentation>HCDF schema version this file conforms to. Current: 1.0 (the clean in-place reset). Pattern-validated MAJOR.MINOR. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility; tooling binds to the canonical hcdf.xsd by content SHA-256, not by this string.</xs:documentation></xs:annotation>
       </xs:attribute>
       <xs:attribute name="body-frame" type="BodyFrame">
         <xs:annotation><xs:documentation>Body-frame axis convention for all pose values in this file. FLU (X-forward, Y-left, Z-up): common in ground robotics and humanoid platforms. FRD (X-forward, Y-right, Z-down): common in aerospace and flight controllers. All xyz and rpy values in this document are expressed in the specified body-frame convention. Optional; when omitted, consumers should not assume a default and must either infer from context or require explicit specification. Semantic rule: all files in an include chain must use the same body-frame.</xs:documentation></xs:annotation>
@@ -3590,6 +3706,22 @@
         <xs:annotation><xs:documentation>World-frame (navigation/map frame) axis convention for global coordinates. ENU (X-east, Y-north, Z-up): common in GIS, surveying, and ground robotics. NED (X-north, Y-east, Z-down): common in aerospace, marine navigation, and flight controllers. Determines how global poses, waypoints, and map-relative coordinates are interpreted. Independent of body-frame. Optional; when omitted, consumers should not assume a default. Semantic rule: all files in an include chain must use the same world-frame.</xs:documentation></xs:annotation>
       </xs:attribute>
     </xs:complexType>
+    <!-- Referential integrity: ROOT-DIRECT key/keyref selectors (xpath="comp"/"joint"/"group",
+         NOT ".//..." which would wrongly match overloaded names like transmission/joint or
+         inline material). Covers the clean, unambiguous references. Deferred to the companion
+         validator (overloaded/ambiguous names; see proposal sec 4.7): frame/@relative-to
+         (frame-vs-comp), material refs (material_inline/@name is a local name OR a global ref),
+         and transmission motor/joint refs (comp-scoped). Keyrefs validate the FLATTENED document
+         (cross-include integrity is the validator's job). -->
+    <xs:key name="compKey"><xs:selector xpath="comp"/><xs:field xpath="@name"/></xs:key>
+    <xs:key name="jointKey"><xs:selector xpath="joint"/><xs:field xpath="@name"/></xs:key>
+    <xs:key name="groupKey"><xs:selector xpath="group"/><xs:field xpath="@name"/></xs:key>
+    <xs:keyref name="jointParentCompRef" refer="compKey"><xs:selector xpath="joint/parent"/><xs:field xpath="@comp"/></xs:keyref>
+    <xs:keyref name="jointChildCompRef" refer="compKey"><xs:selector xpath="joint/child"/><xs:field xpath="@comp"/></xs:keyref>
+    <xs:keyref name="groupJointRef" refer="jointKey"><xs:selector xpath="group/joint"/><xs:field xpath="@ref"/></xs:keyref>
+    <xs:keyref name="groupGroupRef" refer="groupKey"><xs:selector xpath="group/group"/><xs:field xpath="@ref"/></xs:keyref>
+    <xs:keyref name="stateJointRef" refer="jointKey"><xs:selector xpath="state/joint-position"/><xs:field xpath="@joint"/></xs:keyref>
+    <xs:keyref name="mimicJointRef" refer="jointKey"><xs:selector xpath="joint/mimic"/><xs:field xpath="@joint"/></xs:keyref>
   </xs:element>
 
 </xs:schema>

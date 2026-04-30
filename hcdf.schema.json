@@ -183,6 +183,9 @@
         "pyramidal"
       ]
     },
+    "HcdfVersion": {
+      "type": "string"
+    },
     "HmiType": {
       "type": "string",
       "enum": [
@@ -286,6 +289,13 @@
         "ice"
       ]
     },
+    "NameOrigin": {
+      "type": "string",
+      "enum": [
+        "authored",
+        "synthesized"
+      ]
+    },
     "NoiseType": {
       "type": "string",
       "enum": [
@@ -340,6 +350,9 @@
         "express",
         "preemptable"
       ]
+    },
+    "Quat4": {
+      "type": "string"
     },
     "RadiationSensorType": {
       "type": "string",
@@ -445,7 +458,7 @@
           "description": "Wireless capabilities of this antenna (bands, standards, gain, polarization)."
         },
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Physical location and orientation of the antenna on the component as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "geometry": {
@@ -517,7 +530,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -1058,7 +1071,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -1099,7 +1112,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the collision geometry relative to the component origin as \"x y z roll pitch yaw\" (meters and radians). Default: identity."
         },
         "geometry": {
@@ -1113,6 +1126,14 @@
         "name": {
           "type": "string",
           "description": "Unique name for this collision shape within the component. Required."
+        },
+        "name-origin": {
+          "$ref": "#/$defs/NameOrigin",
+          "description": "Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. URDF collision @name is optional, so an unnamed URDF collision imports as \"synthesized\" and is stripped on export."
+        },
+        "verbose": {
+          "type": "boolean",
+          "description": "URDF-compat: the per-collision URDF <verbose> flag (zero CPS meaning), kept per-collision (not on the comp-level urdf-compat) so each collision round-trips its own flag. Optional; omit for native HCDF."
         }
       },
       "required": [
@@ -1264,6 +1285,10 @@
         "discovered": {
           "$ref": "#/$defs/discovered",
           "description": "Runtime discovery state (IP, port, last-seen). Populated by discovery agents, not authored by hand."
+        },
+        "urdf-compat": {
+          "$ref": "#/$defs/urdf_compat_comp",
+          "description": "URDF-only, zero-CPS fields for this component (e.g. the PR2 link/@type). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF."
         },
         "extension": {
           "type": "array",
@@ -1508,7 +1533,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -1549,7 +1574,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -1680,7 +1705,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -1725,7 +1750,7 @@
           "description": "Human-readable description of the frame's purpose (e.g., \"camera mount point\", \"tool center point\")."
         },
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the frame relative to the component origin (or to the frame named in relative-to) as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "name": {
@@ -2166,7 +2191,7 @@
           "description": "Human-readable description of this HMI element."
         },
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Position and orientation relative to component origin."
         },
         "geometry": {
@@ -2332,9 +2357,9 @@
           "type": "number",
           "description": "Total mass of the component in kilograms (kg)."
         },
-        "com": {
-          "type": "string",
-          "description": "Center of mass position as \"x y z\" in meters relative to the component origin."
+        "inertia_origin": {
+          "$ref": "#/$defs/pose",
+          "description": "Origin of the inertial frame (center-of-mass position plus optional orientation) as a structured pose relative to the component origin. The inertia tensor below is expressed IN this frame, so a rotated inertial frame (URDF inertial/origin/@rpy) is preserved with no tensor pre-rotation. Replaces the former bare-string <com> (position only) in the clean 1.0 reset; the center of mass is inertia_origin/@xyz."
         },
         "inertia": {
           "type": "string",
@@ -2347,7 +2372,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the inertial sensor relative to the sensor group origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -2422,6 +2447,14 @@
         "loop": {
           "$ref": "#/$defs/loop_closure",
           "description": "Loop closure marker. Present when this joint closes a kinematic loop (parallel mechanism). The kinematic tree parser should treat this joint as a constraint, not a parent-child relationship. Used for four-bar linkages, delta robots, Stewart platforms."
+        },
+        "extension": {
+          "$ref": "#/$defs/extension",
+          "description": "Vendor/domain-specific extension data for this joint. Used (among other things) as the lax home for a joint-anchored URDF <gazebo reference=\"joint\"> block on the byte-faithful import path. At most one per joint (xs:all); collect multiple domains as separate children inside it if needed."
+        },
+        "urdf-compat": {
+          "$ref": "#/$defs/urdf_compat_joint",
+          "description": "URDF-only, zero-CPS fields for this joint (e.g. safety_controller). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF."
         },
         "name": {
           "type": "string",
@@ -2552,13 +2585,11 @@
       "properties": {
         "lower": {
           "type": "number",
-          "description": "Lower position limit. Radians for revolute joints, meters for prismatic. Default: 0.",
-          "default": 0.0
+          "description": "Lower position limit. Radians for revolute joints, meters for prismatic. Optional; ABSENCE means unbounded (no schema default is injected) — continuous joints MUST omit lower/upper. A 0 resting value must be written explicitly."
         },
         "upper": {
           "type": "number",
-          "description": "Upper position limit. Radians for revolute joints, meters for prismatic. Default: 0. Semantic rule: upper must be greater than or equal to lower for non-continuous joints.",
-          "default": 0.0
+          "description": "Upper position limit. Radians for revolute joints, meters for prismatic. Optional; absence means unbounded. Validator rule: upper >= lower for non-continuous joints; continuous joints omit both."
         },
         "effort": {
           "type": "number",
@@ -2577,6 +2608,10 @@
         "jerk": {
           "type": "number",
           "description": "Maximum joint jerk (rad/s^3 for revolute, m/s^3 for prismatic). Optional; used for smooth trajectory generation."
+        },
+        "deceleration": {
+          "type": "number",
+          "description": "Maximum joint deceleration (rad/s^2 for revolute, m/s^2 for prismatic). Optional; distinct from acceleration for asymmetric motion profiles. Mirrors urdfdom_headers JointLimits::deceleration. Has no URDF schema field (URDF-compat: reported in the loss manifest on HCDF->URDF export)."
         }
       },
       "description": "Position, velocity, effort, acceleration, and jerk limits for a joint. Required for revolute and prismatic joints. Units depend on joint type: radians and Nm for revolute, meters and N for prismatic."
@@ -2695,9 +2730,46 @@
         "vertical-fov": {
           "$ref": "#/$defs/range_value",
           "description": "Vertical field of view as min/max angle. Example: min=\"-25\" max=\"15\" unit=\"deg\"."
+        },
+        "scan-pattern": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "$ref": "#/$defs/lidar_scan_axis",
+              "description": "Horizontal scan axis (URDF ray/horizontal)."
+            },
+            "vertical": {
+              "$ref": "#/$defs/lidar_scan_axis",
+              "description": "Vertical scan axis (URDF ray/vertical)."
+            }
+          },
+          "description": "Per-axis angular scan pattern (samples/resolution/min-angle/max-angle for the horizontal and vertical axes), the lossless target for a converted URDF ray/LaserRay sensor. Optional; complements the aggregate channels/fov fields above."
         }
       },
       "description": "Lidar-specific parameters defining scan geometry, point cloud density, and environmental robustness. Applies to optical sensors with type=\"lidar\"."
+    },
+    "lidar_scan_axis": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of samples (beams) along this axis. URDF ray horizontal/vertical @samples."
+        },
+        "resolution": {
+          "type": "number",
+          "description": "Angular resolution multiplier along this axis. URDF ray @resolution."
+        },
+        "min-angle": {
+          "type": "number",
+          "description": "Minimum sweep angle in radians. URDF ray @min_angle."
+        },
+        "max-angle": {
+          "type": "number",
+          "description": "Maximum sweep angle in radians. URDF ray @max_angle."
+        }
+      },
+      "description": "One axis of a lidar/ray angular scan pattern, matching a URDF ray <horizontal>/<vertical> element (samples, angular resolution, and min/max sweep angle). This is the lossless target for a converted URDF ray sensor; it complements the aggregate fields (channels, fov) which describe the device rather than the per-axis sampling."
     },
     "link": {
       "type": "object",
@@ -2903,6 +2975,15 @@
           "type": "string",
           "description": "Scale factors as three space-separated doubles \"sx sy sz\" applied to the mesh. Default: \"1 1 1\" (no scaling).",
           "default": "1 1 1"
+        },
+        "sha": {
+          "type": "string",
+          "description": "SHA-256 hash of the mesh file for content integrity and content-addressed caching. Optional but recommended for reproducible builds. Mirrors model_ref/@sha so primitive mesh refs are integrity-checkable too."
+        },
+        "source-uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI of the original pre-conversion asset (e.g. the STL/DAE/OBJ this mesh was converted from when targeting GLB/glTF). Optional; lets tooling reuse the source for a higher-fidelity reverse conversion."
         }
       },
       "required": [
@@ -2981,7 +3062,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the motor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "voltage": {
@@ -3226,7 +3307,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the optical sensor module relative to the sensor group origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -3338,7 +3419,7 @@
           "description": "Hardware capabilities of this port (speeds, protocols, TSN features, power). Optional; omit for ports whose capabilities are implied by type (e.g., simple JTAG/SWD debug ports)."
         },
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Physical location of the port connector on the component as \"x y z roll pitch yaw\" (meters and radians) relative to the component origin."
         },
         "geometry": {
@@ -3472,8 +3553,8 @@
           "default": "0 0 0"
         },
         "quat": {
-          "type": "string",
-          "description": "Orientation as quaternion \"x y z w\" (Hamilton convention, scalar-last). Optional; if present, overrides rpy."
+          "$ref": "#/$defs/Quat4",
+          "description": "Orientation as quaternion \"x y z w\" (Hamilton convention, scalar-last), exactly four doubles. Optional; if present, overrides rpy (quat-wins precedence)."
         }
       },
       "description": "6-DOF pose (position + orientation) of an element relative to its parent frame. Specify position via xyz and orientation via either rpy (Euler angles) or quat (quaternion). If both rpy and quat are given, quat takes precedence."
@@ -3626,7 +3707,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -3725,7 +3806,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -3769,6 +3850,27 @@
         "type"
       ],
       "description": "Radio-frequency sensor (GNSS receiver, UWB ranger, radar, radio altimeter). Extends sensor_base with type-specific parameter blocks for radar and GNSS."
+    },
+    "safety_controller": {
+      "type": "object",
+      "properties": {
+        "soft_lower_limit": {
+          "type": "number"
+        },
+        "soft_upper_limit": {
+          "type": "number"
+        },
+        "k_position": {
+          "type": "number"
+        },
+        "k_velocity": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "k_velocity"
+      ],
+      "description": "URDF joint safety_controller (soft-limit controller). Zero cyber-physical meaning; carried for lossless URDF round-trip only. Mirrors urdf.xsd safety_controller (k_velocity required)."
     },
     "schedule": {
       "type": "object",
@@ -3957,7 +4059,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -4012,7 +4114,7 @@
           "description": "Human-readable description of this FoV (e.g., \"left stereo camera\", \"forward-facing depth\")."
         },
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the FoV origin relative to the sensor origin as \"x y z roll pitch yaw\" (meters and radians). For stereo cameras, this encodes the baseline offset."
         },
         "geometry": {
@@ -4395,7 +4497,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -4489,7 +4591,7 @@
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the sensor relative to the component origin as \"x y z roll pitch yaw\" (meters and radians)."
         },
         "driver": {
@@ -4895,20 +4997,36 @@
       ],
       "description": "Tunnel configuration for carrying one chain's traffic encapsulated over another chain or link. Used for EtherCAT-over-TSN (IEEE 1722 encapsulation) or EtherCAT-over-EtherCAT (ETG.1700) scenarios."
     },
+    "urdf_compat_comp": {
+      "type": "object",
+      "properties": {
+        "link-type": {
+          "type": "string",
+          "description": "The URDF link/@type (an undocumented PR2-era attribute). Preserved verbatim for URDF round-trip; no HCDF semantics."
+        }
+      },
+      "description": "Container for URDF-only, zero-CPS fields on a component, kept out of the clean core. Optional; omit for native HCDF authoring."
+    },
+    "urdf_compat_joint": {
+      "type": "object",
+      "properties": {
+        "safety_controller": {
+          "$ref": "#/$defs/safety_controller",
+          "description": "URDF safety_controller, preserved for round-trip. Only meaningful on joints that map to URDF revolute/prismatic."
+        }
+      },
+      "description": "Container for URDF-only, zero-CPS fields on a joint, kept out of the clean core. Optional; omit for native HCDF authoring."
+    },
     "visual": {
       "type": "object",
       "properties": {
         "pose": {
-          "type": "string",
+          "$ref": "#/$defs/pose",
           "description": "Pose of the visual relative to the component origin as \"x y z roll pitch yaw\" (meters and radians). Default: identity (no offset)."
-        },
-        "model": {
-          "$ref": "#/$defs/model_ref",
-          "description": "High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available."
         },
         "geometry": {
           "$ref": "#/$defs/geometry",
-          "description": "Geometry primitive fallback for rendering when no 3D model is available."
+          "description": "Geometry primitive (used when no 3D model is provided)."
         },
         "material": {
           "$ref": "#/$defs/material_inline",
@@ -4921,6 +5039,10 @@
         "toggle": {
           "type": "string",
           "description": "Toggle group name. Visuals sharing the same toggle group can be shown/hidden together at runtime (e.g., \"leds\", \"covers\")."
+        },
+        "name-origin": {
+          "$ref": "#/$defs/NameOrigin",
+          "description": "Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. A converter importing URDF (whose visuals have no name) sets this to \"synthesized\" so the name can be stripped on URDF export."
         }
       },
       "required": [
@@ -5194,13 +5316,21 @@
       },
       "description": "External HCDF file includes for model composition."
     },
+    "extension": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/extension",
+        "description": "Document-level vendor/domain-specific extension data. Used (among other things) as the lax home for model-level (reference-less) URDF <gazebo> blocks and for top-level non-URDF-schema elements quarantined on import (e.g. <ros2_control> under domain \"org.ros2.control\"), preserving them byte-faithfully for round-trip without polluting the typed core."
+      },
+      "description": "Document-level vendor/domain-specific extension data. Used (among other things) as the lax home for model-level (reference-less) URDF <gazebo> blocks and for top-level non-URDF-schema elements quarantined on import (e.g. <ros2_control> under domain \"org.ros2.control\"), preserving them byte-faithfully for round-trip without polluting the typed core."
+    },
     "name": {
       "type": "string",
       "description": "Name of the robot, platform, or sub-assembly described by this file. Required. For top-level robot descriptions, this is the robot's model name (e.g., \"cogni-humanoid-v2\", \"quadrotor-x500\"). For reusable sub-assemblies, this is the module name (e.g., \"7dof-arm\", \"stereo-head-v2\", \"hebi-x8-9\"). When a file is imported via include, the include's name attribute provides the instance name (e.g., \"left_arm\"), while this attribute provides the module identity. Use lowercase-with-hyphens by convention."
     },
     "version": {
-      "type": "string",
-      "description": "HCDF schema version this file conforms to. Current: 1.0. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility.",
+      "$ref": "#/$defs/HcdfVersion",
+      "description": "HCDF schema version this file conforms to. Current: 1.0 (the clean in-place reset). Pattern-validated MAJOR.MINOR. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility; tooling binds to the canonical hcdf.xsd by content SHA-256, not by this string.",
       "default": "1.0"
     },
     "body-frame": {

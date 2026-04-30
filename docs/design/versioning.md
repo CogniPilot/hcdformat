@@ -45,6 +45,24 @@ When a new version is released:
 5. Update the spec browser version dropdown
 6. Update CHANGELOG.md
 
+## Hash Pinning
+
+Tooling should bind to a schema by its content hash, not by filename or the
+version string. `versions/HASHES` records the sha256 of each released schema
+file:
+
+```
+# version  file                     sha256
+1.0        hcdf.xsd                 <sha256>
+1.0        hcdf-stream-profile.xsd  <sha256>
+```
+
+Two files that claim the same version but hash differently is a contradiction,
+and CI fails when it sees one. Each `versions/<MAJOR.MINOR>/` directory is a
+write once frozen archive of the schema for that version. Derived artifacts
+such as `hcdf.schema.json` and `spec.html` are not archived. CI regenerates
+them from the schema and diffs the result to keep them in sync.
+
 ## JSON Schema Versioning
 
 The JSON Schema (`hcdf.schema.json`) is generated from the XSD and carries the same version number in its `$id` field. When the XSD version changes, regenerate the JSON Schema:

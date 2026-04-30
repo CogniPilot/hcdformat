@@ -19,7 +19,7 @@
     <description>Carbon fiber quadrotor airframe (X configuration, 450mm motor-to-motor)</description>
     <inertial>
       <mass>0.35</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
       <inertia>0.0045 0 0 0.0045 0 0.008</inertia>
     </inertial>
     <visual name="frame_body">
@@ -42,7 +42,7 @@
     <operating-temp min="-40" max="85" unit="degC"/>
     <inertial>
       <mass>0.045</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <visual name="navq95_pcb">
       <geometry>
@@ -129,7 +129,7 @@
     <!-- Camera sensor (direct MIPI-CSI connection) -->
     <sensor name="camera0" update-rate="30">
       <optical type="camera">
-        <pose>0 0 -0.015 0 1.5708 0</pose>
+        <pose xyz="0 0 -0.015" rpy="0 1.5708 0"/>
         <driver name="imx219"/>
         <geometry>
           <box><size>0.025 0.025 0.01</size></box>
@@ -525,7 +525,7 @@
     <!-- PAA3905 optical flow -->
     <sensor name="optical_flow0" update-rate="100">
       <optical type="optical_flow">
-        <pose>0 0 -0.005 0 3.14159 0</pose>
+        <pose xyz="0 0 -0.005" rpy="0 3.14159 0"/>
         <driver name="paa3905"/>
         <fov name="flow">
           <geometry>

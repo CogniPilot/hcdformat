@@ -11,13 +11,14 @@
   Licensed under Apache-2.0
 
   Semantic constraints not expressible in XSD 1.0 (enforced by tooling):
-    - Revolute/prismatic joints require axis + limit; fixed joints forbid them
+    - Revolute/prismatic/cylindrical joints require axis + limit; fixed/free forbid them
     - speed-tx/speed-rx mutually exclusive with speed on ports
     - T1 links: one PHY master, one PHY slave per link
     - Schedule gate durations must sum to cycle-time-us
     - Chain hop port references must match device port definitions
     - EtherCAT FMMU offset+size ranges must not overlap
     - Mimic joint references must name an existing joint
+    - All files in an include chain must use the same body-frame and world-frame
 
   IMPORTANT: Do NOT use xs:choice with minOccurs="0" maxOccurs="unbounded".
   This causes exponential backtracking in libxml2 (xmllint hangs).
@@ -32,8 +33,24 @@
   <!-- SIMPLE TYPES (Enumerations)                                     -->
   <!-- ================================================================ -->
 
+  <xs:simpleType name="BodyFrame">
+    <xs:annotation><xs:documentation>Body-frame axis convention describing how the robot's local coordinate axes are oriented relative to its physical body. The three-letter code specifies the direction each axis points: first letter = X, second = Y, third = Z. F=Forward, B=Back, L=Left, R=Right, U=Up, D=Down. FLU (X-forward, Y-left, Z-up): common in ground robotics, humanoids, and wheeled platforms. Positive X faces the direction the robot drives or walks. FRD (X-forward, Y-right, Z-down): common in aerospace, aviation, and flight controllers. Matches the aircraft body-frame convention where Z points toward the ground. Choosing a convention affects how all pose xyz and rpy values in the document are interpreted. Semantic rule for composition: all files in an include chain must use the same body-frame convention. Tooling should validate this at include-resolve time.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="FLU"/>
+      <xs:enumeration value="FRD"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="WorldFrame">
+    <xs:annotation><xs:documentation>World-frame (navigation frame) axis convention describing how global/map coordinate axes are oriented. ENU (X-east, Y-north, Z-up): common in geographic information systems, ground robotics, and surveying. Z-up aligns with gravity opposition, making vertical reasoning intuitive. NED (X-north, Y-east, Z-down): common in aerospace, aviation, marine navigation, and most inertial navigation systems. Z-down aligns with gravity direction, matching accelerometer sign conventions in flight controllers. The world-frame convention determines how global poses, waypoints, and map coordinates are interpreted. Independent of body-frame: a ground robot may use body-frame=FLU with world-frame=ENU, while a drone may use body-frame=FRD with world-frame=NED. Semantic rule for composition: all files in an include chain must use the same world-frame convention.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ENU"/>
+      <xs:enumeration value="NED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="JointType">
-    <xs:annotation><xs:documentation>Enumeration of kinematic joint types. revolute: bounded single-axis rotation. continuous: unbounded single-axis rotation. prismatic: bounded linear translation. fixed: rigid (zero DOF). ball: 3-DOF spherical. universal: 2-DOF (requires axis + axis2). planar: 2-DOF translation on a plane. screw: helical (requires thread_pitch).</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Enumeration of kinematic joint types. revolute: bounded single-axis rotation. continuous: unbounded single-axis rotation. prismatic: bounded linear translation (sliding). fixed: rigid (zero DOF). ball: 3-DOF spherical. universal: 2-DOF (requires axis + axis2). planar: 2-DOF translation on a plane. screw: helical (requires thread_pitch). cylindrical: 2-DOF combined rotation and translation on the same axis (like a piston that can also rotate — requires axis, limit defines both rotation and translation bounds). free: 6-DOF unconstrained (all translation and rotation allowed — used for the root body of mobile robots, free-flying spacecraft, and any body not kinematically constrained to a parent; axis and limit are forbidden).</xs:documentation></xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="revolute"/>
       <xs:enumeration value="continuous"/>
@@ -43,17 +60,20 @@
       <xs:enumeration value="universal"/>
       <xs:enumeration value="planar"/>
       <xs:enumeration value="screw"/>
+      <xs:enumeration value="cylindrical"/>
+      <xs:enumeration value="free"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="MotorType">
-    <xs:annotation><xs:documentation>Motor or actuator technology type. bldc: brushless DC motor. brushed: brushed DC motor. stepper: stepper motor. servo: hobby/industrial servo. linear: linear actuator. hydraulic: hydraulic actuator. pneumatic: pneumatic actuator. thrust: thrust motor (propeller, jet, rocket). ice: internal combustion engine (gasoline, diesel — for generators or direct mechanical drive).</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Motor or actuator technology type. bldc: brushless DC motor. brushed: brushed DC motor. stepper: stepper motor. servo: hobby/industrial servo. linear: linear actuator (proportional control over stroke length). solenoid: electromagnetic on/off linear actuator (binary pull/push action with no proportional position control — used for valves, latches, locks, pin releases, landing gear, and gripper release mechanisms). hydraulic: hydraulic actuator. pneumatic: pneumatic actuator. thrust: thrust motor (propeller, jet, rocket). ice: internal combustion engine (gasoline, diesel — for generators or direct mechanical drive).</xs:documentation></xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="bldc"/>
       <xs:enumeration value="brushed"/>
       <xs:enumeration value="stepper"/>
       <xs:enumeration value="servo"/>
       <xs:enumeration value="linear"/>
+      <xs:enumeration value="solenoid"/>
       <xs:enumeration value="hydraulic"/>
       <xs:enumeration value="pneumatic"/>
       <xs:enumeration value="thrust"/>
@@ -421,6 +441,17 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="TactileSensorType">
+    <xs:annotation><xs:documentation>Tactile sensor sub-type. Tactile sensors measure contact, pressure, or deformation distributed across a surface area, as distinct from force sensors which measure at a single point. capacitive: measures pressure via capacitance change between conductive layers — high sensitivity, good spatial resolution, common in robot fingertips and e-skin (e.g., PPS TakkTile, SynTouch BioTac). resistive: force-sensitive resistor (FSR) arrays or piezoresistive films — lower cost, simpler electronics, used in gripper pads and pressure mats (e.g., Interlink FSR, Tekscan FlexiForce). piezoelectric: generates voltage from mechanical deformation — measures dynamic contact events (slip, vibration, texture) rather than static pressure, used for slip detection in dexterous hands. barometric: array of barometric pressure sensors under a deformable membrane — robust to wear, high dynamic range, used in soft grippers and compliant fingers (e.g., XELA uSkin). optical: uses internal cameras and deformable gel to measure contact geometry via image analysis — provides rich 3D contact shape and shear force data (e.g., GelSight, DIGIT, GelSlim).</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="capacitive"/>
+      <xs:enumeration value="resistive"/>
+      <xs:enumeration value="piezoelectric"/>
+      <xs:enumeration value="barometric"/>
+      <xs:enumeration value="optical"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- ================================================================ -->
   <!-- LEAF TYPES (Values, Geometry, Pose, Noise)                      -->
   <!-- ================================================================ -->
@@ -468,6 +499,21 @@
   </xs:complexType>
 
   <!-- Pose: HCDF convention is string content "x y z roll pitch yaw" -->
+  <xs:simpleType name="HcdfVersion">
+    <xs:annotation><xs:documentation>HCDF schema version as MAJOR.MINOR (e.g. "1.0"). Validating pattern (replaces the former unvalidated xs:string) so a document declaring an unknown version shape is rejected, and same-version-string drift is caught by binding the converter to the canonical hcdf.xsd by content hash.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]+\.[0-9]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Quat4">
+    <xs:annotation><xs:documentation>Orientation quaternion as exactly four space-separated doubles "x y z w" (Hamilton convention, scalar-last). The fixed length-4 list rejects malformed 3- or 7-value strings that the former bare xs:string allowed.</xs:documentation></xs:annotation>
+    <xs:restriction>
+      <xs:simpleType><xs:list itemType="xs:double"/></xs:simpleType>
+      <xs:length value="4"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="pose">
     <xs:annotation><xs:documentation>6-DOF pose (position + orientation) of an element relative to its parent frame. Specify position via xyz and orientation via either rpy (Euler angles) or quat (quaternion). If both rpy and quat are given, quat takes precedence.</xs:documentation></xs:annotation>
     <xs:attribute name="xyz" type="xs:string" default="0 0 0">
@@ -476,8 +522,8 @@
     <xs:attribute name="rpy" type="xs:string" default="0 0 0">
       <xs:annotation><xs:documentation>Orientation as three space-separated Euler angles "roll pitch yaw" in radians (XYZ extrinsic convention). Default: "0 0 0" (no rotation).</xs:documentation></xs:annotation>
     </xs:attribute>
-    <xs:attribute name="quat" type="xs:string">
-      <xs:annotation><xs:documentation>Orientation as quaternion "x y z w" (Hamilton convention, scalar-last). Optional; if present, overrides rpy.</xs:documentation></xs:annotation>
+    <xs:attribute name="quat" type="Quat4">
+      <xs:annotation><xs:documentation>Orientation as quaternion "x y z w" (Hamilton convention, scalar-last), exactly four doubles. Optional; if present, overrides rpy (quat-wins precedence).</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -557,6 +603,12 @@
     </xs:attribute>
     <xs:attribute name="scale" type="xs:string" default="1 1 1">
       <xs:annotation><xs:documentation>Scale factors as three space-separated doubles "sx sy sz" applied to the mesh. Default: "1 1 1" (no scaling).</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sha" type="xs:string">
+      <xs:annotation><xs:documentation>SHA-256 hash of the mesh file for content integrity and content-addressed caching. Optional but recommended for reproducible builds. Mirrors model_ref/@sha so primitive mesh refs are integrity-checkable too.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="source-uri" type="xs:anyURI">
+      <xs:annotation><xs:documentation>URI of the original pre-conversion asset (e.g. the STL/DAE/OBJ this mesh was converted from when targeting GLB/glTF). Optional; lets tooling reuse the source for a higher-fidelity reverse conversion.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -659,8 +711,8 @@
       <xs:element name="mass" type="xs:double" minOccurs="0">
         <xs:annotation><xs:documentation>Total mass of the component in kilograms (kg).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="com" type="xs:string" minOccurs="0">
-        <xs:annotation><xs:documentation>Center of mass position as "x y z" in meters relative to the component origin.</xs:documentation></xs:annotation>
+      <xs:element name="inertia_origin" type="pose" minOccurs="0">
+        <xs:annotation><xs:documentation>Origin of the inertial frame (center-of-mass position plus optional orientation) as a structured pose relative to the component origin. The inertia tensor below is expressed IN this frame, so a rotated inertial frame (URDF inertial/origin/@rpy) is preserved with no tensor pre-rotation. Replaces the former bare-string &lt;com&gt; (position only) in the clean 1.0 reset; the center of mass is inertia_origin/@xyz.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="inertia" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Rotational inertia tensor as "ixx ixy ixz iyy iyz izz" in kg*m^2. Six unique components of the symmetric 3x3 inertia matrix about the center of mass.</xs:documentation></xs:annotation>
@@ -691,18 +743,34 @@
   </xs:complexType>
 
   <!-- Visual: 3D model reference. <model> is primary, <geometry> is fallback. -->
+  <xs:simpleType name="NameOrigin">
+    <xs:annotation><xs:documentation>Provenance of a visual/collision name: "authored" = meaningful, human/source-supplied (round-trips, emitted to URDF where the URDF schema allows it); "synthesized" = generated by a converter to satisfy HCDF's required-name rule (stripped on URDF export so the output stays byte-clean). Absence is interpreted as "authored" by the companion validator.</xs:documentation></xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="authored"/>
+      <xs:enumeration value="synthesized"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="visual">
     <xs:annotation><xs:documentation>Visual representation of a component for rendering. Contains either a high-fidelity 3D model reference or a geometry primitive fallback (or both, where model is preferred and geometry is the fallback). Multiple visuals per component are allowed for multi-part rendering.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the visual relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity (no offset).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="model" type="model_ref" minOccurs="0">
-        <xs:annotation><xs:documentation>High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available.</xs:documentation></xs:annotation>
-      </xs:element>
-      <xs:element name="geometry" type="geometry" minOccurs="0">
-        <xs:annotation><xs:documentation>Geometry primitive fallback for rendering when no 3D model is available.</xs:documentation></xs:annotation>
-      </xs:element>
+      <xs:choice minOccurs="1">
+        <xs:annotation><xs:documentation>A visual MUST carry a model and/or a geometry (the empty-visual case is invalid in the clean 1.0 reset). When both are present, model (GLB/glTF) is the high-fidelity form and geometry is the primitive fallback.</xs:documentation></xs:annotation>
+        <xs:sequence>
+          <xs:element name="model" type="model_ref">
+            <xs:annotation><xs:documentation>High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="geometry" type="geometry" minOccurs="0">
+            <xs:annotation><xs:documentation>Optional geometry primitive fallback rendered when the 3D model cannot be loaded.</xs:documentation></xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:element name="geometry" type="geometry">
+          <xs:annotation><xs:documentation>Geometry primitive (used when no 3D model is provided).</xs:documentation></xs:annotation>
+        </xs:element>
+      </xs:choice>
       <xs:element name="material" type="material_inline" minOccurs="0">
         <xs:annotation><xs:documentation>Material properties (color, texture) for this visual. Overrides any material in the referenced model.</xs:documentation></xs:annotation>
       </xs:element>
@@ -712,6 +780,9 @@
     </xs:attribute>
     <xs:attribute name="toggle" type="xs:string">
       <xs:annotation><xs:documentation>Toggle group name. Visuals sharing the same toggle group can be shown/hidden together at runtime (e.g., "leds", "covers").</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name-origin" type="NameOrigin">
+      <xs:annotation><xs:documentation>Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. A converter importing URDF (whose visuals have no name) sets this to "synthesized" so the name can be stripped on URDF export.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -758,7 +829,7 @@
   <xs:complexType name="collision">
     <xs:annotation><xs:documentation>Collision geometry for physics simulation and proximity detection. Typically a simplified version of the visual geometry (bounding box, convex hull, or low-poly mesh). Multiple collision elements per component are allowed for complex shapes.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the collision geometry relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="1">
@@ -771,6 +842,12 @@
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this collision shape within the component. Required.</xs:documentation></xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name-origin" type="NameOrigin">
+      <xs:annotation><xs:documentation>Provenance of the name (authored vs converter-synthesized). Optional; absence means authored. URDF collision @name is optional, so an unnamed URDF collision imports as "synthesized" and is stripped on export.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="verbose" type="xs:boolean">
+      <xs:annotation><xs:documentation>URDF-compat: the per-collision URDF &lt;verbose&gt; flag (zero CPS meaning), kept per-collision (not on the comp-level urdf-compat) so each collision round-trips its own flag. Optional; omit for native HCDF.</xs:documentation></xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- Frame -->
@@ -780,7 +857,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of the frame's purpose (e.g., "camera mount point", "tool center point").</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the frame relative to the component origin (or to the frame named in relative-to) as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
@@ -791,7 +868,7 @@
       <xs:annotation><xs:documentation>Name of another frame that this frame's pose is relative to. If omitted, the pose is relative to the component origin.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
-      <xs:annotation><xs:documentation>Frame purpose type: "tcp" (Tool Center Point for end-effector control), "sensor-origin" (sensor reference frame), "attachment" (mechanical mounting point), "optical" (camera optical frame, Z-forward per REP 103). Optional — omit for general-purpose frames.</xs:documentation></xs:annotation>
+      <xs:annotation><xs:documentation>Frame purpose type: "tcp" (Tool Center Point for end-effector control), "sensor-origin" (sensor reference frame), "attachment" (mechanical mounting point), "optical" (camera optical frame, Z-forward convention). Optional — omit for general-purpose frames.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -1053,7 +1130,7 @@
       <xs:element name="capabilities" type="port_capabilities" minOccurs="0">
         <xs:annotation><xs:documentation>Hardware capabilities of this port (speeds, protocols, TSN features, power). Optional; omit for ports whose capabilities are implied by type (e.g., simple JTAG/SWD debug ports).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Physical location of the port connector on the component as "x y z roll pitch yaw" (meters and radians) relative to the component origin.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1090,7 +1167,7 @@
         <xs:annotation><xs:documentation>Wireless standard supported (e.g., "802.11ax", "bluetooth-5.3", "lora-1.0.4"). Multiple standards for multi-standard radios.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="protocol" type="xs:string" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation><xs:documentation>Higher-layer wireless protocol (e.g., "DroneCAN", "MAVLink", "ROS2-DDS"). Multiple protocol elements for multi-protocol capability.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Higher-layer wireless protocol (e.g., "DroneCAN", "MAVLink", "DDS", "Zenoh"). Multiple protocol elements for multi-protocol capability.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="gain" type="measured_value" minOccurs="0">
         <xs:annotation><xs:documentation>Antenna gain in dBi (decibels relative to isotropic). Higher gain = more directional.</xs:documentation></xs:annotation>
@@ -1108,7 +1185,7 @@
       <xs:element name="capabilities" type="antenna_capabilities" minOccurs="0">
         <xs:annotation><xs:documentation>Wireless capabilities of this antenna (bands, standards, gain, polarization).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Physical location and orientation of the antenna on the component as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1247,9 +1324,39 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:complexType name="gripper_surface">
+    <xs:annotation><xs:documentation>Gripper or end-effector contact surface that interacts with grasped objects. Describes the physical interface between the robot's gripper and the objects it manipulates. Different gripper types use fundamentally different physics: mechanical fingers squeeze via friction, suction cups use vacuum, magnetic grippers use electromagnetic force, and adhesive surfaces use van der Waals or chemical bonding. An agent uses this to determine grasp feasibility: can this gripper pick up a given object based on weight, material, surface finish, and geometry?</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="grip-force" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum grip or holding force. Unit: "N". For mechanical fingers: the squeeze force at the fingertip. For suction: the pull-off force (vacuum area x pressure differential). For magnetic: the breakaway force at contact. An agent compares this against object weight x safety factor to determine if a grasp is secure.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="contact-area" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Active contact area of the gripper surface. Unit: "mm2" or "cm2". For suction cups: the sealing area. For finger pads: the pad face area. For magnetic grippers: the pole face area. Larger contact area generally means more stable grasps and better force distribution.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="payload" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum payload the gripper can reliably hold. Unit: "kg" or "N". This is the practical limit accounting for orientation, acceleration, and safety margin — typically less than grip-force / (gravity x safety_factor). Example: 5 kg for a two-finger gripper, 20 kg for a large vacuum gripper array.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="shore-hardness" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Shore durometer hardness of the contact surface material (for compliant finger pads and suction cups). Format: scale + value, e.g., "A30" (soft silicone finger pad), "A50" (medium rubber), "A70" (firm polyurethane). Shore A scale: 0=very soft gel, 30=soft rubber, 50=pencil eraser, 70=tire tread, 90=hard plastic. Softer pads conform to irregular surfaces for better grip; harder pads are more durable. Only applicable for mechanical and suction types.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="vacuum-level" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Vacuum pressure for suction grippers. Unit: "kPa" (negative gauge pressure). Example: -60 kPa for a standard Venturi generator, -85 kPa for a vacuum pump. Pull-off force = vacuum_level x sealing_area. Only applicable for type="suction".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="magnetic-force" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Magnetic holding force at contact. Unit: "N". For permanent magnets: the breakaway force with a flat mild steel surface. For electromagnets: the force at rated current. Only applicable for type="magnetic".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="friction" type="friction" minOccurs="0">
+        <xs:annotation><xs:documentation>Friction coefficients between the gripper surface and a reference material (typically smooth steel or ABS plastic). Used for grasp stability analysis: tangential holding force = normal_force x friction_coefficient.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="type" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Gripper contact mechanism: "mechanical" (friction-based finger pads — the gripper squeezes the object, holding force comes from normal force x friction), "suction" (vacuum cup — single or array of cups creating negative pressure seal, works on smooth non-porous surfaces), "magnetic" (permanent or electromagnetic — works only on ferromagnetic materials), "adhesive" (gecko-inspired dry adhesive or chemical adhesive — uses van der Waals or chemical bonding, works on smooth surfaces regardless of material), "jamming" (granular jamming gripper — conforms to object shape then stiffens via vacuum, handles irregular geometries). Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- Surface container: one or more dynamic surfaces on a component -->
   <xs:complexType name="surface_element">
-    <xs:annotation><xs:documentation>Dynamic surface that interacts with the environment (air, water, or ground). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), and ground contact surfaces (wheels, tracks). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Dynamic surface that interacts with the environment (air, water, ground, or grasped objects). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), ground contact surfaces (wheels, tracks), and gripper contact surfaces (mechanical pads, suction cups, magnetic, adhesive). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="prop" type="prop_surface" minOccurs="0">
         <xs:annotation><xs:documentation>Propeller surface — thrust from rotation.</xs:documentation></xs:annotation>
@@ -1268,6 +1375,9 @@
       </xs:element>
       <xs:element name="track" type="track_surface" minOccurs="0">
         <xs:annotation><xs:documentation>Tracked vehicle surface (tank treads).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="gripper" type="gripper_surface" minOccurs="0">
+        <xs:annotation><xs:documentation>Gripper or end-effector contact surface — mechanical finger pads, suction cups, magnetic grippers, adhesive surfaces, granular jamming.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1393,8 +1503,68 @@
     </xs:all>
   </xs:complexType>
 
+  <xs:complexType name="solar_source">
+    <xs:annotation><xs:documentation>Solar panel energy source — converts sunlight to electricity via photovoltaic cells. Used on agricultural robots, exploration rovers, long-endurance UAS, outdoor monitoring platforms, and space systems. Solar provides continuous power during daylight but output varies with irradiance, temperature, panel orientation, and shading. An agent combines solar peak-power with battery capacity to estimate sustained runtime: during daylight the panel charges the battery and powers the system, at night the battery alone provides power.</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="cell-type" type="xs:string" minOccurs="0">
+        <xs:annotation><xs:documentation>Photovoltaic cell technology: "monocrystalline" (highest efficiency 20-24%, rigid panels), "polycrystalline" (lower cost, 15-20% efficiency), "thin-film" (flexible, lightweight, 10-15% efficiency, can conform to curved surfaces), "gaas" (gallium arsenide, 28-30% efficiency, used in space — expensive), "perovskite" (emerging, potentially low cost). Determines efficiency, weight, flexibility, and cost tradeoffs.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="peak-power" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Peak power output under Standard Test Conditions (STC: 1000 W/m2 irradiance, 25 degC cell temperature, AM1.5 spectrum). Unit: "W" or "Wp" (watts-peak). Real-world output is typically 60-80% of peak due to non-ideal conditions. Example: 100 Wp panel produces ~60-80W in typical outdoor conditions.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="area" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total panel area. Unit: "m2" or "cm2". Used with efficiency to cross-check peak-power: peak_power = area x 1000W/m2 x efficiency. Also used for physical packaging constraints on the robot body.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="efficiency" type="xs:double" minOccurs="0">
+        <xs:annotation><xs:documentation>Solar cell conversion efficiency as a fraction (0-1). The ratio of electrical power output to incident solar power. Monocrystalline: 0.20-0.24. Polycrystalline: 0.15-0.20. Thin-film: 0.10-0.15. GaAs: 0.28-0.30.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="voltage-mpp" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Voltage at Maximum Power Point (Vmpp) under STC. Unit: "V". The MPPT charge controller operates the panel at this voltage to extract maximum power. Example: 18V for a nominal 12V panel, 36V for a nominal 24V panel.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="current-mpp" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Current at Maximum Power Point (Impp) under STC. Unit: "A". peak-power = voltage-mpp x current-mpp.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="open-circuit-voltage" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Open-circuit voltage (Voc) under STC. Unit: "V". The maximum voltage the panel produces with no load. Always higher than voltage-mpp. Used for charge controller input voltage rating.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="mppt" type="xs:boolean" minOccurs="0">
+        <xs:annotation><xs:documentation>Whether the associated charge controller uses Maximum Power Point Tracking. true = MPPT controller (extracts 15-30% more energy than PWM in varying conditions). false = PWM or direct connection. An agent factors this into energy harvest estimates.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <xs:complexType name="supercapacitor_source">
+    <xs:annotation><xs:documentation>Supercapacitor (ultracapacitor) energy source — stores energy electrostatically rather than chemically. Compared to batteries: much higher power density (fast charge/discharge in seconds), much lower energy density (stores less total energy), and near-unlimited cycle life (millions of cycles vs hundreds for batteries). Used for peak power buffering (absorbs regenerative braking energy, provides burst current for motor acceleration), bridge power during battery hot-swap, and smoothing pulsed loads. An agent combines supercapacitor burst capability with battery sustained power for complete power budget analysis.</xs:documentation></xs:annotation>
+    <xs:all>
+      <xs:element name="capacitance" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total capacitance. Unit: "F" (farads). Supercapacitors typically range from 1F to 3000F per cell. Series/parallel configurations adjust the effective capacitance and voltage. Energy stored = 0.5 x C x V^2.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-voltage" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum rated voltage. Unit: "V". Individual cells are typically 2.5-2.7V; series stacks reach 12V, 24V, 48V or higher. Exceeding max voltage causes gas generation and permanent damage.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="esr" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Equivalent Series Resistance. Unit: "mohm" (milliohms). Determines power loss during charge/discharge and maximum current capability: I_max approx V / ESR. Lower ESR = higher power capability. Typical: 0.3-50 mohm depending on size.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-current" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum continuous discharge current. Unit: "A". Supercapacitors can deliver very high currents (hundreds of amps) for short durations. Limited by ESR heating.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="peak-current" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Peak (burst) current for short pulses. Unit: "A". Can be significantly higher than max-current for pulses under 1 second.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="energy" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Total stored energy at max voltage. Unit: "Wh" or "J". Computed from 0.5 x C x V^2 but useful to state explicitly. Much less than batteries of similar volume: a 3000F/2.7V cell stores ~3 Wh vs ~50 Wh for a similar-sized Li-ion cell.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cells-series" type="xs:unsignedInt" minOccurs="0">
+        <xs:annotation><xs:documentation>Number of cells in series. Determines pack voltage: max-voltage = cells x cell-voltage. Requires balancing circuitry.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="cycle-life" type="xs:unsignedInt" minOccurs="0">
+        <xs:annotation><xs:documentation>Rated cycle life — number of charge/discharge cycles to 80% capacitance retention. Supercapacitors typically last 500,000 to 1,000,000+ cycles, far exceeding batteries.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
   <xs:complexType name="power_source">
-    <xs:annotation><xs:documentation>Energy source on a component. Contains one or more source types (battery, tank, fuel-cell). An agent computes runtime, power budget, and weight impact from this data. The component's POWER port defines the electrical output; the power-source defines the stored energy.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Energy source on a component. Contains one or more source types (battery, tank, fuel-cell, solar, supercapacitor). An agent computes runtime, power budget, and weight impact from this data. The component's POWER port defines the electrical output; the power-source defines the stored or generated energy.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="battery" type="battery_source" minOccurs="0">
         <xs:annotation><xs:documentation>Rechargeable battery energy source.</xs:documentation></xs:annotation>
@@ -1404,6 +1574,12 @@
       </xs:element>
       <xs:element name="fuel-cell" type="fuel_cell" minOccurs="0">
         <xs:annotation><xs:documentation>Fuel cell energy converter (PEM, DMFC, SOFC). Generates electricity from fuel continuously.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="solar" type="solar_source" minOccurs="0">
+        <xs:annotation><xs:documentation>Solar panel energy source. Generates electricity from sunlight via photovoltaic cells.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="supercapacitor" type="supercapacitor_source" minOccurs="0">
+        <xs:annotation><xs:documentation>Supercapacitor for peak power buffering, regenerative braking energy capture, and pulsed load smoothing.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1447,7 +1623,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of this HMI element.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Position and orientation relative to component origin.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1555,7 +1731,7 @@
   <xs:complexType name="sensor_base">
     <xs:annotation><xs:documentation>Base sensor type with elements common to ALL sensor subtypes: pose, driver, range, resolution, noise, data output, and geometry. Extended by em, rf, chemical, force, and encoder sensor types. ODR/bandwidth/FIFO are NOT included here — those are specific to high-rate inertial sensors and live in sensor_params (accel/gyro blocks).</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the sensor relative to the component origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -1681,7 +1857,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of this FoV (e.g., "left stereo camera", "forward-facing depth").</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the FoV origin relative to the sensor origin as "x y z roll pitch yaw" (meters and radians). For stereo cameras, this encodes the baseline offset.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="geometry" type="geometry" minOccurs="0">
@@ -1747,6 +1923,22 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="lidar_scan_axis">
+    <xs:annotation><xs:documentation>One axis of a lidar/ray angular scan pattern, matching a URDF ray &lt;horizontal&gt;/&lt;vertical&gt; element (samples, angular resolution, and min/max sweep angle). This is the lossless target for a converted URDF ray sensor; it complements the aggregate fields (channels, fov) which describe the device rather than the per-axis sampling.</xs:documentation></xs:annotation>
+    <xs:attribute name="samples" type="xs:unsignedInt">
+      <xs:annotation><xs:documentation>Number of samples (beams) along this axis. URDF ray horizontal/vertical @samples.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="resolution" type="xs:double">
+      <xs:annotation><xs:documentation>Angular resolution multiplier along this axis. URDF ray @resolution.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="min-angle" type="xs:double">
+      <xs:annotation><xs:documentation>Minimum sweep angle in radians. URDF ray @min_angle.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="max-angle" type="xs:double">
+      <xs:annotation><xs:documentation>Maximum sweep angle in radians. URDF ray @max_angle.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <xs:complexType name="lidar_params">
     <xs:annotation><xs:documentation>Lidar-specific parameters defining scan geometry, point cloud density, and environmental robustness. Applies to optical sensors with type="lidar".</xs:documentation></xs:annotation>
     <xs:sequence>
@@ -1773,6 +1965,19 @@
       </xs:element>
       <xs:element name="vertical-fov" type="range_value" minOccurs="0">
         <xs:annotation><xs:documentation>Vertical field of view as min/max angle. Example: min="-25" max="15" unit="deg".</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="scan-pattern" minOccurs="0">
+        <xs:annotation><xs:documentation>Per-axis angular scan pattern (samples/resolution/min-angle/max-angle for the horizontal and vertical axes), the lossless target for a converted URDF ray/LaserRay sensor. Optional; complements the aggregate channels/fov fields above.</xs:documentation></xs:annotation>
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="horizontal" type="lidar_scan_axis" minOccurs="0">
+              <xs:annotation><xs:documentation>Horizontal scan axis (URDF ray/horizontal).</xs:documentation></xs:annotation>
+            </xs:element>
+            <xs:element name="vertical" type="lidar_scan_axis" minOccurs="0">
+              <xs:annotation><xs:documentation>Vertical scan axis (URDF ray/vertical).</xs:documentation></xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:complexType>
@@ -1850,7 +2055,7 @@
   <xs:complexType name="inertial_sensor">
     <xs:annotation><xs:documentation>Inertial measurement sensor (accelerometer, gyroscope, or combined IMU). Contains pose, driver identification, and separate parameter blocks for accelerometer and gyroscope axes.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the inertial sensor relative to the sensor group origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -1885,7 +2090,7 @@
   <xs:complexType name="optical_sensor">
     <xs:annotation><xs:documentation>Optical sensor (camera, lidar, ToF, optical flow). Contains one or more field-of-view definitions, each with its own intrinsics, distortion, and noise model.</xs:documentation></xs:annotation>
     <xs:sequence>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the optical sensor module relative to the sensor group origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="driver" type="sensor_driver" minOccurs="0">
@@ -2021,8 +2226,39 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="tactile_sensor">
+    <xs:annotation><xs:documentation>Tactile sensor for distributed contact/pressure measurement across a surface. Unlike force sensors (single-point measurement), tactile sensors provide spatially distributed pressure data across an array of sensing elements (taxels). Used on robot fingertips, palms, grippers, and body skin for grasp planning, slip detection, object recognition by touch, and safe physical interaction. Extends sensor_base with tactile-specific parameters: array dimensions, taxel count, spatial resolution, and pressure range.</xs:documentation></xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="sensor_base">
+        <xs:sequence>
+          <xs:element name="rows" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Number of rows in the taxel array. Defines the spatial layout along one axis of the sensing surface. Example: 4 rows x 4 cols = 16 taxels in a fingertip pad.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="cols" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Number of columns in the taxel array. Together with rows, defines the rectangular grid of sensing elements.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="taxels" type="xs:unsignedInt" minOccurs="0">
+            <xs:annotation><xs:documentation>Total number of individual tactile sensing elements (taxels). For regular grids, taxels = rows x cols. For irregular layouts (e.g., curved fingertip, hexagonal packing), specify taxels directly when rows/cols do not apply. Example: 160 taxels on a SynTouch BioTac, 32 on a XELA uSkin patch.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="spatial-resolution" type="measured_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Center-to-center spacing between adjacent taxels. Unit: "mm". Determines the minimum feature size the sensor can resolve through touch. Example: 2.5 mm for a fingertip array, 10 mm for a body-skin patch. Smaller spacing = finer spatial detail but more wiring and processing.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="pressure-range" type="range_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Measurable contact pressure range per taxel. Unit: "kPa" or "N". min = minimum detectable pressure (sensitivity threshold), max = saturation pressure. Example: min="0.1" max="100" unit="kPa" for a capacitive fingertip. Light touch is ~1 kPa, firm grip is 10-50 kPa, maximum grip can exceed 100 kPa.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="sensing-area" type="measured_value" minOccurs="0">
+            <xs:annotation><xs:documentation>Total active sensing area of the tactile surface. Unit: "mm2" or "cm2". Example: 314 mm2 for a circular fingertip pad (20mm diameter), 2500 mm2 for a 50x50 palm patch.</xs:documentation></xs:annotation>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="TactileSensorType" use="required">
+          <xs:annotation><xs:documentation>Tactile sensor technology type (capacitive, resistive, piezoelectric, barometric, optical). Required. Determines the sensing principle and typical characteristics: capacitive and barometric are best for static pressure, piezoelectric for dynamic events (slip, texture), optical for rich 3D contact geometry.</xs:documentation></xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="sensor">
-    <xs:annotation><xs:documentation>Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), and audio (microphone, ultrasonic, sonar, hydrophone) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Sensor hardware container grouped by physical measurement category. Contains sub-elements for inertial (accel, gyro), electromagnetic (mag), optical (camera, lidar, tof, optical flow), RF (gnss, uwb, radar), chemical (gas, ph, humidity), force (strain, pressure, torque, load cell), encoder (position/velocity feedback), temperature (thermistor, RTD, thermocouple, IR), radiation (geiger, scintillation, neutron, dosimeter), audio (microphone, ultrasonic, sonar, hydrophone), and tactile (capacitive, resistive, piezoelectric, barometric, optical) sensors. Each sub-sensor has pose, driver identification, measurement parameters, and noise model.</xs:documentation></xs:annotation>
     <xs:sequence>
       <xs:element name="inertial" type="inertial_sensor" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Inertial measurement unit(s) — accelerometers and/or gyroscopes.</xs:documentation></xs:annotation>
@@ -2054,6 +2290,9 @@
       <xs:element name="audio" type="audio_sensor" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Audio/acoustic sensor(s) — microphones, ultrasonic transducers, sonar, hydrophones.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="tactile" type="tactile_sensor" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Tactile/contact sensor(s) — capacitive arrays, FSR pads, piezoelectric skins, barometric patches, optical gel sensors. Provides spatially distributed pressure/contact data for grasp planning, slip detection, and safe interaction.</xs:documentation></xs:annotation>
+      </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this sensor group within the component (e.g., "imu_main", "front_camera_suite"). Required.</xs:documentation></xs:annotation>
@@ -2079,7 +2318,7 @@
   <xs:complexType name="motor">
     <xs:annotation><xs:documentation>Motor or actuator with electrical, mechanical, and thermal parameters. Voltage and current use rated_value type with nominal/continuous/peak/max ratings. Connected to joints via transmission elements.</xs:documentation></xs:annotation>
     <xs:all>
-      <xs:element name="pose" type="xs:string" minOccurs="0">
+      <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the motor relative to the component origin as "x y z roll pitch yaw" (meters and radians).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="voltage" type="rated_value" minOccurs="0">
@@ -2177,9 +2416,54 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="transmission">
-    <xs:annotation><xs:documentation>Mechanical power transmission connecting a motor to a joint. Defines the gear reduction ratio, efficiency, and backlash for the mechanical coupling between motor output and joint input.</xs:documentation></xs:annotation>
+  <xs:complexType name="transmission_spring">
+    <xs:annotation><xs:documentation>Compliant element (spring) in a transmission drivetrain. The presence of a spring element is what distinguishes compliant actuators from rigid ones. A spring in series between the gearbox and the joint output creates a Series Elastic Actuator (SEA) — enabling torque sensing via deflection measurement, impact absorption, backdrivability through high-ratio gearboxes, and inherent safety for human interaction. A spring in parallel with the motor creates a Parallel Elastic Actuator (PEA) — providing passive gravity compensation to reduce motor effort. Multiple spring elements are allowed: an SEA+PEA combination uses one series spring for force sensing and one parallel spring for gravity compensation. Advanced variants add a clutch (CPEA — clutchable PEA, engages/disengages the parallel spring on demand), an equilibrium motor (AE-PEA — adjustable equilibrium PEA, shifts the spring rest position at runtime), or a stiffness motor (VSA — variable stiffness actuator, changes spring stiffness at runtime via a second motor).</xs:documentation></xs:annotation>
     <xs:all>
+      <xs:element name="stiffness" type="range_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Spring stiffness (rate). Unit: "Nm/rad" for rotary, "N/m" for linear. For fixed-stiffness springs (SEA, PEA, CPEA, AE-PEA): specify the text content as the single stiffness value. For variable-stiffness actuators (VSA): use min and max attributes for the adjustable range. Example: 4.5 Nm/rad for HEBI X8-9 SEA, or min="5" max="500" unit="Nm/rad" for a VSA. This is the defining parameter of a compliant actuator — it determines force control bandwidth, impact energy absorption, and torque measurement resolution (torque = stiffness x deflection).</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="max-deflection" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Maximum spring deflection before mechanical hard stop. Unit: "rad" for rotary, "m" for linear. Defines the torque saturation limit: max_torque = stiffness x max_deflection. Beyond this deflection the actuator behaves rigidly. Example: 0.15 rad for a typical SEA torsion spring. Also determines maximum stored elastic energy: E = 0.5 x stiffness x max_deflection^2.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="damping" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Viscous damping in the spring element. Unit: "Nm.s/rad" for rotary, "N.s/m" for linear. Most springs have minimal inherent damping; this captures any intentional damping added to the compliant element. Affects oscillation settling time and force control stability.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="equilibrium" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Fixed spring rest position (equilibrium point) for PEA configurations. Unit: "rad" for rotary, "m" for linear. The joint angle at which the parallel spring exerts zero force. Typically tuned to the most common operating posture for optimal gravity compensation. For AE-PEA (adjustable equilibrium), use equilibrium-range instead.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="equilibrium-range" type="range_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Adjustable equilibrium range for AE-PEA configurations. Unit: "rad" for rotary, "m" for linear. min and max define the range over which the equilibrium motor can shift the spring rest position. The equilibrium-actuator attribute identifies the motor that performs this adjustment. Example: min="-1.57" max="0.0" for a knee joint that needs gravity compensation anywhere from full flexion to standing.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="clutch-power" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Electrical power required to operate the clutch mechanism for CPEA configurations. Unit: "W". For electromagnetic clutches: power to hold engaged (typically 1-5W). For mechanical latches: power for the actuation pulse only (zero holding power). Only applicable when the clutch attribute is set.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="engage-time" type="measured_value" minOccurs="0">
+        <xs:annotation><xs:documentation>Clutch engagement/disengagement latency for CPEA configurations. Unit: "ms". Time from command to full engagement. Electromagnetic clutches: 2-10 ms. Mechanical latches: 10-50 ms. Affects how quickly the system can switch between compliant and rigid behavior (e.g., switching between stance and swing phase in walking).</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="placement" type="xs:string" use="required">
+      <xs:annotation><xs:documentation>Where the spring sits in the drivetrain relative to the gearbox and motor. "series": between gearbox output and joint output (SEA) — the spring deflects under load, enabling force sensing via dual-encoder deflection measurement and providing inherent compliance. "parallel": alongside the motor, between a fixed anchor and the joint output (PEA) — the spring provides a passive torque that assists or opposes the motor, typically tuned for gravity compensation. Required.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="xs:string">
+      <xs:annotation><xs:documentation>Physical spring construction: "torsion-bar" (solid or tubular bar that twists — compact, common in SEAs), "leaf" (flat spring that bends — easy to manufacture), "coil" (helical compression/extension spring — common in linear actuators), "cable-linear" (cable-driven with linear spring in tension), "gas" (gas spring — provides near-constant force over stroke), "custom" (application-specific design). Optional.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="torque-sensing" type="xs:string">
+      <xs:annotation><xs:documentation>How joint torque is measured using this spring. "spring-deflection": torque derived from the angular difference between motor-side and output-side encoders multiplied by spring stiffness (torque = k x delta_theta) — the standard SEA approach, requires two encoders. "strain-gauge": dedicated strain gauge or load cell on the spring element (e.g., Franka Panda joint torque sensors). "current": torque estimated from motor current (torque = Kt x I) — less accurate, no spring needed but listed here for completeness. "none": no torque sensing. Optional; only applicable for series springs.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="clutch" type="xs:string">
+      <xs:annotation><xs:documentation>Clutch mechanism for engaging/disengaging a parallel spring (CPEA). "electromagnetic": fast switching (2-10 ms), requires continuous power to hold engaged. "mechanical-latch": zero holding power, slower switching (10-50 ms), uses a bistable mechanism. "one-way": ratchet or sprag clutch that locks in one direction and freewheels in the other. "none" or omit: no clutch, spring is permanently engaged. Only applicable for parallel springs.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="equilibrium-actuator" type="xs:string">
+      <xs:annotation><xs:documentation>Reference to a motor (dotted path "comp.motor") that adjusts the spring equilibrium position for AE-PEA configurations. This second motor is typically small and slow — it only moves when the operating posture changes, shifting where the parallel spring exerts zero force for optimal gravity compensation at any joint angle. Only applicable for parallel springs with equilibrium-range.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="stiffness-actuator" type="xs:string">
+      <xs:annotation><xs:documentation>Reference to a motor (dotted path "comp.motor") that adjusts spring stiffness at runtime for Variable Stiffness Actuator (VSA) configurations. The second motor changes the effective lever arm or preload on the spring, varying stiffness between the min and max values specified in the stiffness element. Only applicable for series springs with variable stiffness range.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="transmission">
+    <xs:annotation><xs:documentation>Mechanical power transmission connecting a motor to a joint. Defines the gear reduction ratio, efficiency, backlash, and optional compliant elements (springs) for the mechanical coupling between motor output and joint input. A transmission without spring elements is a rigid actuator. Adding a series spring creates a Series Elastic Actuator (SEA). Adding a parallel spring creates a Parallel Elastic Actuator (PEA). Both can be combined. Advanced variants (CPEA, AE-PEA, VSA) are expressed through spring attributes (clutch, equilibrium-actuator, stiffness-actuator).</xs:documentation></xs:annotation>
+    <xs:sequence>
       <xs:element name="motor" type="transmission_endpoint" minOccurs="0">
         <xs:annotation><xs:documentation>Reference to the motor that drives this transmission. Uses dotted path "comp_name.motor_name".</xs:documentation></xs:annotation>
       </xs:element>
@@ -2195,7 +2479,10 @@
       <xs:element name="backlash" type="measured_value" minOccurs="0">
         <xs:annotation><xs:documentation>Mechanical backlash (dead zone) at the joint output. Unit: typically "rad" for rotary or "m" for linear transmissions.</xs:documentation></xs:annotation>
       </xs:element>
-    </xs:all>
+      <xs:element name="spring" type="transmission_spring" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation><xs:documentation>Compliant spring element(s) in the drivetrain. Zero springs = rigid actuator. One series spring = SEA. One parallel spring = PEA. One of each = SEA+PEA combination. Springs with clutch/equilibrium-actuator/stiffness-actuator attributes express CPEA, AE-PEA, and VSA architectures respectively.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this transmission (e.g., "shoulder_trans", "wheel_fl_belt"). Required.</xs:documentation></xs:annotation>
     </xs:attribute>
@@ -2238,13 +2525,39 @@
     </xs:attribute>
   </xs:complexType>
 
+  <!-- URDF-compat: a closed set of zero-CPS URDF-only fields, typed but quarantined
+       from the clean cyber-physical core. All optional; omit for native HCDF authoring. -->
+  <xs:complexType name="safety_controller">
+    <xs:annotation><xs:documentation>URDF joint safety_controller (soft-limit controller). Zero cyber-physical meaning; carried for lossless URDF round-trip only. Mirrors urdf.xsd safety_controller (k_velocity required).</xs:documentation></xs:annotation>
+    <xs:attribute name="soft_lower_limit" type="xs:double"/>
+    <xs:attribute name="soft_upper_limit" type="xs:double"/>
+    <xs:attribute name="k_position" type="xs:double"/>
+    <xs:attribute name="k_velocity" type="xs:double" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="urdf_compat_comp">
+    <xs:annotation><xs:documentation>Container for URDF-only, zero-CPS fields on a component, kept out of the clean core. Optional; omit for native HCDF authoring.</xs:documentation></xs:annotation>
+    <xs:attribute name="link-type" type="xs:string">
+      <xs:annotation><xs:documentation>The URDF link/@type (an undocumented PR2-era attribute). Preserved verbatim for URDF round-trip; no HCDF semantics.</xs:documentation></xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="urdf_compat_joint">
+    <xs:annotation><xs:documentation>Container for URDF-only, zero-CPS fields on a joint, kept out of the clean core. Optional; omit for native HCDF authoring.</xs:documentation></xs:annotation>
+    <xs:sequence>
+      <xs:element name="safety_controller" type="safety_controller" minOccurs="0">
+        <xs:annotation><xs:documentation>URDF safety_controller, preserved for round-trip. Only meaningful on joints that map to URDF revolute/prismatic.</xs:documentation></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="joint_limit">
     <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits for a joint. Required for revolute and prismatic joints. Units depend on joint type: radians and Nm for revolute, meters and N for prismatic.</xs:documentation></xs:annotation>
-    <xs:attribute name="lower" type="xs:double" default="0">
-      <xs:annotation><xs:documentation>Lower position limit. Radians for revolute joints, meters for prismatic. Default: 0.</xs:documentation></xs:annotation>
+    <xs:attribute name="lower" type="xs:double">
+      <xs:annotation><xs:documentation>Lower position limit. Radians for revolute joints, meters for prismatic. Optional; ABSENCE means unbounded (no schema default is injected) — continuous joints MUST omit lower/upper. A 0 resting value must be written explicitly.</xs:documentation></xs:annotation>
     </xs:attribute>
-    <xs:attribute name="upper" type="xs:double" default="0">
-      <xs:annotation><xs:documentation>Upper position limit. Radians for revolute joints, meters for prismatic. Default: 0. Semantic rule: upper must be greater than or equal to lower for non-continuous joints.</xs:documentation></xs:annotation>
+    <xs:attribute name="upper" type="xs:double">
+      <xs:annotation><xs:documentation>Upper position limit. Radians for revolute joints, meters for prismatic. Optional; absence means unbounded. Validator rule: upper &gt;= lower for non-continuous joints; continuous joints omit both.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="effort" type="xs:double" default="0">
       <xs:annotation><xs:documentation>Maximum joint effort (torque for revolute in Nm, force for prismatic in N). Default: 0 (unlimited if not specified by tooling).</xs:documentation></xs:annotation>
@@ -2257,6 +2570,9 @@
     </xs:attribute>
     <xs:attribute name="jerk" type="xs:double">
       <xs:annotation><xs:documentation>Maximum joint jerk (rad/s^3 for revolute, m/s^3 for prismatic). Optional; used for smooth trajectory generation.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="deceleration" type="xs:double">
+      <xs:annotation><xs:documentation>Maximum joint deceleration (rad/s^2 for revolute, m/s^2 for prismatic). Optional; distinct from acceleration for asymmetric motion profiles. Mirrors urdfdom_headers JointLimits::deceleration. Has no URDF schema field (URDF-compat: reported in the loss manifest on HCDF-&gt;URDF export).</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -2318,7 +2634,7 @@
   </xs:complexType>
 
   <xs:complexType name="joint">
-    <xs:annotation><xs:documentation>Kinematic connection between two components defining degrees of freedom. Supports 8 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), and screw (helical). Semantic rule: revolute/prismatic require axis + limit; fixed forbids them; universal requires axis + axis2.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>Kinematic connection between two components defining degrees of freedom. Supports 10 joint types: revolute (bounded rotation), continuous (unbounded rotation), prismatic (linear), fixed (rigid), ball (3-DOF spherical), universal (2-DOF), planar (2D translation), screw (helical), cylindrical (rotation + translation on same axis), and free (6-DOF unconstrained). Semantic rules: revolute/prismatic/cylindrical require axis + limit; fixed and free forbid axis and limit; universal requires axis + axis2; screw requires axis + thread_pitch.</xs:documentation></xs:annotation>
     <xs:all>
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation><xs:documentation>Human-readable description of the joint's purpose (e.g., "left shoulder pitch", "front-left wheel spin").</xs:documentation></xs:annotation>
@@ -2333,13 +2649,13 @@
         <xs:annotation><xs:documentation>Pose of the joint frame relative to the parent component's origin. Defines where the joint is located and how it is oriented on the parent body.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="axis" type="axis" minOccurs="0">
-        <xs:annotation><xs:documentation>Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, universal, and screw joints. Forbidden for fixed joints.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Primary axis of rotation/translation in the joint frame. Required for revolute, continuous, prismatic, cylindrical, universal, and screw joints. Forbidden for fixed and free joints. For cylindrical joints, this single axis defines both the rotation and translation direction.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="axis2" type="axis" minOccurs="0">
         <xs:annotation><xs:documentation>Secondary axis for universal joints (2-DOF). Defines the second rotation axis, which must be perpendicular to the primary axis. Only used when type="universal".</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="limit" type="joint_limit" minOccurs="0">
-        <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits. Required for revolute and prismatic joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Position, velocity, effort, acceleration, and jerk limits. Required for revolute, prismatic, and cylindrical joints. Optional for continuous (velocity/effort limits only). Forbidden for fixed and free. For cylindrical joints, lower/upper define the translation range (meters) and a separate semantic constraint defines the rotation range (enforced by tooling).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="dynamics" type="joint_dynamics" minOccurs="0">
         <xs:annotation><xs:documentation>Damping, friction, and spring parameters for simulation.</xs:documentation></xs:annotation>
@@ -2352,6 +2668,12 @@
       </xs:element>
       <xs:element name="loop" type="loop_closure" minOccurs="0">
         <xs:annotation><xs:documentation>Loop closure marker. Present when this joint closes a kinematic loop (parallel mechanism). The kinematic tree parser should treat this joint as a constraint, not a parent-child relationship. Used for four-bar linkages, delta robots, Stewart platforms.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="extension" type="extension" minOccurs="0">
+        <xs:annotation><xs:documentation>Vendor/domain-specific extension data for this joint. Used (among other things) as the lax home for a joint-anchored URDF &lt;gazebo reference="joint"&gt; block on the byte-faithful import path. At most one per joint (xs:all); collect multiple domains as separate children inside it if needed.</xs:documentation></xs:annotation>
+      </xs:element>
+      <xs:element name="urdf-compat" type="urdf_compat_joint" minOccurs="0">
+        <xs:annotation><xs:documentation>URDF-only, zero-CPS fields for this joint (e.g. safety_controller). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF.</xs:documentation></xs:annotation>
       </xs:element>
     </xs:all>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -3154,6 +3476,9 @@
       <xs:element name="board" type="xs:string" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Board or hardware platform identifier (e.g., "jetson-agx-orin-64gb", "nxp-s32n79-evb", "custom-motor-driver-v3"). Used for BOM generation and hardware matching.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="operating-temp" type="range_value" minOccurs="0" maxOccurs="1">
+        <xs:annotation><xs:documentation>Operating temperature range of this component. Use min and max attributes for the rated limits. Unit: "degC" (default). Example: min="-40" max="85" for automotive grade, min="0" max="70" for commercial grade, min="-40" max="125" for mil-spec. An agent uses this to validate that all components in a system can operate in the target environment. If the robot operates outdoors in winter (-20 degC), every component's operating-temp range must include that temperature. Components without operating-temp are assumed to have no specific constraint (or the constraint is unknown).</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="inertial" type="inertial_properties" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Inertial properties (mass, center of mass, inertia tensor) for dynamics simulation.</xs:documentation></xs:annotation>
       </xs:element>
@@ -3196,6 +3521,9 @@
       <xs:element name="discovered" type="discovered" minOccurs="0" maxOccurs="1">
         <xs:annotation><xs:documentation>Runtime discovery state (IP, port, last-seen). Populated by discovery agents, not authored by hand.</xs:documentation></xs:annotation>
       </xs:element>
+      <xs:element name="urdf-compat" type="urdf_compat_comp" minOccurs="0" maxOccurs="1">
+        <xs:annotation><xs:documentation>URDF-only, zero-CPS fields for this component (e.g. the PR2 link/@type). Optional; present only when imported from URDF and needed for a lossless round-trip. Omit for native HCDF.</xs:documentation></xs:annotation>
+      </xs:element>
       <xs:element name="extension" type="extension" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation><xs:documentation>Vendor or domain-specific extension data for this component.</xs:documentation></xs:annotation>
       </xs:element>
@@ -3211,6 +3539,9 @@
     </xs:attribute>
     <xs:attribute name="struct-type" type="xs:string">
       <xs:annotation><xs:documentation>Structural classification of this component: fuselage, wing, boom, mast, hull, chassis, frame, arm, leg, tail, nacelle, pod. Optional — provides semantic context for the component's role in the robot's body architecture. Used by agents for high-level reasoning about robot morphology.</xs:documentation></xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ip-rating" type="xs:string">
+      <xs:annotation><xs:documentation>Ingress Protection rating per IEC 60529 (e.g., "IP67", "IP68", "IP54") or NEMA enclosure type (e.g., "NEMA-4X", "NEMA-6P"). The two-digit IP code indicates protection against solids (first digit, 0-6) and liquids (second digit, 0-9K): IP54 = dust-protected + splash-proof. IP65 = dust-tight + water jets. IP67 = dust-tight + temporary immersion (1m, 30min). IP68 = dust-tight + continuous immersion (depth/duration defined by manufacturer). IP69K = dust-tight + high-pressure steam cleaning. An agent uses this to validate that all components meet the environmental requirements for the target deployment (outdoor, underwater, washdown). Components without ip-rating are assumed to have no specific protection (or the rating is unknown). Optional; free-form string to support both IP and NEMA systems.</xs:documentation></xs:annotation>
     </xs:attribute>
   </xs:complexType>
 
@@ -3315,8 +3646,22 @@
 
   <xs:element name="hcdf">
     <xs:complexType>
-      <xs:annotation><xs:documentation>Root element of an HCDF cyber-physical robot description. Contains components (rigid bodies), joints (kinematic connections), joint groups, named kinematic states, self-collision configuration, networks (connectivity + TSN), transmissions (motor-to-joint), materials, and model composition includes.</xs:documentation></xs:annotation>
+      <xs:annotation><xs:documentation>Root element of an HCDF cyber-physical robot description. Every HCDF file is a self-describing module: standalone robot descriptions and reusable sub-assemblies (arms, sensor heads, wheel modules) all use the same root element with the same metadata. When files are composed via include, each file retains its own name, author, and license, allowing tooling to trace provenance per sub-assembly and generate accurate bills of materials. Contains metadata, components (rigid bodies), joints (kinematic connections), joint groups, named kinematic states, self-collision configuration, networks (connectivity + TSN), transmissions (motor-to-joint), materials, and model composition includes.</xs:documentation></xs:annotation>
       <xs:sequence>
+        <!-- Metadata: document-level information about this HCDF file -->
+        <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Human-readable description of what this HCDF file describes. For a top-level robot: the robot's purpose and key characteristics (e.g., "CogniPilot humanoid mobile base research platform with dual 7-DOF arms and TSN backbone"). For a reusable sub-assembly: the module's function and interface (e.g., "7-DOF manipulator arm with HEBI X8-series SEA actuators, 802.3dm daisy-chain, and force/torque sensing at wrist"). Helps humans and AI agents understand the file's contents without parsing the full document.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="author" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Author or organization that created this HCDF file (e.g., "CogniPilot Foundation", "HEBI Robotics", "Jane Doe"). For composed systems, each included file retains its own author, allowing BOM tools to trace which vendor or team provided each sub-assembly. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="license" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>License governing use of this HCDF file and the design it describes. Use SPDX license identifiers when possible (e.g., "Apache-2.0", "BSD-3-Clause", "MIT", "CERN-OHL-S-2.0" for open hardware, "LicenseRef-Proprietary" for closed designs). For composed systems, each included file can carry a different license, enabling mixed open-source and proprietary sub-assemblies. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <xs:element name="url" type="xs:anyURI" minOccurs="0" maxOccurs="1">
+          <xs:annotation><xs:documentation>Canonical URL for this HCDF file's project, documentation, or source repository (e.g., "https://github.com/CogniPilot/hcdformat"). Provides a stable reference for humans and tooling to find updates, issues, and related resources. Optional.</xs:documentation></xs:annotation>
+        </xs:element>
+        <!-- Structure -->
         <xs:element name="comp" type="comp" minOccurs="0" maxOccurs="unbounded">
           <xs:annotation><xs:documentation>Component definitions (rigid bodies / hardware assemblies).</xs:documentation></xs:annotation>
         </xs:element>
@@ -3344,11 +3689,39 @@
         <xs:element name="include" type="include" minOccurs="0" maxOccurs="unbounded">
           <xs:annotation><xs:documentation>External HCDF file includes for model composition.</xs:documentation></xs:annotation>
         </xs:element>
+        <xs:element name="extension" type="extension" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation><xs:documentation>Document-level vendor/domain-specific extension data. Used (among other things) as the lax home for model-level (reference-less) URDF &lt;gazebo&gt; blocks and for top-level non-URDF-schema elements quarantined on import (e.g. &lt;ros2_control&gt; under domain "org.ros2.control"), preserving them byte-faithfully for round-trip without polluting the typed core.</xs:documentation></xs:annotation>
+        </xs:element>
       </xs:sequence>
-      <xs:attribute name="version" type="xs:string" default="1.0">
-        <xs:annotation><xs:documentation>HCDF schema version. Current: 1.0.</xs:documentation></xs:annotation>
+      <xs:attribute name="name" type="xs:string" use="required">
+        <xs:annotation><xs:documentation>Name of the robot, platform, or sub-assembly described by this file. Required. For top-level robot descriptions, this is the robot's model name (e.g., "cogni-humanoid-v2", "quadrotor-x500"). For reusable sub-assemblies, this is the module name (e.g., "7dof-arm", "stereo-head-v2", "hebi-x8-9"). When a file is imported via include, the include's name attribute provides the instance name (e.g., "left_arm"), while this attribute provides the module identity. Use lowercase-with-hyphens by convention.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="version" type="HcdfVersion" default="1.0">
+        <xs:annotation><xs:documentation>HCDF schema version this file conforms to. Current: 1.0 (the clean in-place reset). Pattern-validated MAJOR.MINOR. Parsers should accept documents with the same MAJOR version and ignore unknown elements for forward compatibility; tooling binds to the canonical hcdf.xsd by content SHA-256, not by this string.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="body-frame" type="BodyFrame">
+        <xs:annotation><xs:documentation>Body-frame axis convention for all pose values in this file. FLU (X-forward, Y-left, Z-up): common in ground robotics and humanoid platforms. FRD (X-forward, Y-right, Z-down): common in aerospace and flight controllers. All xyz and rpy values in this document are expressed in the specified body-frame convention. Optional; when omitted, consumers should not assume a default and must either infer from context or require explicit specification. Semantic rule: all files in an include chain must use the same body-frame.</xs:documentation></xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="world-frame" type="WorldFrame">
+        <xs:annotation><xs:documentation>World-frame (navigation/map frame) axis convention for global coordinates. ENU (X-east, Y-north, Z-up): common in GIS, surveying, and ground robotics. NED (X-north, Y-east, Z-down): common in aerospace, marine navigation, and flight controllers. Determines how global poses, waypoints, and map-relative coordinates are interpreted. Independent of body-frame. Optional; when omitted, consumers should not assume a default. Semantic rule: all files in an include chain must use the same world-frame.</xs:documentation></xs:annotation>
       </xs:attribute>
     </xs:complexType>
+    <!-- Referential integrity: ROOT-DIRECT key/keyref selectors (xpath="comp"/"joint"/"group",
+         NOT ".//..." which would wrongly match overloaded names like transmission/joint or
+         inline material). Covers the clean, unambiguous references. Deferred to the companion
+         validator (overloaded/ambiguous names; see proposal sec 4.7): frame/@relative-to
+         (frame-vs-comp), material refs (material_inline/@name is a local name OR a global ref),
+         and transmission motor/joint refs (comp-scoped). Keyrefs validate the FLATTENED document
+         (cross-include integrity is the validator's job). -->
+    <xs:key name="compKey"><xs:selector xpath="comp"/><xs:field xpath="@name"/></xs:key>
+    <xs:key name="jointKey"><xs:selector xpath="joint"/><xs:field xpath="@name"/></xs:key>
+    <xs:key name="groupKey"><xs:selector xpath="group"/><xs:field xpath="@name"/></xs:key>
+    <xs:keyref name="jointParentCompRef" refer="compKey"><xs:selector xpath="joint/parent"/><xs:field xpath="@comp"/></xs:keyref>
+    <xs:keyref name="jointChildCompRef" refer="compKey"><xs:selector xpath="joint/child"/><xs:field xpath="@comp"/></xs:keyref>
+    <xs:keyref name="groupJointRef" refer="jointKey"><xs:selector xpath="group/joint"/><xs:field xpath="@ref"/></xs:keyref>
+    <xs:keyref name="groupGroupRef" refer="groupKey"><xs:selector xpath="group/group"/><xs:field xpath="@ref"/></xs:keyref>
+    <xs:keyref name="stateJointRef" refer="jointKey"><xs:selector xpath="state/joint-position"/><xs:field xpath="@joint"/></xs:keyref>
+    <xs:keyref name="mimicJointRef" refer="jointKey"><xs:selector xpath="joint/mimic"/><xs:field xpath="@joint"/></xs:keyref>
   </xs:element>
 
 </xs:schema>

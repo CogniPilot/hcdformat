@@ -1,0 +1,10 @@
+# HCDF released-schema content hashes (sha256).
+# Bind tooling to a schema BY HASH, never by filename or the "version" string.
+# Two files claiming the same version with different hashes is a detectable
+# contradiction (enforced by CI). versions/<v>/ is a write-once frozen archive.
+# Derived artifacts (hcdf.schema.json, spec.html) are NOT archived here; their
+# consistency is enforced by CI regenerate-and-diff.
+#
+# version  file                     sha256
+1.0        hcdf.xsd                 b0ac45d0b1097d693234660d520695d97cfed620fff5a4e12633ea73b50d31a5
+1.0        hcdf-stream-profile.xsd  753fb48e0995d08c618d28fe3d1adef33d7191689866c7db87e4b1b99d6c58fe

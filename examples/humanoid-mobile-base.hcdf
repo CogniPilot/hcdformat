@@ -23,7 +23,7 @@
     <board>nvidia-agx-thor</board>
     <inertial>
       <mass>1.5</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="mgbe0" iface="eth0" type="ethernet">
       <capabilities>
@@ -66,7 +66,7 @@
     <operating-temp min="-40" max="105" unit="degC"/>
     <inertial>
       <mass>0.8</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
 
     <!-- Integrated TSN switch fabric: XFI + QXGMII ports are bridged -->
@@ -208,7 +208,7 @@
     <operating-temp min="-40" max="125" unit="degC"/>
     <inertial>
       <mass>0.3</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
 
     <switch chip="s32j100-integrated">
@@ -302,7 +302,7 @@
     <board>nxp-imx95-evk</board>
     <inertial>
       <mass>0.6</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -332,7 +332,7 @@
     <description>NXP SPAD front base lidar — solid-state, 200m range</description>
     <inertial>
       <mass>0.4</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -383,7 +383,7 @@
     <description>NXP SPAD rear base lidar — solid-state, 200m range</description>
     <inertial>
       <mass>0.4</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -434,7 +434,7 @@
     <description>Cubtek 4D imaging radar — 77GHz FMCW, 120-degree FOV</description>
     <inertial>
       <mass>0.3</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -479,7 +479,7 @@
     <description>ZLTECH ZLAC8015D v4.0 dual-channel servo controller. Drives 2x ZLLG65ASM250-L hub motors via SIGNAL connectors. CANopen on CAN-FD bus.</description>
     <inertial>
       <mass>0.8</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="can0" iface="can0" type="CAN">
       <capabilities>
@@ -514,7 +514,7 @@
     <description>ZLLG65ASM250-L 24V BLDC hub motor (left). 170mm diameter, 2.92 kg, 250W rated.</description>
     <inertial>
       <mass>2.92</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="sig0" type="SIGNAL">
       <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
@@ -576,7 +576,7 @@
     <description>ZLLG65ASM250-L 24V BLDC hub motor (right). 170mm diameter, 2.92 kg, 250W rated.</description>
     <inertial>
       <mass>2.92</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="sig0" type="SIGNAL">
       <capabilities><connector>12-pin: encoder-AB, hall-UVW, NTC thermistor</connector></capabilities>
@@ -638,7 +638,7 @@
     <description>Front-left passive omni caster wheel</description>
     <inertial>
       <mass>0.15</mass>
-      <com>0 0 -0.015</com>
+      <inertia_origin xyz="0 0 -0.015"/>
     </inertial>
     <surface name="caster">
       <wheel type="omni">
@@ -654,7 +654,7 @@
     <description>Front-right passive omni caster wheel</description>
     <inertial>
       <mass>0.15</mass>
-      <com>0 0 -0.015</com>
+      <inertia_origin xyz="0 0 -0.015"/>
     </inertial>
     <surface name="caster">
       <wheel type="omni">
@@ -670,7 +670,7 @@
     <description>CogniPilot MR-BMS771 — 8S LiFePO4 (~25.6V nominal). CAN-FD. Battery management + power distribution.</description>
     <inertial>
       <mass>3.0</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="can0" iface="can0" type="CAN">
       <capabilities>
@@ -704,7 +704,7 @@
     <description>Mobile base chassis frame — structural root of kinematic tree</description>
     <inertial>
       <mass>45.0</mass>
-      <com>0 0 0.15</com>
+      <inertia_origin xyz="0 0 0.15"/>
       <inertia>1.35 0 0 0.6 0 1.68</inertia>
     </inertial>
     <collision name="chassis_box">
@@ -721,7 +721,7 @@
     <description>Upper body torso structure — mounts both arm chains</description>
     <inertial>
       <mass>8.0</mass>
-      <com>0 0 0.2</com>
+      <inertia_origin xyz="0 0 0.2"/>
       <inertia>0.16 0 0 0.08 0 0.12</inertia>
     </inertial>
     <collision name="torso_box">
@@ -739,7 +739,7 @@
     <description>Left Motor Control Node 1: Shoulder (3 BLDC motors — yaw, pitch, roll). 802.3dm bridging switch.</description>
     <inertial>
       <mass>1.2</mass>
-      <com>0 0 -0.05</com>
+      <inertia_origin xyz="0 0 -0.05"/>
     </inertial>
     <collision name="mcn1l_col">
       <geometry><cylinder><radius>0.04</radius><length>0.12</length></cylinder></geometry>
@@ -832,7 +832,7 @@
     <description>Left Motor Control Node 2: Elbow (1 BLDC motor)</description>
     <inertial>
       <mass>0.8</mass>
-      <com>0 0 -0.04</com>
+      <inertia_origin xyz="0 0 -0.04"/>
     </inertial>
     <collision name="mcn2l_col">
       <geometry><cylinder><radius>0.035</radius><length>0.1</length></cylinder></geometry>
@@ -911,7 +911,7 @@
     <description>Left Motor Control Node 3: Wrist (2 BLDC motors — pitch, roll) + camera spur port</description>
     <inertial>
       <mass>0.6</mass>
-      <com>0 0 -0.03</com>
+      <inertia_origin xyz="0 0 -0.03"/>
     </inertial>
     <collision name="mcn3l_col">
       <geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry>
@@ -919,7 +919,7 @@
 
     <frame name="tcp_left" type="tcp">
       <description>Left arm tool center point for end-effector control</description>
-      <pose>0 0 -0.12 0 0 0</pose>
+      <pose xyz="0 0 -0.12" rpy="0 0 0"/>
     </frame>
 
     <switch>
@@ -1006,7 +1006,7 @@
     <description>Left Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
     <inertial>
       <mass>0.4</mass>
-      <com>0 0 -0.02</com>
+      <inertia_origin xyz="0 0 -0.02"/>
     </inertial>
     <collision name="mcn4l_col">
       <geometry><box><size>0.08 0.06 0.04</size></box></geometry>
@@ -1069,7 +1069,7 @@
     <description>Left wrist stereo camera — ~7 Gbps raw via 802.3dm upstream to S32N79</description>
     <inertial>
       <mass>0.05</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -1111,7 +1111,7 @@
           </intrinsics>
         </fov>
         <fov name="right_eye" color="#4444ff">
-          <pose>-0.06 0 0 0 0 0</pose>
+          <pose xyz="-0.06 0 0" rpy="0 0 0"/>
           <geometry>
             <frustum shape="pyramidal">
               <near>0.1</near>
@@ -1142,7 +1142,7 @@
     <description>Right Motor Control Node 1: Shoulder (3 BLDC motors — yaw, pitch, roll)</description>
     <inertial>
       <mass>1.2</mass>
-      <com>0 0 -0.05</com>
+      <inertia_origin xyz="0 0 -0.05"/>
     </inertial>
     <collision name="mcn1r_col">
       <geometry><cylinder><radius>0.04</radius><length>0.12</length></cylinder></geometry>
@@ -1235,7 +1235,7 @@
     <description>Right Motor Control Node 2: Elbow (1 BLDC motor)</description>
     <inertial>
       <mass>0.8</mass>
-      <com>0 0 -0.04</com>
+      <inertia_origin xyz="0 0 -0.04"/>
     </inertial>
     <collision name="mcn2r_col">
       <geometry><cylinder><radius>0.035</radius><length>0.1</length></cylinder></geometry>
@@ -1314,7 +1314,7 @@
     <description>Right Motor Control Node 3: Wrist (2 BLDC motors — pitch, roll) + camera spur port</description>
     <inertial>
       <mass>0.6</mass>
-      <com>0 0 -0.03</com>
+      <inertia_origin xyz="0 0 -0.03"/>
     </inertial>
     <collision name="mcn3r_col">
       <geometry><cylinder><radius>0.03</radius><length>0.08</length></cylinder></geometry>
@@ -1322,7 +1322,7 @@
 
     <frame name="tcp_right" type="tcp">
       <description>Right arm tool center point for end-effector control</description>
-      <pose>0 0 -0.12 0 0 0</pose>
+      <pose xyz="0 0 -0.12" rpy="0 0 0"/>
     </frame>
 
     <switch>
@@ -1409,7 +1409,7 @@
     <description>Right Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
     <inertial>
       <mass>0.4</mass>
-      <com>0 0 -0.02</com>
+      <inertia_origin xyz="0 0 -0.02"/>
     </inertial>
     <collision name="mcn4r_col">
       <geometry><box><size>0.08 0.06 0.04</size></box></geometry>
@@ -1472,7 +1472,7 @@
     <description>Right wrist stereo camera — ~7 Gbps raw via 802.3dm upstream to S32N79</description>
     <inertial>
       <mass>0.05</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <port name="eth0" iface="eth0" type="ethernet">
       <capabilities>
@@ -1514,7 +1514,7 @@
           </intrinsics>
         </fov>
         <fov name="right_eye" color="#4444ff">
-          <pose>-0.06 0 0 0 0 0</pose>
+          <pose xyz="-0.06 0 0" rpy="0 0 0"/>
           <geometry>
             <frustum shape="pyramidal">
               <near>0.1</near>

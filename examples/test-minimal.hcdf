@@ -7,17 +7,17 @@
 
     <inertial>
       <mass>0.5</mass>
-      <com>0 0 0.005</com>
+      <inertia_origin xyz="0 0 0.005"/>
       <inertia>1.2e-5 0 0 1.1e-5 0 2.0e-5</inertia>
     </inertial>
 
     <visual name="board">
-      <pose>0 0 0 0 0 0</pose>
+      <pose xyz="0 0 0" rpy="0 0 0"/>
       <model uri="models/test-board.glb" sha="abc123def456"/>
     </visual>
 
     <collision name="board_col">
-      <pose>0 0 -0.005 0 0 0</pose>
+      <pose xyz="0 0 -0.005" rpy="0 0 0"/>
       <geometry>
         <box><size>0.048 0.044 0.012</size></box>
       </geometry>
@@ -29,7 +29,7 @@
 
     <frame name="sensor_origin" relative-to="test-board">
       <description>Sensor reference frame</description>
-      <pose>0 0 0.01 0 0 0</pose>
+      <pose xyz="0 0 0.01" rpy="0 0 0"/>
     </frame>
 
     <switch chip="test-switch">
@@ -93,7 +93,7 @@
 
     <sensor name="imu0" update-rate="1000">
       <inertial type="accel_gyro">
-        <pose>0.016 -0.001 -0.008 0 0 0</pose>
+        <pose xyz="0.016 -0.001 -0.008" rpy="0 0 0"/>
         <driver name="icm45686">
           <axis-align x="Y" y="-X" z="Z"/>
         </driver>
@@ -117,10 +117,10 @@
 
     <sensor name="tof0">
       <optical type="tof">
-        <pose>-0.008 0 0.003 0 0 0</pose>
+        <pose xyz="-0.008 0 0.003" rpy="0 0 0"/>
         <driver name="afbr_s50"/>
         <fov name="collector" color="#4488ff">
-          <pose>0 0 0 0 0.0471 0</pose>
+          <pose xyz="0 0 0" rpy="0 0.0471 0"/>
           <geometry>
             <frustum shape="pyramidal">
               <near>0.05</near>
@@ -131,7 +131,7 @@
           </geometry>
         </fov>
         <fov name="emitter" color="#ff4444">
-          <pose>-0.005 0 0 0 0 0</pose>
+          <pose xyz="-0.005 0 0" rpy="0 0 0"/>
           <geometry>
             <frustum shape="conical">
               <near>0.001</near>
@@ -198,7 +198,7 @@
   <comp name="parent-body" role="parent">
     <inertial>
       <mass>5.0</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <collision name="parent_col">
       <geometry><cylinder><radius>0.05</radius><length>0.2</length></cylinder></geometry>

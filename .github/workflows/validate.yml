@@ -10,6 +10,8 @@ on:
       - 'tests/**'
       - '*.py'
       - 'convert.py'
+      - 'scripts/**'
+      - 'versions/**'
   pull_request:
     branches: [main]
     paths:
@@ -19,6 +21,8 @@ on:
       - 'tests/**'
       - '*.py'
       - 'convert.py'
+      - 'scripts/**'
+      - 'versions/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -45,3 +49,12 @@ jobs:
           python3 generate_spec_html.py hcdf.xsd spec.html.new
           diff spec.html spec.html.new || (echo "spec.html is out of date — regenerate with: python3 generate_spec_html.py hcdf.xsd spec.html" && exit 1)
           rm spec.html.new
+
+      - name: Regenerate JSON schema and check for drift
+        run: |
+          python3 generate_json_schema.py hcdf.xsd hcdf.schema.json.new
+          diff hcdf.schema.json hcdf.schema.json.new || (echo "hcdf.schema.json is out of date — regenerate with: python3 generate_json_schema.py hcdf.xsd hcdf.schema.json" && exit 1)
+          rm hcdf.schema.json.new
+
+      - name: Check version archive integrity (hash pin + frozen)
+        run: python3 scripts/check_version_hashes.py
