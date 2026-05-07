@@ -6,5 +6,5 @@
 # consistency is enforced by CI regenerate-and-diff.
 #
 # version  file                     sha256
-1.0        hcdf.xsd                 b0ac45d0b1097d693234660d520695d97cfed620fff5a4e12633ea73b50d31a5
+1.0        hcdf.xsd                 65db896e60f7c85a7003d3d106770721b9140f0f036536d31e3d28402df845ad
 1.0        hcdf-stream-profile.xsd  753fb48e0995d08c618d28fe3d1adef33d7191689866c7db87e4b1b99d6c58fe

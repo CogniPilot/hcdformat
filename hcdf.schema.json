@@ -1116,8 +1116,8 @@
           "description": "Pose of the collision geometry relative to the component origin as \"x y z roll pitch yaw\" (meters and radians). Default: identity."
         },
         "geometry": {
-          "$ref": "#/$defs/geometry",
-          "description": "Geometry primitive or mesh defining the collision boundary. Required."
+          "$ref": "#/$defs/collision_geometry",
+          "description": "Geometry primitive or lean external mesh defining the collision boundary. Required. Prefer primitives/convex hulls; a collision mesh should be a lean format (STL/OBJ/convex), not a GLB -- collision needs shape, not baked appearance."
         },
         "surface": {
           "$ref": "#/$defs/surface",
@@ -1141,6 +1141,89 @@
         "name"
       ],
       "description": "Collision geometry for physics simulation and proximity detection. Typically a simplified version of the visual geometry (bounding box, convex hull, or low-poly mesh). Multiple collision elements per component are allowed for complex shapes."
+    },
+    "collision_geometry": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "box": {
+              "$ref": "#/$defs/box"
+            }
+          },
+          "required": [
+            "box"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cylinder": {
+              "$ref": "#/$defs/cylinder"
+            }
+          },
+          "required": [
+            "cylinder"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "sphere": {
+              "$ref": "#/$defs/sphere"
+            }
+          },
+          "required": [
+            "sphere"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "capsule": {
+              "$ref": "#/$defs/capsule"
+            }
+          },
+          "required": [
+            "capsule"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cone": {
+              "$ref": "#/$defs/cone"
+            }
+          },
+          "required": [
+            "cone"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ellipsoid": {
+              "$ref": "#/$defs/ellipsoid"
+            }
+          },
+          "required": [
+            "ellipsoid"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mesh": {
+              "$ref": "#/$defs/mesh"
+            }
+          },
+          "required": [
+            "mesh"
+          ]
+        }
+      ],
+      "description": "Collision geometry: primitive shapes (box, cylinder, sphere, capsule, cone, ellipsoid) plus an external <mesh>. Prefer primitives or a convex hull for efficiency; a collision <mesh> should be a LEAN format (STL/OBJ/DAE/convex), NOT a GLB -- collision needs shape, not baked appearance (validator-enforced; URI format is not XSD-expressible). Frustum is excluded (sensor-FOV only). Carries no material (collision has no appearance)."
     },
     "collision_pair": {
       "type": "object",
@@ -1759,7 +1842,7 @@
         },
         "relative-to": {
           "type": "string",
-          "description": "Name of another frame that this frame's pose is relative to. If omitted, the pose is relative to the component origin."
+          "description": "Name of the anchor this frame's pose is expressed relative to: a sibling frame (comp-local frame name), a comp (document-unique comp name -- including this frame's own comp, to state the component origin explicitly), or a joint (its joint frame). This mirrors SDF's frame graph, where a frame may attach to a link, joint, or frame. If omitted, the pose is relative to this frame's own component origin. Because the reference resolves against the UNION of frame, comp, and joint names -- a heterogeneous namespace an XSD keyref cannot target (a keyref binds exactly one key) -- referential integrity is enforced by the companion validator, not the schema. On a name collision, resolution precedence is: sibling frame (most local) > comp > joint."
         },
         "type": {
           "type": "string",
@@ -1963,7 +2046,7 @@
           ]
         }
       ],
-      "description": "Geometry container holding exactly one geometric primitive. Solid primitives (box, cylinder, sphere, capsule, cone, ellipsoid, mesh) are used for collision bounds and visual shapes. Frustum is used for sensor field-of-view visualization."
+      "description": "General geometry container holding exactly one shape. Used for sensor field-of-view geometry (frustum) and general references. NOTE: <visual> uses visual_geometry (primitives only -- a visual mesh is the GLB <model>) and <collision> uses collision_geometry (primitives + lean mesh); both exclude frustum. This type retains mesh + frustum for sensor/FOV usage."
     },
     "gnss_params": {
       "type": "object",
@@ -5024,14 +5107,6 @@
           "$ref": "#/$defs/pose",
           "description": "Pose of the visual relative to the component origin as \"x y z roll pitch yaw\" (meters and radians). Default: identity (no offset)."
         },
-        "geometry": {
-          "$ref": "#/$defs/geometry",
-          "description": "Geometry primitive (used when no 3D model is provided)."
-        },
-        "material": {
-          "$ref": "#/$defs/material_inline",
-          "description": "Material properties (color, texture) for this visual. Overrides any material in the referenced model."
-        },
         "name": {
           "type": "string",
           "description": "Unique name for this visual within the component. Required. Used for programmatic toggling and identification."
@@ -5049,6 +5124,78 @@
         "name"
       ],
       "description": "Visual representation of a component for rendering. Contains either a high-fidelity 3D model reference or a geometry primitive fallback (or both, where model is preferred and geometry is the fallback). Multiple visuals per component are allowed for multi-part rendering."
+    },
+    "visual_geometry": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "box": {
+              "$ref": "#/$defs/box"
+            }
+          },
+          "required": [
+            "box"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cylinder": {
+              "$ref": "#/$defs/cylinder"
+            }
+          },
+          "required": [
+            "cylinder"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "sphere": {
+              "$ref": "#/$defs/sphere"
+            }
+          },
+          "required": [
+            "sphere"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "capsule": {
+              "$ref": "#/$defs/capsule"
+            }
+          },
+          "required": [
+            "capsule"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cone": {
+              "$ref": "#/$defs/cone"
+            }
+          },
+          "required": [
+            "cone"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ellipsoid": {
+              "$ref": "#/$defs/ellipsoid"
+            }
+          },
+          "required": [
+            "ellipsoid"
+          ]
+        }
+      ],
+      "description": "Visual geometry: primitive shapes ONLY (box, cylinder, sphere, capsule, cone, ellipsoid). There is deliberately NO <mesh> here -- a *visual* mesh is the self-contained GLB/glTF <model> (the rich-appearance arm of <visual>), never a bare geometry mesh. So \"a visual mesh is GLB-only\" is enforced by the grammar itself. Frustum is excluded (sensor-FOV only). Used in <visual>'s flat/primitive arm with an optional flat <material> color."
     },
     "vlan": {
       "type": "object",

@@ -645,8 +645,33 @@
   </xs:complexType>
 
   <!-- Geometry container: exactly one primitive -->
+  <xs:complexType name="visual_geometry">
+    <xs:annotation><xs:documentation>Visual geometry: primitive shapes ONLY (box, cylinder, sphere, capsule, cone, ellipsoid). There is deliberately NO &lt;mesh&gt; here -- a *visual* mesh is the self-contained GLB/glTF &lt;model&gt; (the rich-appearance arm of &lt;visual&gt;), never a bare geometry mesh. So "a visual mesh is GLB-only" is enforced by the grammar itself. Frustum is excluded (sensor-FOV only). Used in &lt;visual&gt;'s flat/primitive arm with an optional flat &lt;material&gt; color.</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name="box" type="box"/>
+      <xs:element name="cylinder" type="cylinder"/>
+      <xs:element name="sphere" type="sphere"/>
+      <xs:element name="capsule" type="capsule"/>
+      <xs:element name="cone" type="cone"/>
+      <xs:element name="ellipsoid" type="ellipsoid"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="collision_geometry">
+    <xs:annotation><xs:documentation>Collision geometry: primitive shapes (box, cylinder, sphere, capsule, cone, ellipsoid) plus an external &lt;mesh&gt;. Prefer primitives or a convex hull for efficiency; a collision &lt;mesh&gt; should be a LEAN format (STL/OBJ/DAE/convex), NOT a GLB -- collision needs shape, not baked appearance (validator-enforced; URI format is not XSD-expressible). Frustum is excluded (sensor-FOV only). Carries no material (collision has no appearance).</xs:documentation></xs:annotation>
+    <xs:choice>
+      <xs:element name="box" type="box"/>
+      <xs:element name="cylinder" type="cylinder"/>
+      <xs:element name="sphere" type="sphere"/>
+      <xs:element name="capsule" type="capsule"/>
+      <xs:element name="cone" type="cone"/>
+      <xs:element name="ellipsoid" type="ellipsoid"/>
+      <xs:element name="mesh" type="mesh"/>
+    </xs:choice>
+  </xs:complexType>
+
   <xs:complexType name="geometry">
-    <xs:annotation><xs:documentation>Geometry container holding exactly one geometric primitive. Solid primitives (box, cylinder, sphere, capsule, cone, ellipsoid, mesh) are used for collision bounds and visual shapes. Frustum is used for sensor field-of-view visualization.</xs:documentation></xs:annotation>
+    <xs:annotation><xs:documentation>General geometry container holding exactly one shape. Used for sensor field-of-view geometry (frustum) and general references. NOTE: &lt;visual&gt; uses visual_geometry (primitives only -- a visual mesh is the GLB &lt;model&gt;) and &lt;collision&gt; uses collision_geometry (primitives + lean mesh); both exclude frustum. This type retains mesh + frustum for sensor/FOV usage.</xs:documentation></xs:annotation>
     <xs:choice>
       <xs:element name="box" type="box">
         <xs:annotation><xs:documentation>Axis-aligned box primitive.</xs:documentation></xs:annotation>
@@ -758,22 +783,24 @@
         <xs:annotation><xs:documentation>Pose of the visual relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity (no offset).</xs:documentation></xs:annotation>
       </xs:element>
       <xs:choice minOccurs="1">
-        <xs:annotation><xs:documentation>A visual MUST carry a model and/or a geometry (the empty-visual case is invalid in the clean 1.0 reset). When both are present, model (GLB/glTF) is the high-fidelity form and geometry is the primitive fallback.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>The appearance decision -- an EXCLUSIVE choice so a visual has a single source of truth (glTF-style; avoids the URDF/SDF mesh-vs-material ambiguity). ARM A: a self-contained GLB/glTF &lt;model&gt; (geometry + baked PBR/textures, content-addressed by @sha) -- NO &lt;material&gt; is grammatically reachable here, so a flat color can never fight the baked appearance; an optional primitive &lt;geometry&gt; may follow as a pure load-failure fallback. ARM B: a primitive &lt;geometry&gt; with an OPTIONAL flat &lt;material&gt; (color or named-material ref). A flat color is reachable ONLY on a primitive, so "GLB + color" is structurally impossible.</xs:documentation></xs:annotation>
         <xs:sequence>
           <xs:element name="model" type="model_ref">
-            <xs:annotation><xs:documentation>High-fidelity 3D model reference (GLB/glTF). Preferred over geometry when available.</xs:documentation></xs:annotation>
+            <xs:annotation><xs:documentation>Self-contained GLB/glTF asset (geometry + baked PBR/textures + node graph), content-addressed by @sha. THE rich-appearance form, the single source of truth for this visual; it carries no external material. A *visual* mesh is always this (GLB-only).</xs:documentation></xs:annotation>
           </xs:element>
-          <xs:element name="geometry" type="geometry" minOccurs="0">
-            <xs:annotation><xs:documentation>Optional geometry primitive fallback rendered when the 3D model cannot be loaded.</xs:documentation></xs:annotation>
+          <xs:element name="geometry" type="visual_geometry" minOccurs="0">
+            <xs:annotation><xs:documentation>Optional primitive fallback, rendered only if the GLB model cannot be loaded.</xs:documentation></xs:annotation>
           </xs:element>
         </xs:sequence>
-        <xs:element name="geometry" type="geometry">
-          <xs:annotation><xs:documentation>Geometry primitive (used when no 3D model is provided).</xs:documentation></xs:annotation>
-        </xs:element>
+        <xs:sequence>
+          <xs:element name="geometry" type="visual_geometry">
+            <xs:annotation><xs:documentation>Primitive shape (no baked appearance). For a mesh visual, use the GLB &lt;model&gt; arm instead.</xs:documentation></xs:annotation>
+          </xs:element>
+          <xs:element name="material" type="material_inline" minOccurs="0">
+            <xs:annotation><xs:documentation>Optional flat material (color, or a named global-material reference) for the primitive. The ONLY place a flat color may appear -- never alongside a GLB &lt;model&gt;.</xs:documentation></xs:annotation>
+          </xs:element>
+        </xs:sequence>
       </xs:choice>
-      <xs:element name="material" type="material_inline" minOccurs="0">
-        <xs:annotation><xs:documentation>Material properties (color, texture) for this visual. Overrides any material in the referenced model.</xs:documentation></xs:annotation>
-      </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation><xs:documentation>Unique name for this visual within the component. Required. Used for programmatic toggling and identification.</xs:documentation></xs:annotation>
@@ -832,8 +859,8 @@
       <xs:element name="pose" type="pose" minOccurs="0">
         <xs:annotation><xs:documentation>Pose of the collision geometry relative to the component origin as "x y z roll pitch yaw" (meters and radians). Default: identity.</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name="geometry" type="geometry" minOccurs="1">
-        <xs:annotation><xs:documentation>Geometry primitive or mesh defining the collision boundary. Required.</xs:documentation></xs:annotation>
+      <xs:element name="geometry" type="collision_geometry" minOccurs="1">
+        <xs:annotation><xs:documentation>Geometry primitive or lean external mesh defining the collision boundary. Required. Prefer primitives/convex hulls; a collision mesh should be a lean format (STL/OBJ/convex), not a GLB -- collision needs shape, not baked appearance.</xs:documentation></xs:annotation>
       </xs:element>
       <xs:element name="surface" type="surface" minOccurs="0">
         <xs:annotation><xs:documentation>Surface physics properties (friction, restitution, contact) for this collision shape.</xs:documentation></xs:annotation>
@@ -865,7 +892,7 @@
       <xs:annotation><xs:documentation>Unique name for this frame within the component. Required. Referenced by other elements using the frame name.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="relative-to" type="xs:string">
-      <xs:annotation><xs:documentation>Name of another frame that this frame's pose is relative to. If omitted, the pose is relative to the component origin.</xs:documentation></xs:annotation>
+      <xs:annotation><xs:documentation>Name of the anchor this frame's pose is expressed relative to: a sibling frame (comp-local frame name), a comp (document-unique comp name -- including this frame's own comp, to state the component origin explicitly), or a joint (its joint frame). This mirrors SDF's frame graph, where a frame may attach to a link, joint, or frame. If omitted, the pose is relative to this frame's own component origin. Because the reference resolves against the UNION of frame, comp, and joint names -- a heterogeneous namespace an XSD keyref cannot target (a keyref binds exactly one key) -- referential integrity is enforced by the companion validator, not the schema. On a name collision, resolution precedence is: sibling frame (most local) > comp > joint.</xs:documentation></xs:annotation>
     </xs:attribute>
     <xs:attribute name="type" type="xs:string">
       <xs:annotation><xs:documentation>Frame purpose type: "tcp" (Tool Center Point for end-effector control), "sensor-origin" (sensor reference frame), "attachment" (mechanical mounting point), "optical" (camera optical frame, Z-forward convention). Optional — omit for general-purpose frames.</xs:documentation></xs:annotation>
