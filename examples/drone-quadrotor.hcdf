@@ -26,7 +26,7 @@
       <geometry>
         <box><size>0.18 0.18 0.03</size></box>
       </geometry>
-      <material name="carbon"/>
+      <color name="carbon"/>
     </visual>
     <collision name="frame_col">
       <geometry>
@@ -48,7 +48,7 @@
       <geometry>
         <box><size>0.07 0.05 0.012</size></box>
       </geometry>
-      <material name="green_pcb"/>
+      <color name="green_pcb"/>
     </visual>
     <collision name="navq95_col">
       <geometry>
@@ -342,14 +342,14 @@
         <mode>velocity</mode>
       </control-modes>
     </motor>
-    <surface name="prop">
+    <dynamic-surface name="prop">
       <prop>
         <diameter unit="in">9</diameter>
         <pitch unit="in">4.5</pitch>
         <blades>2</blades>
         <direction>CCW</direction>
       </prop>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Front-Right motor (CW) -->
@@ -374,14 +374,14 @@
         <mode>velocity</mode>
       </control-modes>
     </motor>
-    <surface name="prop">
+    <dynamic-surface name="prop">
       <prop>
         <diameter unit="in">9</diameter>
         <pitch unit="in">4.5</pitch>
         <blades>2</blades>
         <direction>CW</direction>
       </prop>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Rear-Left motor (CW) -->
@@ -406,14 +406,14 @@
         <mode>velocity</mode>
       </control-modes>
     </motor>
-    <surface name="prop">
+    <dynamic-surface name="prop">
       <prop>
         <diameter unit="in">9</diameter>
         <pitch unit="in">4.5</pitch>
         <blades>2</blades>
         <direction>CW</direction>
       </prop>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Rear-Right motor (CCW) -->
@@ -438,14 +438,14 @@
         <mode>velocity</mode>
       </control-modes>
     </motor>
-    <surface name="prop">
+    <dynamic-surface name="prop">
       <prop>
         <diameter unit="in">9</diameter>
         <pitch unit="in">4.5</pitch>
         <blades>2</blades>
         <direction>CCW</direction>
       </prop>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- ===== Sensor boards ===== -->
@@ -953,18 +953,8 @@
   <!-- MATERIALS                                                     -->
   <!-- ============================================================ -->
 
-  <material name="carbon">
-    <description>Carbon fiber composite</description>
-    <color rgba="0.15 0.15 0.15 1.0"/>
-    <surface>
-      <friction static="0.4" dynamic="0.3"/>
-      <restitution>0.1</restitution>
-    </surface>
-  </material>
+  <color name="carbon" rgba="0.15 0.15 0.15 1.0" description="Carbon fiber composite"/>
 
-  <material name="green_pcb">
-    <description>FR4 PCB solder mask</description>
-    <color rgba="0.05 0.35 0.1 1.0"/>
-  </material>
+  <color name="green_pcb" rgba="0.05 0.35 0.1 1.0" description="FR4 PCB solder mask"/>
 
 </hcdf>

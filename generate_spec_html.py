@@ -24,7 +24,7 @@ TABS = [
     ("sensor",      "Sensor",       "sensor"),
     ("motor",       "Motor",        "motor"),
     ("hmi",         "HMI",          "hmi_element"),
-    ("surface",     "Surface",      "surface_element"),
+    ("dynamic-surface", "Dynamic Surface", "dynamic_surface"),
     ("power",       "Power",        "power_source"),
     ("port",        "Port",         "port"),
     ("antenna",     "Antenna",      "antenna"),
@@ -34,7 +34,7 @@ TABS = [
     ("chain",       "Chain",        "chain"),
     ("mesh",        "Mesh",         "wireless_mesh"),
     ("transmission","Transmission", "transmission"),
-    ("material",    "Material",     "material_global"),
+    ("color",       "Color",        "color"),
     ("geometry",    "Geometry",     "geometry"),
 ]
 

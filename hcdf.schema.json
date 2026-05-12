@@ -1250,13 +1250,21 @@
     "color": {
       "type": "object",
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "Optional. At document level, declares a reusable color by this name (must be unique). On a visual, either references a document-level color by name (omit @rgba) or names a one-off inline color. Maps to/from URDF's <material name> wrapper."
+        },
         "rgba": {
           "type": "string",
-          "description": "Four space-separated floats \"R G B A\" each in [0, 1]. R=red, G=green, B=blue, A=alpha (1=opaque, 0=transparent). Default: \"0 0 0 1\" (opaque black).",
+          "description": "Four space-separated floats \"R G B A\" each in [0, 1]. R=red, G=green, B=blue, A=alpha (1=opaque, 0=transparent). Default: \"0 0 0 1\" (opaque black). Omit when referencing a named color by @name alone.",
           "default": "0 0 0 1"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional human-readable note (e.g., \"carbon fiber\", \"anodized aluminum\") -- carries intent when a color is named after a material/substance."
         }
       },
-      "description": "RGBA color specification for visual materials."
+      "description": "RGBA appearance color. Used three ways: (1) DEFINE a reusable color at document level with @name + @rgba; (2) REFERENCE a document-level color from a visual by @name alone; (3) INLINE a one-off color with @rgba alone. This is HCDF's flat-appearance tier (the URDF-portable color); rich appearance (PBR/textures) is baked into the GLB <model>, never expressed here. There is no separate <material> element -- a color is the appearance unit, and contact physics lives independently on <collision><surface>."
     },
     "comp": {
       "type": "object",
@@ -1345,13 +1353,13 @@
           },
           "description": "Human-machine interface elements (displays, speakers, LEDs, buttons) on this component."
         },
-        "surface": {
+        "dynamic-surface": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/surface_element",
-            "description": "Dynamic surfaces (aerofoils, control surfaces, propellers, wheels, tracks) on this component."
+            "$ref": "#/$defs/dynamic_surface",
+            "description": "Functional interaction surfaces (aerofoils, control surfaces, propellers, wheels, tracks, grippers) on this component. Renamed from <surface> so that <surface> now refers unambiguously to collision contact physics."
           },
-          "description": "Dynamic surfaces (aerofoils, control surfaces, propellers, wheels, tracks) on this component."
+          "description": "Functional interaction surfaces (aerofoils, control surfaces, propellers, wheels, tracks, grippers) on this component. Renamed from <surface> so that <surface> now refers unambiguously to collision contact physics."
         },
         "power-source": {
           "type": "array",
@@ -1587,6 +1595,55 @@
         }
       },
       "description": "Runtime discovery state for a component. Populated by device discovery agents (mDNS, LLDP, EtherCAT scan) at runtime. Not typically authored by hand — updated automatically by HCDF tooling after network scanning."
+    },
+    "dynamic_surface": {
+      "type": "object",
+      "properties": {
+        "prop": {
+          "$ref": "#/$defs/prop_surface",
+          "description": "Propeller surface — thrust from rotation."
+        },
+        "aerofoil": {
+          "$ref": "#/$defs/aerofoil_surface",
+          "description": "Aerodynamic lifting surface — wing, stabilizer, canard."
+        },
+        "hydrofoil": {
+          "$ref": "#/$defs/hydrofoil_surface",
+          "description": "Hydrodynamic lifting surface — underwater foil."
+        },
+        "control-surface": {
+          "$ref": "#/$defs/control_surface_def",
+          "description": "Aerodynamic control surface — aileron, elevator, rudder, elevon, flap."
+        },
+        "wheel": {
+          "$ref": "#/$defs/wheel_surface",
+          "description": "Wheel ground contact surface."
+        },
+        "track": {
+          "$ref": "#/$defs/track_surface",
+          "description": "Tracked vehicle surface (tank treads)."
+        },
+        "gripper": {
+          "$ref": "#/$defs/gripper_surface",
+          "description": "Gripper or end-effector contact surface — mechanical finger pads, suction cups, magnetic grippers, adhesive surfaces, granular jamming."
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique name for this surface within the component."
+        },
+        "visual": {
+          "type": "string",
+          "description": "Name of the visual element containing this surface's mesh for 3D highlighting."
+        },
+        "mesh": {
+          "type": "string",
+          "description": "GLTF mesh node name within the visual for 3D highlighting of this surface."
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "description": "Dynamic surface that interacts with the environment (air, water, ground, or grasped objects). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), ground contact surfaces (wheels, tracks), and gripper contact surfaces (mechanical pads, suction cups, magnetic, adhesive). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties."
     },
     "eee_capability": {
       "type": "object",
@@ -2989,45 +3046,6 @@
         "policy"
       ],
       "description": "Per-link or per-chain IEEE 802.1AE MACsec security policy. Overrides the network-wide macsec default when present. Specifies policy intent only — actual keys are provisioned at runtime."
-    },
-    "material_global": {
-      "type": "object",
-      "properties": {
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of the material (e.g., \"anodized aluminum\", \"carbon fiber composite\")."
-        },
-        "color": {
-          "$ref": "#/$defs/color",
-          "description": "RGBA color of the material for visual rendering."
-        },
-        "surface": {
-          "$ref": "#/$defs/surface",
-          "description": "Surface physics properties (friction, restitution, contact) when this material is involved in collisions."
-        },
-        "name": {
-          "type": "string",
-          "description": "Unique name for this material. Required. Referenced from visual material elements and collision surfaces."
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "description": "Globally defined material that can be referenced by name from visual and surface elements throughout the HCDF document. Defines appearance (color) and physics (surface properties) in one reusable definition."
-    },
-    "material_inline": {
-      "type": "object",
-      "properties": {
-        "color": {
-          "$ref": "#/$defs/color",
-          "description": "RGBA color for this material. Optional if referencing a global material by name."
-        },
-        "name": {
-          "type": "string",
-          "description": "Reference to a globally defined material name (from top-level material elements), or a local name for this inline material definition."
-        }
-      },
-      "description": "Inline material definition for a visual element. Either defines color directly or references a globally defined material by name."
     },
     "measured_value": {
       "type": "object",
@@ -4453,62 +4471,9 @@
         "contact": {
           "$ref": "#/$defs/contact",
           "description": "Contact dynamics parameters (stiffness, damping) for physics simulation."
-        },
-        "material": {
-          "type": "string",
-          "description": "Reference to a named global material that provides default surface properties. Inline friction/restitution/contact elements override the referenced material's values."
         }
       },
-      "description": "Surface physics properties for collision geometry. Defines friction, restitution (bounciness), and contact dynamics used by physics simulators."
-    },
-    "surface_element": {
-      "type": "object",
-      "properties": {
-        "prop": {
-          "$ref": "#/$defs/prop_surface",
-          "description": "Propeller surface — thrust from rotation."
-        },
-        "aerofoil": {
-          "$ref": "#/$defs/aerofoil_surface",
-          "description": "Aerodynamic lifting surface — wing, stabilizer, canard."
-        },
-        "hydrofoil": {
-          "$ref": "#/$defs/hydrofoil_surface",
-          "description": "Hydrodynamic lifting surface — underwater foil."
-        },
-        "control-surface": {
-          "$ref": "#/$defs/control_surface_def",
-          "description": "Aerodynamic control surface — aileron, elevator, rudder, elevon, flap."
-        },
-        "wheel": {
-          "$ref": "#/$defs/wheel_surface",
-          "description": "Wheel ground contact surface."
-        },
-        "track": {
-          "$ref": "#/$defs/track_surface",
-          "description": "Tracked vehicle surface (tank treads)."
-        },
-        "gripper": {
-          "$ref": "#/$defs/gripper_surface",
-          "description": "Gripper or end-effector contact surface — mechanical finger pads, suction cups, magnetic grippers, adhesive surfaces, granular jamming."
-        },
-        "name": {
-          "type": "string",
-          "description": "Unique name for this surface within the component."
-        },
-        "visual": {
-          "type": "string",
-          "description": "Name of the visual element containing this surface's mesh for 3D highlighting."
-        },
-        "mesh": {
-          "type": "string",
-          "description": "GLTF mesh node name within the visual for 3D highlighting of this surface."
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "description": "Dynamic surface that interacts with the environment (air, water, ground, or grasped objects). Includes aerodynamic surfaces (wings, control surfaces, propellers), hydrodynamic surfaces (hydrofoils), ground contact surfaces (wheels, tracks), and gripper contact surfaces (mechanical pads, suction cups, magnetic, adhesive). Each surface has a name and contains exactly one surface type definition. The comp's joints define the actuation (hinge axes, deflection); the surface defines the physical interaction properties."
+      "description": "Inline contact physics for a collision shape: friction, restitution (bounciness), and contact dynamics used by physics simulators. Appears only under <collision>. Inline-only (no named contact-material library) -- matching URDF (per-link <gazebo> mu/kp) and SDF (per-collision <surface>), neither of which has a reusable contact handle. Not to be confused with <dynamic-surface> (functional aero/wheel/gripper surfaces on a comp)."
     },
     "switch": {
       "type": "object",
@@ -5447,13 +5412,13 @@
       },
       "description": "Motor-to-joint mechanical power transmissions."
     },
-    "material": {
+    "color": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/material_global",
-        "description": "Global material definitions (color, surface friction, restitution)."
+        "$ref": "#/$defs/color",
+        "description": "Reusable document-level color definitions (each @name + @rgba), referenced by name from visual <color> elements. HCDF's flat-appearance palette; replaces the former bundled <material> -- rich appearance is baked into the GLB <model>, and contact physics lives on <collision><surface>."
       },
-      "description": "Global material definitions (color, surface friction, restitution)."
+      "description": "Reusable document-level color definitions (each @name + @rgba), referenced by name from visual <color> elements. HCDF's flat-appearance palette; replaces the former bundled <material> -- rich appearance is baked into the GLB <model>, and contact physics lives on <collision><surface>."
     },
     "include": {
       "type": "array",

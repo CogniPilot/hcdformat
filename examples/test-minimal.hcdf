@@ -180,13 +180,13 @@
       </control-modes>
     </motor>
 
-    <surface name="wheel">
+    <dynamic-surface name="wheel">
       <wheel type="driven">
         <radius unit="m">0.085</radius>
         <width unit="m">0.041</width>
         <friction static="0.9" dynamic="0.7"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
 
     <software name="firmware">
       <version>1.0.0</version>
@@ -338,14 +338,8 @@
     <efficiency>0.85</efficiency>
   </transmission>
 
-  <!-- Material -->
-  <material name="rubber">
-    <color rgba="0.1 0.1 0.1 1.0"/>
-    <surface>
-      <friction static="0.8" dynamic="0.6"/>
-      <restitution>0.3</restitution>
-    </surface>
-  </material>
+  <!-- Color palette -->
+  <color name="rubber" rgba="0.1 0.1 0.1 1.0"/>
 
   <!-- Include -->
   <include uri="components/sensor-module.hcdf" sha="abc123" name="sensor-1" pose="0 0 0.1 0 0 0"/>

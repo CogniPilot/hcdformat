@@ -562,13 +562,13 @@
         <mode>torque</mode>
       </control-modes>
     </motor>
-    <surface name="left-wheel">
+    <dynamic-surface name="left-wheel">
       <wheel type="driven">
         <radius unit="m">0.085</radius>
         <width unit="m">0.041</width>
         <friction static="0.9" dynamic="0.7"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Right hub motor: ZLLG65ASM250-L -->
@@ -624,13 +624,13 @@
         <mode>torque</mode>
       </control-modes>
     </motor>
-    <surface name="right-wheel">
+    <dynamic-surface name="right-wheel">
       <wheel type="driven">
         <radius unit="m">0.085</radius>
         <width unit="m">0.041</width>
         <friction static="0.9" dynamic="0.7"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Omni caster front-left -->
@@ -640,13 +640,13 @@
       <mass>0.15</mass>
       <inertia_origin xyz="0 0 -0.015"/>
     </inertial>
-    <surface name="caster">
+    <dynamic-surface name="caster">
       <wheel type="omni">
         <radius unit="m">0.025</radius>
         <width unit="m">0.02</width>
         <friction static="0.6" dynamic="0.4"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- Omni caster front-right -->
@@ -656,13 +656,13 @@
       <mass>0.15</mass>
       <inertia_origin xyz="0 0 -0.015"/>
     </inertial>
-    <surface name="caster">
+    <dynamic-surface name="caster">
       <wheel type="omni">
         <radius unit="m">0.025</radius>
         <width unit="m">0.02</width>
         <friction static="0.6" dynamic="0.4"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
   </comp>
 
   <!-- MR-BMS771: 8S LiFePO4 battery management system -->
@@ -2272,31 +2272,10 @@
   <!-- MATERIALS                                                        -->
   <!-- ================================================================ -->
 
-  <material name="aluminum-anodized">
-    <description>Anodized aluminum chassis and structural components</description>
-    <color rgba="0.7 0.7 0.7 1.0"/>
-    <surface>
-      <friction static="0.5" dynamic="0.35"/>
-      <restitution>0.1</restitution>
-    </surface>
-  </material>
+  <color name="aluminum-anodized" rgba="0.7 0.7 0.7 1.0" description="Anodized aluminum chassis and structural components"/>
 
-  <material name="rubber-tire">
-    <description>Rubber tire compound for driven wheels</description>
-    <color rgba="0.15 0.15 0.15 1.0"/>
-    <surface>
-      <friction static="0.9" dynamic="0.7"/>
-      <restitution>0.05</restitution>
-    </surface>
-  </material>
+  <color name="rubber-tire" rgba="0.15 0.15 0.15 1.0" description="Rubber tire compound for driven wheels"/>
 
-  <material name="abs-black">
-    <description>ABS plastic enclosure material</description>
-    <color rgba="0.1 0.1 0.1 1.0"/>
-    <surface>
-      <friction static="0.4" dynamic="0.3"/>
-      <restitution>0.2</restitution>
-    </surface>
-  </material>
+  <color name="abs-black" rgba="0.1 0.1 0.1 1.0" description="ABS plastic enclosure material"/>
 
 </hcdf>
