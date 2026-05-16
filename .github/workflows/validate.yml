@@ -11,6 +11,7 @@ on:
       - '*.py'
       - 'convert.py'
       - 'scripts/**'
+      - 'hcdfdom/**'
       - 'versions/**'
   pull_request:
     branches: [main]
@@ -22,6 +23,7 @@ on:
       - '*.py'
       - 'convert.py'
       - 'scripts/**'
+      - 'hcdfdom/**'
       - 'versions/**'
 
 env:
@@ -55,6 +57,15 @@ jobs:
           python3 generate_json_schema.py hcdf.xsd hcdf.schema.json.new
           diff hcdf.schema.json hcdf.schema.json.new || (echo "hcdf.schema.json is out of date — regenerate with: python3 generate_json_schema.py hcdf.xsd hcdf.schema.json" && exit 1)
           rm hcdf.schema.json.new
+
+      - name: Regenerate hcdfdom model and check for drift
+        run: |
+          python3 generate_hcdfdom.py hcdf.xsd hcdfdom/model.py.new
+          diff hcdfdom/model.py hcdfdom/model.py.new || (echo "hcdfdom/model.py is out of date — regenerate with: python3 generate_hcdfdom.py hcdf.xsd hcdfdom/model.py" && exit 1)
+          rm hcdfdom/model.py.new
+
+      - name: hcdfdom typed-DOM round-trip
+        run: python3 tests/test_hcdfdom.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py
