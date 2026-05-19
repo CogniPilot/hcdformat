@@ -67,5 +67,8 @@ jobs:
       - name: hcdfdom typed-DOM round-trip
         run: python3 tests/test_hcdfdom.py
 
+      - name: hcdfdom companion validator
+        run: python3 tests/test_validator.py
+
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py

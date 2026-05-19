@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: two states marked default=true (E_MULTI_DEFAULT_STATE) -->
+<hcdf version="1.0" name="two-default-states">
+  <comp name="a"/>
+  <state name="home" default="true"/>
+  <state name="stow" default="true"/>
+</hcdf>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: visual references a color that is not defined (E_COLOR_REF) -->
+<hcdf version="1.0" name="dangling-color">
+  <comp name="a">
+    <visual name="v">
+      <geometry><box><size>1 1 1</size></box></geometry>
+      <color name="ghost"/>
+    </visual>
+  </comp>
+</hcdf>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: comp c is the child of two joints (E_MULTI_PARENT) -->
+<hcdf version="1.0" name="multi-parent">
+  <comp name="a"/>
+  <comp name="b"/>
+  <comp name="c"/>
+  <joint name="j1" type="fixed"><parent comp="a"/><child comp="c"/></joint>
+  <joint name="j2" type="fixed"><parent comp="b"/><child comp="c"/></joint>
+</hcdf>
