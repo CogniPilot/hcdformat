@@ -40,8 +40,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install lxml
-        run: pip install lxml
+      - name: Install dependencies
+        run: pip install lxml numpy
 
       - name: Run test suite
         run: python3 tests/run_tests.py
@@ -69,6 +69,9 @@ jobs:
 
       - name: hcdfdom companion validator
         run: python3 tests/test_validator.py
+
+      - name: hcdfdom pose/frame normalizer
+        run: python3 tests/test_frames.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py
