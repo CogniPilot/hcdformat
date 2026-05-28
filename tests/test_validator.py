@@ -32,10 +32,14 @@ EXPECT = {
     "dangling-color.hcdf": "E_COLOR_REF",
     "two-default-states.hcdf": "E_MULTI_DEFAULT_STATE",
     "group-bad-tip-frame.hcdf": "E_GROUP_TIP_FRAME",
+    "loop-bad-ref.hcdf": "E_LOOP_REF",
 }
 
 # documents that must be validator-clean (zero errors)
-CLEAN = ["tests/valid/articulated-arm.hcdf"]
+CLEAN = [
+    "tests/valid/articulated-arm.hcdf",
+    "tests/valid/fourbar-loop.hcdf",   # closed kinematic loop: the <loop> joint is a constraint, not a cycle
+]
 
 OK, FAIL = "\033[32mok\033[0m", "\033[31mFAIL\033[0m"
 

@@ -70,6 +70,7 @@ def validate(doc) -> list[Issue]:
     frames_by_comp = {c.name: {f.name for f in (c.frame or []) if f.name} for c in comps}
 
     _check_tree(joints, issues)
+    _check_loops(joints, comp_names, issues)
     _check_joint_semantics(joints, issues)
     _check_frames(comps, comp_names, joint_names, frames_by_comp, issues)
     _check_colors(comps, color_names, issues)
@@ -138,6 +139,24 @@ def _check_tree(joints, issues):
             issues.append(Issue(WARNING, "W_MULTI_ROOT",
                                  f"{len(roots)} kinematic roots ({', '.join(roots)}); "
                                  f"a single robot model usually has one"))
+
+
+# ── loop-closure references ───────────────────────────────────────────────────
+def _check_loops(joints, comp_names, issues):
+    """A <loop> joint may name predecessor/successor comps; if set they must exist.
+
+    Loop joints close kinematic loops (four-bars, delta/Stewart platforms) that URDF's
+    tree-only model cannot express; _check_tree already excludes them from tree edges, so
+    a marked loop is *allowed* — this only validates its body references.
+    """
+    for j in joints:
+        lp = j.loop
+        if lp is None:
+            continue
+        for role, name in (("predecessor", lp.predecessor), ("successor", lp.successor)):
+            if name is not None and name not in comp_names:
+                issues.append(Issue(ERROR, "E_LOOP_REF",
+                                    f"joint {j.name!r}: loop {role} {name!r} is not a comp"))
 
 
 # ── joint-type semantics ──────────────────────────────────────────────────────
