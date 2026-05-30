@@ -12,6 +12,7 @@ on:
       - 'convert.py'
       - 'scripts/**'
       - 'hcdfdom/**'
+      - 'urdf_hcdf/**'
       - 'versions/**'
   pull_request:
     branches: [main]
@@ -24,6 +25,7 @@ on:
       - 'convert.py'
       - 'scripts/**'
       - 'hcdfdom/**'
+      - 'urdf_hcdf/**'
       - 'versions/**'
 
 env:
@@ -72,6 +74,15 @@ jobs:
 
       - name: hcdfdom pose/frame normalizer
         run: python3 tests/test_frames.py
+
+      - name: urdf_hcdf URDF -> HCDF import
+        run: python3 tests/test_urdf_io.py
+
+      - name: urdf_hcdf round-trip + loss manifest
+        run: python3 tests/test_urdf_roundtrip.py
+
+      - name: urdf_hcdf export-loss completeness
+        run: python3 tests/test_urdf_export_losses.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py
