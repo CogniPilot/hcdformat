@@ -13,6 +13,7 @@ on:
       - 'scripts/**'
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
+      - 'hcdf_io/**'
       - 'versions/**'
   pull_request:
     branches: [main]
@@ -26,6 +27,7 @@ on:
       - 'scripts/**'
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
+      - 'hcdf_io/**'
       - 'versions/**'
 
 env:
@@ -83,6 +85,9 @@ jobs:
 
       - name: urdf_hcdf export-loss completeness
         run: python3 tests/test_urdf_export_losses.py
+
+      - name: hcdf_io include flattening + JSON
+        run: python3 tests/test_hcdf_io.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py

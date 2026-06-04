@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Include-cycle fixture: see cycle-a.hcdf. -->
+<hcdf version="1.0" name="cycle-b">
+  <comp name="b_root"/>
+  <include uri="cycle-a.hcdf" name="a"/>
+</hcdf>

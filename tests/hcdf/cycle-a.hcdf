@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Include-cycle fixture: cycle-a includes cycle-b which includes cycle-a (flatten must raise). -->
+<hcdf version="1.0" name="cycle-a">
+  <comp name="a"/>
+  <include uri="cycle-b.hcdf" name="b"/>
+</hcdf>
