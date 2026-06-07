@@ -45,7 +45,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install lxml numpy
+        run: pip install lxml numpy trimesh pygltflib
 
       - name: Run test suite
         run: python3 tests/run_tests.py
@@ -88,6 +88,9 @@ jobs:
 
       - name: hcdf_io include flattening + JSON
         run: python3 tests/test_hcdf_io.py
+
+      - name: assets mesh -> GLB pipeline
+        run: python3 tests/test_assets.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py
