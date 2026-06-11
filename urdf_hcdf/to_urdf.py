@@ -48,6 +48,41 @@ class LossManifest:
     def text(self):
         return "\n".join(f"[{c}] {d}" for c, d in self.items)
 
+    def categories(self):
+        """Return an order-preserving {category: [detail, ...]} grouping of the items."""
+        cats = {}
+        for c, d in self.items:
+            cats.setdefault(c, []).append(d)
+        return cats
+
+    def to_dict(self):
+        """Structured form: total count, per-category grouping, and the flat item list."""
+        return {
+            "total": len(self.items),
+            "categories": self.categories(),
+            "items": [{"category": c, "detail": d} for c, d in self.items],
+        }
+
+    def to_json(self, indent=2):
+        import json
+        return json.dumps(self.to_dict(), indent=indent)
+
+    def markdown(self, title="HCDF → URDF loss manifest"):
+        """A human-readable report grouped by category (stable category ordering)."""
+        lines = [f"# {title}", ""]
+        if not self.items:
+            lines.append("_No losses — the document exports to URDF without dropping content._")
+            return "\n".join(lines) + "\n"
+        cats = self.categories()
+        lines.append(f"**{len(self.items)} loss item(s)** across {len(cats)} categor"
+                     f"{'y' if len(cats) == 1 else 'ies'}.")
+        lines.append("")
+        for c in sorted(cats):
+            lines.append(f"## {c} ({len(cats[c])})")
+            lines.extend(f"- {d}" for d in cats[c])
+            lines.append("")
+        return "\n".join(lines).rstrip() + "\n"
+
 
 def _sub(parent, tag, **attrs):
     e = etree.SubElement(parent, tag)
@@ -90,10 +125,10 @@ class _Exporter:
         if pose is None:
             return
         if self._C is not None or pose.quat:
+            # quat->rpy and FRD->FLU are exact representation conversions (the rotation is preserved),
+            # so neither is a content loss — the profile checker surfaces them as with-transform findings.
             out = frames.transform_pose(pose, self._C if self._C is not None else frames._I3, use_quat=False)
             xyz, rpy = out.xyz, out.rpy
-            if pose.quat:
-                self.loss.add("pose", "quat orientation emitted as rpy (URDF <origin> has no quaternion)")
         else:
             xyz, rpy = pose.xyz, pose.rpy
         if xyz is None and rpy is None:
@@ -128,7 +163,7 @@ class _Exporter:
         if color.rgba is not None:
             _sub(m, "color", rgba=color.rgba)
         if color.description is not None:
-            self.loss.add("material", f"color {color.name!r}: description dropped (no URDF field)")
+            self.loss.add("annotation", f"color {color.name!r}: description dropped (no URDF field)")
         # URDF material needs a name or an inline color; emit only if it has one
         if m.get("name") is not None or len(m):
             parent.append(m)
@@ -154,8 +189,14 @@ class _Exporter:
                             ("switch", "switches"), ("software", "software blocks"),
                             ("discovered", "discovered-device blocks"), ("extension", "vendor extensions")):
             self._drop("comp", ctx, attr, label, comp)
+        # HCDF-only comp metadata scalars with no URDF home (were silently dropped)
+        for attr, label in (("struct_type", "struct-type"), ("ip_rating", "ip-rating"),
+                            ("role", "role"), ("hwid", "hwid")):
+            val = getattr(comp, attr, None)
+            if val is not None:
+                self.loss.add("comp", f"{ctx}: {label}={val!r} dropped (HCDF-only; no URDF home)")
         if comp.description is not None:
-            self.loss.add("comp", f"{ctx}: <description> dropped (no URDF field)")
+            self.loss.add("annotation", f"{ctx}: <description> dropped (no URDF field)")
 
     def _inertial(self, link, ip):
         ine = _sub(link, "inertial")
@@ -190,6 +231,9 @@ class _Exporter:
         else:
             self.loss.add("visual", f"visual {v.name!r}: no geometry; dropped")
             return
+        if v.toggle is not None:
+            self.loss.add("visual", f"visual {v.name!r}: toggle group {v.toggle!r} dropped "
+                                    f"(URDF has no runtime show/hide grouping)")
         link.append(vis)
 
     def _collision(self, link, c, comp_name):
@@ -203,6 +247,11 @@ class _Exporter:
         if c.surface is not None:
             self.loss.add("collision", f"collision {c.name!r}: <surface> contact physics dropped "
                                        f"(URDF core has none; lives in <gazebo> at sim time)")
+        if c.verbose is not None:
+            # urdf-compat per-collision verbose flag; standard urdf.xsd has no such attribute and it
+            # carries zero CPS meaning, so it is a benign (non-model) drop.
+            self.loss.add("annotation", f"collision {c.name!r}: @verbose {c.verbose!r} dropped "
+                                        f"(no standard URDF field; zero CPS meaning)")
         link.append(col)
 
     # ── joint ────────────────────────────────────────────────────────────────
@@ -223,9 +272,10 @@ class _Exporter:
                                        f"{jtype}->fixed downgrade")
             if j.limit is not None:
                 self.loss.add("joint", f"joint {j.name!r}: <limit> dropped with the {jtype}->fixed downgrade")
-            if j.thread_pitch is not None:
-                self.loss.add("joint", f"joint {j.name!r}: thread_pitch {j.thread_pitch!r} dropped "
-                                       f"(URDF has no screw joint)")
+        # thread_pitch never has a URDF home (no screw joint), regardless of the exported type
+        if j.thread_pitch is not None:
+            self.loss.add("joint", f"joint {j.name!r}: thread_pitch {j.thread_pitch!r} dropped "
+                                   f"(URDF has no screw joint)")
         jt = _sub(robot, "joint", name=j.name, type=urdf_type)
         if j.parent is not None:
             _sub(jt, "parent", link=j.parent.comp)
@@ -263,12 +313,18 @@ class _Exporter:
         if j.extension is not None:
             self.loss.add("joint", f"joint {j.name!r}: <extension> vendor data dropped (no URDF home)")
         if j.description is not None:
-            self.loss.add("joint", f"joint {j.name!r}: <description> dropped (no URDF field)")
+            self.loss.add("annotation", f"joint {j.name!r}: <description> dropped (no URDF field)")
 
     # ── top-level ──────────────────────────────────────────────────────────────
     def build(self):
         robot = etree.Element("robot")
         robot.set("name", self.doc.name or "robot")
+        # document-level metadata URDF <robot> has no field for (benign, non-model)
+        for attr, label in (("description", "<description>"), ("author", "author"),
+                            ("license", "license"), ("url", "url"), ("version", "version")):
+            val = getattr(self.doc, attr, None)
+            if val is not None:
+                self.loss.add("annotation", f"document {label} {val!r} dropped (no URDF field)")
         if self.world == WorldFrame.NED:
             self.loss.add("world-frame", "document is world-frame NED; world-relative placements are NOT "
                                          "converted to URDF's ENU (body-frame poses ARE). Re-root world poses "

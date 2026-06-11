@@ -48,6 +48,7 @@ def main():
         cur = getattr(c, attr)
         # list fields default to []; single fields default to None
         setattr(c, attr, [object()] if isinstance(cur, list) else object())
+    c.struct_type, c.ip_rating, c.role, c.hwid = "aluminum-6061", "IP67", "sensor-head", "HW-99"
     uc = M.UrdfCompatComp()
     uc.link_type = "pr2-style-link"
     c.urdf_compat = uc
@@ -111,6 +112,10 @@ def main():
         "comp frame": "frame",
         "comp extension": "extension",
         "comp description": "description",
+        "comp struct-type": "struct-type",
+        "comp ip-rating": "ip-rating",
+        "comp role": "role",
+        "comp hwid": "hwid",
         "capsule geometry": "capsule",
         "joint-type downgrade": "no urdf equivalent",
         "screw thread_pitch": "thread_pitch",

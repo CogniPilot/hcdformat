@@ -58,6 +58,7 @@ def main():
         ("urdf_hcdf import", "tests/test_urdf_io.py"),
         ("urdf_hcdf round-trip", "tests/test_urdf_roundtrip.py"),
         ("urdf_hcdf export-loss completeness", "tests/test_urdf_export_losses.py"),
+        ("loss manifest + profile checker", "tests/test_profile.py"),
         ("hcdf_io flatten + JSON", "tests/test_hcdf_io.py"),
         ("assets mesh -> GLB", "tests/test_assets.py"),
     ):

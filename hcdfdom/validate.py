@@ -48,8 +48,8 @@ class Issue:
 
 
 def _val(enum_or_none):
-    """The .value of a str-Enum, or None."""
-    return enum_or_none.value if enum_or_none is not None else None
+    """The .value of a str-Enum, or the value itself (raw str / None) — tolerant of either form."""
+    return enum_or_none.value if hasattr(enum_or_none, "value") else enum_or_none
 
 
 def _as_float(s):

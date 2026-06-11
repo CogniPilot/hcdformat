@@ -86,6 +86,9 @@ jobs:
       - name: urdf_hcdf export-loss completeness
         run: python3 tests/test_urdf_export_losses.py
 
+      - name: urdf_hcdf loss manifest + HCDF-URDF profile checker
+        run: python3 tests/test_profile.py
+
       - name: hcdf_io include flattening + JSON
         run: python3 tests/test_hcdf_io.py
 
