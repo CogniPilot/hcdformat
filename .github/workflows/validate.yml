@@ -14,6 +14,7 @@ on:
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
       - 'hcdf_io/**'
+      - 'sdf_io/**'
       - 'versions/**'
   pull_request:
     branches: [main]
@@ -28,6 +29,7 @@ on:
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
       - 'hcdf_io/**'
+      - 'sdf_io/**'
       - 'versions/**'
 
 env:
@@ -94,6 +96,9 @@ jobs:
 
       - name: assets mesh -> GLB pipeline
         run: python3 tests/test_assets.py
+
+      - name: sdf_io SDF <-> HCDF spoke
+        run: python3 tests/test_sdf_io.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py

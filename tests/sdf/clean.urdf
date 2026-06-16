@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!-- A minimal, fully-inertialed URDF so libsdformat's URDF->SDF (gz sdf -p) yields a CLEAN model
+     (links without <inertial> are silently dropped by libsdformat). Used by tests/test_sdf_io.py. -->
+<robot name="clean-urdf-bot">
+  <link name="base">
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.3 0.3 0.1"/></geometry>
+    </visual>
+    <collision>
+      <geometry><box size="0.3 0.3 0.1"/></geometry>
+    </collision>
+  </link>
+  <link name="link1">
+    <inertial>
+      <mass value="0.5"/>
+      <origin xyz="0 0 0.2" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.4"/></geometry>
+    </visual>
+  </link>
+  <joint name="joint1" type="revolute">
+    <parent link="base"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5" upper="1.5" effort="10" velocity="2"/>
+  </joint>
+</robot>

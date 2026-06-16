@@ -61,6 +61,7 @@ def main():
         ("loss manifest + profile checker", "tests/test_profile.py"),
         ("hcdf_io flatten + JSON", "tests/test_hcdf_io.py"),
         ("assets mesh -> GLB", "tests/test_assets.py"),
+        ("sdf_io SDF <-> HCDF spoke", "tests/test_sdf_io.py"),
     ):
         results.append(run(label, [PY, script]))
     results.append(run("version-hash archive guard", [PY, "scripts/check_version_hashes.py"]))
