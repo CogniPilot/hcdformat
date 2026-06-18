@@ -134,7 +134,7 @@ def _inertial(iel, notes, ctx):
     return ip
 
 
-def _link(lel, notes):
+def _link(lel, notes, baker=None):
     comp = M.Comp()
     comp.name = lel.get("name")
     ctx = f"link {comp.name!r}"
@@ -155,6 +155,11 @@ def _link(lel, notes):
         col.pose = _pose(cel.find("pose"), notes, ctx + f" collision {col.name!r}")
         geo, _ = _geometry(cel.find("geometry"), notes, ctx + f" collision {col.name!r}",
                            klass=M.CollisionGeometry, allow_mesh=True)
+        if geo is not None and getattr(geo, "mesh", None) is not None and geo.mesh.uri and baker is not None:
+            baked = baker(geo.mesh.uri, geo.mesh.scale, "collision")
+            if baked is not None:
+                geo.mesh.uri, geo.mesh.sha = baked   # scale baked into the vertices (no negative scale left)
+                geo.mesh.scale = None
         col.geometry = geo
         col.surface = _surface(cel.find("surface"), notes, ctx + f" collision {col.name!r}")
         if geo is not None:
@@ -170,14 +175,23 @@ def _link(lel, notes):
                                   klass=M.VisualGeometry, allow_mesh=False)
         if mesh_uri is not None:
             vis.model = M.ModelRef(); vis.model.uri = mesh_uri  # a visual mesh carries its appearance in the GLB model
-            notes.append(f"{ctx} visual {vis.name!r}: mesh -> <model uri> (GLB bake/@sha deferred to assets)")
             scale = _txt(vel.find("geometry/mesh/scale"))
-            if scale and scale != "1 1 1":
-                notes.append(f"{ctx} visual {vis.name!r}: mesh <scale> {scale!r} not represented "
-                             f"(a GLB <model> has no scale field)")
-            if vel.find("material") is not None:
-                notes.append(f"{ctx} visual {vis.name!r}: <material> on a mesh visual not represented "
-                             f"(its appearance is baked into the GLB model)")
+            mat = vel.find("material")
+            color = _txt(mat.find("diffuse")) if mat is not None else None
+            baked = baker(mesh_uri, scale, "visual", color) if baker is not None else None
+            if baked is not None:
+                vis.model.uri, vis.model.sha = baked   # scale, mirror and material colour baked into the GLB
+                if mat is not None and color is None:
+                    notes.append(f"{ctx} visual {vis.name!r}: <material> carried no diffuse colour; "
+                                 f"the GLB keeps the mesh's own appearance")
+            else:
+                notes.append(f"{ctx} visual {vis.name!r}: mesh -> <model uri> (GLB bake/@sha deferred to assets)")
+                if scale and scale != "1 1 1":
+                    notes.append(f"{ctx} visual {vis.name!r}: mesh <scale> {scale!r} not applied "
+                                 f"(bake the GLB with the meshes present to fold it in)")
+                if mat is not None:
+                    notes.append(f"{ctx} visual {vis.name!r}: <material> on a mesh visual not represented "
+                                 f"(its appearance is baked into the GLB model)")
         elif geo is not None:
             vis.geometry = geo
             mat = vel.find("material")
@@ -258,8 +272,11 @@ def _joint(jel, notes):
     return j
 
 
-def from_sdf(src):
+def from_sdf(src, baker=None):
     """Import SDF (path / str / bytes) → (hcdfdom.Hcdf, notes). ``notes`` records every loss/deferral.
+
+    If ``baker`` (an ``assets.Baker``) is given, each visual and collision mesh is resolved and baked
+    to a canonical asset there, with the SDF scale applied, so HCDF never carries a source scale.
 
     Parses with ``recover=True``: libsdformat's URDF→SDF output for legacy models can contain
     undeclared-prefix tags (e.g. old-style ``<sensor:contact>``) that strict XML rejects; recovery
@@ -302,6 +319,6 @@ def from_sdf(src):
         if model.findall(tag):
             notes.append(f"model {doc.name!r}: {len(model.findall(tag))} <{tag}> not represented "
                          f"(SDF-only / out of HCDF-core scope)")
-    doc.comp = [_link(l, notes) for l in model.findall("link")]
+    doc.comp = [_link(l, notes, baker) for l in model.findall("link")]
     doc.joint = [_joint(j, notes) for j in model.findall("joint")]
     return doc, notes

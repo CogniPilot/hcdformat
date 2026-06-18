@@ -62,6 +62,7 @@ def main():
         ("hcdf_io flatten + JSON", "tests/test_hcdf_io.py"),
         ("assets mesh -> GLB", "tests/test_assets.py"),
         ("sdf_io SDF <-> HCDF spoke", "tests/test_sdf_io.py"),
+        ("hcdf CLI", "tests/test_cli.py"),
     ):
         results.append(run(label, [PY, script]))
     results.append(run("version-hash archive guard", [PY, "scripts/check_version_hashes.py"]))

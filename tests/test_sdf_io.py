@@ -190,6 +190,26 @@ def main():
     _, le = to_sdf(M.Hcdf())
     check("requires" in le.text(), "empty doc (no comps) -> recorded that SDF needs >=1 link")
 
+    print("\nA 'world' comp maps to the SDF world frame (reserved name):")
+    d = two_link_doc()
+    w = M.Comp(); w.name = "world"
+    d.comp = [w] + d.comp
+    anchor = M.Joint(); anchor.name = "anchor"; anchor.type = M.JointType("fixed")
+    anchor.parent = M.JointParent(); anchor.parent.comp = "world"
+    anchor.child = M.JointChild(); anchor.child.comp = "base"
+    d.joint = [anchor] + d.joint
+    xml, _ = to_sdf(d)
+    check('name="world"' not in xml, "no <link name=\"world\"> emitted (SDF reserves it)")
+    check("<parent>world</parent>" in xml, "the anchor joint keeps <parent>world</parent> (fixed to the world)")
+    check('name="base"' in xml and 'name="link1"' in xml, "the real links are still emitted")
+
+    print("\nLinks are placed through joint relative_to chains (SDF positions links, not joints):")
+    d = two_link_doc()
+    d.joint[0].origin = M.Pose(); d.joint[0].origin.xyz = "0 0 0.1"; d.joint[0].origin.rpy = "0 0 0"
+    xml, _ = to_sdf(d)
+    check('<pose relative_to="base">0 0 0.1' in xml, "joint pose is the parent->child offset, relative_to the parent")
+    check('relative_to="j1">0 0 0 0 0 0' in xml, "the child link is pinned identity to its joint")
+
     print(f"\nlibsdformat (gz) path  [SDF_VERSION pinned = {SDF_VERSION}]:")
     if not gz.available():
         check(True, "gz/libsdformat not present — skipping gz-delegated checks")

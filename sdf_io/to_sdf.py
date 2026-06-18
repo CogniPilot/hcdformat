@@ -80,10 +80,13 @@ class _Exporter:
         rpy = rpy or "0 0 0"
         return f"{xyz} {rpy}"
 
-    def _emit_pose(self, parent, pose):
+    def _emit_pose(self, parent, pose, relative_to=None, force=False):
         t = self._pose_text(pose)
-        if t is not None:
-            _sub(parent, "pose", text=t)
+        if t is None and not force:
+            return
+        e = _sub(parent, "pose", text=(t or "0 0 0 0 0 0"))
+        if relative_to is not None:
+            e.set("relative_to", relative_to)
 
     def _geometry(self, parent, geo, *, allow_mesh, ctx):
         g = etree.Element("geometry")
@@ -137,12 +140,27 @@ class _Exporter:
             _leaf(_sub(parent, "material"), "diffuse", rgba)
 
     def _link(self, model, comp):
+        if comp.name == "world":
+            # SDF reserves 'world' as the implicit world frame, so a model cannot declare a link
+            # named 'world'. Skip it and let any joint anchored to it reference the world frame
+            # directly (the joint keeps <parent>world</parent>), which fixes the model to the world.
+            if comp.inertial is not None or comp.visual or comp.collision:
+                self.loss.add("comp", "comp 'world' carried geometry or inertia; dropped because SDF "
+                                      "reserves 'world' as the implicit world frame")
+            return
         name = comp.name
         if name is None:
             name = "unnamed_link"
             self.loss.add("comp", "a comp has no name; emitted SDF <link> name synthesized "
                                   f"({name!r}) to keep the SDF valid")
         link = _sub(model, "link", name=name)
+        # Place the link at its parent joint (URDF/HCDF position links through joints, SDF through
+        # link poses). The joint carries the offset, so the child link is identity relative to it.
+        jn = self._child_joint.get(comp.name)
+        if jn is not None:
+            pe = etree.SubElement(link, "pose")
+            pe.set("relative_to", jn)
+            pe.text = "0 0 0 0 0 0"
         if comp.inertial is not None:
             ip = comp.inertial
             ine = _sub(link, "inertial")
@@ -232,7 +250,15 @@ class _Exporter:
             _leaf(jt, "parent", j.parent.comp)
         if j.child is not None:
             _leaf(jt, "child", j.child.comp)
-        self._emit_pose(jt, j.origin)
+        # The joint pose is the parent->child offset, relative to the parent frame. A joint anchored
+        # to 'world' is offset relative to the model frame (SDF reserves 'world' as an implicit frame).
+        pframe = j.parent.comp if j.parent is not None else None
+        if pframe == "world":
+            pframe = "__model__"
+        if pframe is not None:
+            self._emit_pose(jt, j.origin, relative_to=pframe, force=True)
+        else:
+            self._emit_pose(jt, j.origin)
         # NB: a <loop> closure joint is emitted as an ordinary SDF joint — SDF natively expresses
         # closed kinematic loops (URDF cannot), so no loss is recorded for it here.
         if sdf_type == "fixed":
@@ -272,6 +298,9 @@ class _Exporter:
         sdf = etree.Element("sdf")
         sdf.set("version", SDF_VERSION)
         model = _sub(sdf, "model", name=self.doc.name or "model")
+        # which joint places each comp (tree joints only; loop closures do not position links)
+        self._child_joint = {j.child.comp: j.name for j in (self.doc.joint or [])
+                             if j.loop is None and j.child is not None and j.child.comp and j.name}
         if self.world == WorldFrame.NED:
             self.loss.add("world-frame", "document is world-frame NED; world-relative placements are NOT "
                                          "converted to SDF's ENU (body-frame poses ARE).")

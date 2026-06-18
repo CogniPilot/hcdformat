@@ -39,7 +39,13 @@ def to_element(doc: Hcdf):
 
 def dumps(doc: Hcdf, pretty: bool = True) -> str:
     """Serialize the DOM to an XML string."""
-    return etree.tostring(to_element(doc), pretty_print=pretty, encoding="unicode")
+    el = to_element(doc)
+    if pretty:
+        # Quarantined <extension> content is preserved verbatim and carries the source document's own
+        # indentation, which makes lxml's pretty-printer skip re-indenting it (leaving mixed and even
+        # zero-column tags). Re-parse with blank text removed so the whole tree re-indents uniformly.
+        el = etree.fromstring(etree.tostring(el), etree.XMLParser(remove_blank_text=True))
+    return etree.tostring(el, pretty_print=pretty, encoding="unicode")
 
 
 def dump(doc: Hcdf, path, pretty: bool = True) -> None:

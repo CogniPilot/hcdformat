@@ -352,5 +352,10 @@ def to_urdf(doc):
     """Export an hcdfdom Hcdf model to URDF. Returns ``(urdf_xml_string, LossManifest)``."""
     ex = _Exporter(doc)
     robot = ex.build()
+    # De-merged <extension> content keeps its original whitespace, which would suppress lxml's
+    # pretty printing for the whole document. Re-parse with blank text removed so the output is
+    # uniformly indented regardless of any restored gazebo/ros2_control blocks.
+    parser = etree.XMLParser(remove_blank_text=True)
+    robot = etree.fromstring(etree.tostring(robot), parser)
     xml = etree.tostring(robot, pretty_print=True, xml_declaration=True, encoding="UTF-8").decode("utf-8")
     return xml, ex.loss

@@ -20,6 +20,7 @@ Known increment-1 losses (recorded in the returned notes; a structured loss mani
 from __future__ import annotations
 
 import copy
+import os
 
 from lxml import etree
 
@@ -108,7 +109,19 @@ def _material_to_color(mat):
     return col
 
 
-def _visual(v, link, idx, notes):
+def _material_rgba(mat, mat_colors):
+    """Resolve a visual <material> to an 'r g b a' string: inline <color rgba>, or a named reference
+    into the top-level material palette ``mat_colors``. None if it carries no flat colour."""
+    if mat is None:
+        return None
+    c = _find(mat, "color")
+    if c is not None and c.get("rgba") is not None:
+        return c.get("rgba")
+    name = mat.get("name")
+    return mat_colors.get(name) if (name and mat_colors) else None
+
+
+def _visual(v, link, idx, notes, baker=None, mat_colors=None):
     vis = M.Visual()
     vis.name = v.get("name") or f"{link}_visual_{idx}"
     if v.get("name") is None:
@@ -118,16 +131,25 @@ def _visual(v, link, idx, notes):
     mesh = _find(geom, "mesh")
     mat = _find(v, "material")
     if mesh is not None:
-        # ARM A: a visual mesh is a GLB <model> (appearance baked in); @sha filled by step 5.
+        # ARM A: a visual mesh is a GLB <model>. Scale, mirror and the material colour all bake in.
         mr = M.ModelRef()
         mr.uri = mesh.get("filename")
+        scale = mesh.get("scale")
+        color = _material_rgba(mat, mat_colors)
+        baked = baker(mr.uri, scale, "visual", color) if baker is not None else None
+        if baked is not None:
+            mr.uri, mr.sha = baked
+            if mat is not None and color is None:
+                notes.append(f"visual {vis.name!r}: <material> on a mesh visual carried no flat color; "
+                             f"the GLB keeps the mesh's own appearance")
+        else:
+            if scale is not None and scale != "1 1 1":
+                notes.append(f"visual {vis.name!r}: mesh scale {scale!r} not applied "
+                             f"(bake the GLB with the meshes present to fold it in)")
+            if mat is not None:
+                notes.append(f"visual {vis.name!r}: <material> on a mesh visual dropped "
+                             f"(appearance bakes into the GLB at the asset step)")
         vis.model = mr
-        if mat is not None:
-            notes.append(f"visual {vis.name!r}: <material> on a mesh visual dropped "
-                         f"(appearance bakes into the GLB at the asset step)")
-        if mesh.get("scale") is not None and mesh.get("scale") != "1 1 1":
-            notes.append(f"visual {vis.name!r}: mesh scale {mesh.get('scale')!r} dropped "
-                         f"(a GLB <model> carries no scale; bake into the GLB at the asset step)")
     else:
         # ARM B: a primitive with an optional flat color.
         vg = M.VisualGeometry()
@@ -141,7 +163,7 @@ def _visual(v, link, idx, notes):
     return vis
 
 
-def _collision(c, link, idx, notes):
+def _collision(c, link, idx, notes, baker=None):
     col = M.Collision()
     col.name = c.get("name") or f"{link}_collision_{idx}"
     if c.get("name") is None:
@@ -153,8 +175,12 @@ def _collision(c, link, idx, notes):
     if mesh is not None:
         m = M.Mesh()
         m.uri = mesh.get("filename")
-        if mesh.get("scale") is not None:        # lean mesh keeps scale (round-trips exactly)
-            m.scale = mesh.get("scale")
+        scale = mesh.get("scale")
+        baked = baker(m.uri, scale, "collision") if baker is not None else None
+        if baked is not None:
+            m.uri, m.sha = baked             # scale baked into the vertices (no negative scale left)
+        elif scale is not None:              # not baked -> keep the scale so it round-trips
+            m.scale = scale
         cg.mesh = m
     elif not _primitive(geom, cg):
         notes.append(f"collision {col.name!r}: unsupported/empty <geometry>")
@@ -176,16 +202,16 @@ def _inertial(ine):
     return ip
 
 
-def _link_to_comp(link, notes):
+def _link_to_comp(link, notes, baker=None, mat_colors=None):
     comp = M.Comp()
     comp.name = link.get("name")
     ine = _find(link, "inertial")
     if ine is not None:
         comp.inertial = _inertial(ine)
     for i, v in enumerate(_findall(link, "visual")):
-        comp.visual.append(_visual(v, comp.name, i, notes))
+        comp.visual.append(_visual(v, comp.name, i, notes, baker, mat_colors))
     for i, c in enumerate(_findall(link, "collision")):
-        comp.collision.append(_collision(c, comp.name, i, notes))
+        comp.collision.append(_collision(c, comp.name, i, notes, baker))
     return comp
 
 
@@ -260,12 +286,18 @@ def _joint(j, notes):
 
 
 # ── entry point ───────────────────────────────────────────────────────────────
-def from_urdf(src):
+def from_urdf(src, xacro_args=None, baker=None, packages=None):
     """Import URDF (path / string / bytes) into an hcdfdom Hcdf model.
 
-    Returns ``(doc, notes)`` where ``notes`` is a list of human-readable loss/quarantine
-    messages (the precursor to the structured loss manifest).
+    A ``.xacro`` path is expanded to URDF first via the optional ``xacro`` tool; ``xacro_args`` is
+    a ``{name: value}`` dict of xacro arguments and ``packages`` ({name: path}) resolves
+    ``$(find name)`` with no colcon build. If ``baker`` (an ``assets.Baker``) is given, each visual
+    and collision mesh is resolved and baked to a canonical asset there, with the URDF scale applied,
+    so HCDF never carries a source scale. Returns ``(doc, notes)``.
     """
+    if isinstance(src, (str, os.PathLike)) and str(src).endswith(".xacro"):
+        from . import xacro
+        src = xacro.expand(src, xacro_args, packages)
     root = _parse(src)
     if _ln(root) != "robot":
         raise ValueError(f"not a URDF: root element is <{_ln(root)}>, expected <robot>")
@@ -283,6 +315,7 @@ def from_urdf(src):
     # <color rgba>; a texture-based (or rgba-less) material is NOT a flat color, so it is
     # quarantined verbatim (round-trips exactly; the asset pipeline bakes it to a GLB later).
     mat_quarantine = []
+    mat_colors = {}   # name -> 'r g b a', so a visual that references a material by name bakes its colour
     for mat in _findall(root, "material"):
         if mat.get("name") is None:
             notes.append("top-level <material> without a name dropped (URDF requires a material name)")
@@ -290,6 +323,7 @@ def from_urdf(src):
         c = _find(mat, "color")
         if c is not None and c.get("rgba") is not None:
             doc.color.append(_material_to_color(mat))
+            mat_colors[mat.get("name")] = c.get("rgba")
             if _find(mat, "texture") is not None:
                 notes.append(f"material {mat.get('name')!r}: <texture> dropped, flat color kept (bake to GLB)")
         else:
@@ -297,7 +331,7 @@ def from_urdf(src):
             notes.append(f"material {mat.get('name')!r}: texture-based (no flat rgba) -> quarantined to "
                          f"<extension domain='org.urdf.material'> for exact round-trip / GLB bake")
     for link in _findall(root, "link"):
-        doc.comp.append(_link_to_comp(link, notes))
+        doc.comp.append(_link_to_comp(link, notes, baker, mat_colors))
     for j in _findall(root, "joint"):
         doc.joint.append(_joint(j, notes))
 
