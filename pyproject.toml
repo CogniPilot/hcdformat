@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hcdformat"
+version = "1.0.0"
+description = "Convert and check HCDF, URDF, and SDF robot descriptions"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "CogniPilot Foundation" }]
+keywords = ["hcdf", "urdf", "sdf", "robot", "description", "ros"]
+# requires-python is intentionally omitted: colcon's ament_python introspection on some ROS distros
+# literal-evals the setup data, and a SpecifierSet repr breaks it. The supported floor is Python 3.10,
+# recorded in the classifiers below.
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = ["lxml>=4.6", "numpy>=1.21"]
+
+[project.optional-dependencies]
+# mesh baking (hcdf convert --bake): GLB export and inspection
+mesh = ["trimesh>=4.0", "pygltflib>=1.16"]
+
+[project.scripts]
+hcdf = "hcdf_cli:main"
+
+[project.urls]
+Homepage = "https://github.com/CogniPilot/hcdformat"
+
+# The CLI module stays top-level (so `python3 -m hcdf_cli` keeps working); shared support modules
+# live in the hcdf package, and the conversion adapters are their own packages. xacro and gz are
+# external (ROS / Gazebo) tools, resolved at runtime, not Python dependencies.
+[tool.setuptools]
+py-modules = ["hcdf_cli"]
+packages = ["hcdf", "hcdfdom", "hcdf_io", "sdf_io", "urdf_hcdf"]
+
+[tool.setuptools.data-files]
+# the JSON converter reads hcdf.xsd at runtime; json_io locates it under this prefix. package.xml and
+# the resource marker make the same tree installable as an ament_python package (ros2 / colcon).
+"share/hcdformat" = ["hcdf.xsd", "hcdf.schema.json", "package.xml"]
+"share/ament_index/resource_index/packages" = ["resource/hcdformat"]

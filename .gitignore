@@ -1,3 +1,8 @@
 tools/hcdf-cli/target/
 tools/hcdf-cli/Cargo.lock
 __pycache__/
+build/
+dist/
+*.egg-info/
+*.pyc
+log/

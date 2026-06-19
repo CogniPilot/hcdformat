@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>hcdformat</name>
+  <version>1.0.0</version>
+  <description>Convert and check HCDF, URDF, and SDF robot descriptions</description>
+  <maintainer email="bperseghetti@rudislabs.com">Benjamin Perseghetti</maintainer>
+  <license>Apache-2.0</license>
+  <url type="repository">https://github.com/CogniPilot/hcdformat</url>
+
+  <exec_depend>python3-lxml</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <!-- xacro is needed only to convert .xacro inputs; rosdep resolves it on a ROS system -->
+  <exec_depend>xacro</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

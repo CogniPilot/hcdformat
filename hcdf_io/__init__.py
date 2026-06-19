@@ -18,13 +18,7 @@ converter pipeline needs on top of that:
 """
 from __future__ import annotations
 
-import os
-import sys
-
-# make the repo root importable so `import convert` works regardless of cwd
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from hcdfdom import dump, dumps, load  # noqa: E402,F401  (convenience re-exports)
+from hcdfdom import dump, dumps, load  # noqa: F401  (convenience re-exports)
 
 from .include import flatten  # noqa: E402
 from .json_io import from_json, to_json  # noqa: E402

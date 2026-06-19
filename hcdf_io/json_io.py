@@ -7,12 +7,38 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 
-import convert  # repo-root module (path set up by the package __init__)
 import hcdfdom
 
-_XSD = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "hcdf.xsd")
+from hcdf import convert
+
+
+def _locate_xsd():
+    """Find hcdf.xsd across a source checkout, a pip install, and a ROS (ament) install.
+
+    Checkout: it sits at the repo root (one level up from this package). pip install: under
+    ``<sys.prefix>/share/hcdformat`` (see pyproject data-files). ROS install: under the package's
+    ament share directory, found via ament_index when that is available.
+    """
+    name = "hcdf.xsd"
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [os.path.join(os.path.dirname(here), name),            # source checkout: repo root
+                  os.path.join(sys.prefix, "share", "hcdformat", name),  # pip install prefix
+                  os.path.join(here, name)]                              # beside the module
+    try:  # ROS / ament install: console script runs under system python, data is in the overlay
+        from ament_index_python.packages import get_package_share_directory
+        candidates.insert(1, os.path.join(get_package_share_directory("hcdformat"), name))
+    except Exception:  # noqa: BLE001  (not a ROS environment)
+        pass
+    for cand in candidates:
+        if os.path.exists(cand):
+            return cand
+    return candidates[0]  # let the eventual open() report it clearly
+
+
+_XSD = _locate_xsd()
 
 
 def to_json(doc) -> dict:

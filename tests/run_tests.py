@@ -178,7 +178,7 @@ def main():
 
     # --- Roundtrip tests (XML -> JSON -> XML must validate) ---
     try:
-        from convert import xml_to_json_file, json_to_xml_file
+        from hcdf.convert import xml_to_json_file, json_to_xml_file
 
         print(f"\n{BOLD}Roundtrip tests (XML -> JSON -> XML):{RESET}")
         roundtrip_files = (

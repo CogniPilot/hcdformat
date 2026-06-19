@@ -9,7 +9,8 @@ on:
       - 'examples/**'
       - 'tests/**'
       - '*.py'
-      - 'convert.py'
+      - 'hcdf/**'
+      - 'pyproject.toml'
       - 'scripts/**'
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
@@ -24,7 +25,8 @@ on:
       - 'examples/**'
       - 'tests/**'
       - '*.py'
-      - 'convert.py'
+      - 'hcdf/**'
+      - 'pyproject.toml'
       - 'scripts/**'
       - 'hcdfdom/**'
       - 'urdf_hcdf/**'
@@ -99,6 +101,9 @@ jobs:
 
       - name: sdf_io SDF <-> HCDF spoke
         run: python3 tests/test_sdf_io.py
+
+      - name: hcdf CLI
+        run: python3 tests/test_cli.py
 
       - name: Check version archive integrity (hash pin + frozen)
         run: python3 scripts/check_version_hashes.py
