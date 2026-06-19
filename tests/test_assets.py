@@ -24,7 +24,7 @@ except Exception:  # noqa: BLE001
 
 import warnings
 
-import assets  # noqa: E402
+from hcdf import assets  # noqa: E402
 from hcdfdom import model as M  # noqa: E402
 from hcdfdom.validate import validate  # noqa: E402
 
@@ -124,6 +124,75 @@ def main():
         v2.model.uri = "box.stl"
         m3 = assets.stamp(doc2, base_dir=td, out_dir=None)
         check("needs-conversion" in m3[0]["status"], "non-GLB visual without out_dir -> 'needs-conversion'")
+
+        print("\nbake() applies scale and mirror, and passes through canonical GLBs:")
+        bdir = os.path.join(td, "baked")
+        # non-GLB visual + scale -> GLB with the scale baked into the geometry
+        n, _ = assets.bake(stl, "0.001 0.001 0.001", "visual", bdir)
+        g = trimesh.load(os.path.join(bdir, n), force="mesh")
+        check(n.endswith(".glb") and abs(g.extents[0] - 0.0002) < 1e-6, "visual non-GLB + scale -> scaled GLB")
+        # already a GLB + no scale -> passed through unchanged (not re-exported)
+        np_, _ = assets.bake(glb_in, None, "visual", bdir)
+        check(np_.endswith(".glb") and open(glb_in, "rb").read() == open(os.path.join(bdir, np_), "rb").read(),
+              "already-GLB + no scale -> passthrough (identical bytes)")
+        # already a GLB + a scale -> re-baked
+        ns, _ = assets.bake(glb_in, "2 2 2", "visual", bdir)
+        gs = trimesh.load(os.path.join(bdir, ns), force="mesh")
+        check(abs(gs.extents[0] - 0.4) < 1e-6, "already-GLB + scale -> re-baked to the scale")
+        # collision: no scale passes through; a mirror bakes to a positive-volume lean mesh
+        nc, _ = assets.bake(stl, None, "collision", bdir)
+        check(nc.endswith(".stl") and open(stl, "rb").read() == open(os.path.join(bdir, nc), "rb").read(),
+              "collision + no scale -> passthrough lean mesh")
+        nm, _ = assets.bake(obj, "1 -1 1", "collision", bdir)
+        mm = trimesh.load(os.path.join(bdir, nm), force="mesh")
+        check(mm.is_watertight and mm.volume > 0, "collision mirror -> watertight, positive volume (no negative scale)")
+        check(assets.bake(stl, "0.001 0.001 0.001", "visual", bdir)[1]
+              == assets.bake(stl, "0.001 0.001 0.001", "visual", bdir)[1], "bake is deterministic")
+
+        print("\nmirror is baked into the vertices, not left as a negative-determinant node:")
+        # a '1 -1 1' mirror stored as a node transform renders inside-out in engines that ignore the
+        # glTF winding-reversal rule (e.g. gz/ogre2); baking it into the vertices keeps every node at
+        # positive determinant so the surface culls correctly.
+        import numpy as np
+        glb = assets.to_glb(stl, "1 -1 1")
+        s = trimesh.load(trimesh.util.wrap_as_stream(glb), file_type="glb", force="scene")
+        dets = [np.linalg.det(s.graph[n][0][:3, :3]) for n in s.graph.nodes_geometry]
+        check(all(d > 0 for d in dets), f"mirrored visual GLB has no negative-determinant node ({[round(d,2) for d in dets]})")
+
+        print("\nbaked filename is readable but the sha is taken over the bytes, not the name:")
+        import shutil
+        a = os.path.join(td, "alpha.stl"); b = os.path.join(td, "beta.stl")
+        shutil.copy(stl, a); shutil.copy(stl, b)
+        na, sa = assets.bake(a, None, "collision", bdir)
+        nb, sb = assets.bake(b, None, "collision", bdir)
+        check(na.startswith("alpha_") and nb.startswith("beta_"), f"filename keeps the source name ({na}, {nb})")
+        check(na != nb and sa == sb, "different names, identical bytes -> same sha (name does not feed the hash)")
+        short = na.rsplit("_", 1)[1].split(".")[0]
+        check(sa.split(":")[1].startswith(short), "the short sha in the name is a prefix of the full @sha")
+
+        print("\nflat material colour bakes into the GLB base colour (for STL visuals etc.):")
+        # a plain STL has no material; a URDF <material> colour bakes into the GLB so it renders right
+        glb_col = assets.to_glb(stl, None, "0.2 0.7 0.85 1.0")
+        sc = trimesh.load(trimesh.util.wrap_as_stream(glb_col), file_type="glb", force="scene")
+        mats = [getattr(g.visual, "material", None) for g in sc.geometry.values()]
+        bcf = [tuple(m.baseColorFactor[:3]) for m in mats if m is not None]
+        check(bool(bcf) and all(abs(c[0] - 51) <= 1 and abs(c[1] - 178) <= 1 for c in bcf),
+              f"GLB base color matches the requested rgba ({bcf})")
+        check(assets.to_glb(stl, None, None) != glb_col, "colour actually changes the exported bytes")
+
+        # a mesh that already carries its own material (e.g. a .dae) must NOT be flattened by a colour
+        from trimesh.visual import TextureVisuals
+        from trimesh.visual.material import PBRMaterial
+        red = trimesh.creation.box(extents=(0.2, 0.2, 0.2))
+        red.visual = TextureVisuals(material=PBRMaterial(baseColorFactor=[200, 0, 0, 255]))
+        red_glb = os.path.join(td, "red.glb")
+        with open(red_glb, "wb") as fh:
+            fh.write(red.export(file_type="glb"))
+        out = assets.to_glb(red_glb, None, "0 1 0 1")   # ask for green; should be ignored
+        sr = trimesh.load(trimesh.util.wrap_as_stream(out), file_type="glb", force="scene")
+        kept = [tuple(int(x) for x in g.visual.material.baseColorFactor[:3]) for g in sr.geometry.values()]
+        check(bool(kept) and all(c[0] > 150 and c[1] < 60 for c in kept),
+              f"mesh with its own material keeps it, passed colour ignored ({kept})")
 
     print(f"\nassets tests: {_n - _fail} passed, {_fail} failed")
     return 1 if _fail else 0
