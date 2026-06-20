@@ -250,6 +250,33 @@ HCDF holds a cyber layer that neither of them has.
   reader cannot map is in the returned notes.
 * The SDF we emit passes `gz --check`.
 
+## Command line
+
+Install the project (`pip install ".[mesh]"`, the `mesh` extra adds the mesh-baking dependencies) and
+the `hcdf` command is on PATH. From a checkout it also runs as `python3 -m hcdf_cli`. It is also an
+ament_python package, so on ROS it builds with `colcon build` and runs as `ros2 run hcdformat hcdf`
+(`rosdep` resolves `xacro` and the Python dependencies).
+
+```
+hcdf convert arm.urdf       arm.hcdf   converts URDF to HCDF
+hcdf convert arm.hcdf       arm.urdf   converts back, loss manifest to stderr
+hcdf convert arm.sdf        arm.urdf   routes SDF to URDF through HCDF
+hcdf convert arm.urdf.xacro arm.hcdf   expands the xacro first, then converts
+hcdf validate arm.hcdf                 validates the tree and references
+hcdf profile  arm.hcdf                 classifies against the URDF profile
+hcdf expand   arm.urdf.xacro arm.urdf  expands a xacro to a plain URDF
+```
+
+Formats come from the file extensions (`.urdf`, `.sdf`, `.hcdf`, `.json`) and can be overridden
+with `--from` and `--to`. Use `-` as the output path to write to stdout. A `.xacro` input is expanded
+to URDF first using the `xacro` tool, and `--xacro NAME:=VALUE` passes xacro arguments.
+
+`--bake DIR` folds each mesh into a content-addressed asset under `DIR` (scale, any mirror, and a flat
+material colour baked in), writing `@uri` relative to the output. `--package PKG=PATH` locates a ROS
+package so `$(find PKG)` and `package://PKG/...` resolve with no colcon build, the same mapping used
+for both. Runnable before and after conversions for real robots (OpenArm and others) live in a
+dedicated repository: https://github.com/CogniPilot/hcdf-conversion-examples
+
 ## Quick reference
 
 ```python
@@ -270,7 +297,7 @@ data         = to_json(doc)                # HCDF as JSON
 manifest     = assets.stamp(doc, base_dir=".", out_dir="glb")   # bake meshes
 ```
 
-Two command line tools exist:
+The validator and profile checker can also be run on their own:
 
 ```
 python3 -m hcdfdom.validate robot.hcdf      # validate the tree and references
