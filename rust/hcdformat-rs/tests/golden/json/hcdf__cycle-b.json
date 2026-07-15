@@ -1,0 +1,13 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "cycle-b",
+    "comp": {
+      "name": "b_root"
+    },
+    "include": {
+      "uri": "cycle-a.hcdf",
+      "name": "a"
+    }
+  }
+}

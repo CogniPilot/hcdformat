@@ -1,0 +1,2208 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "openarm-thor",
+    "comp": [
+      {
+        "name": "jetson_thor",
+        "role": "compute",
+        "description": "NVIDIA Jetson AGX Thor, the dual-arm host: 2x CAN-FD (one bus per arm), 2x USB3 (one RealSense per arm), a 25G-class uplink, and an onboard regulator off the 48 V rail",
+        "board": "nvidia-agx-thor",
+        "collision": {
+          "name": "thor_box",
+          "geometry": {
+            "box": {
+              "size": "0.11 0.11 0.07"
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "can1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "usb0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 5000000000,
+                "max": 5000000000,
+                "nominal": 5000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "usb1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 5000000000,
+                "max": 5000000000,
+                "nominal": 5000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "uplink",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000000,
+                "max": 10000000000,
+                "nominal": 10000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              },
+              "current": {
+                "max": 6,
+                "nominal": 3,
+                "unit": "A"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "can0_connector",
+            "family": "legacy:jst-gh",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 -0.045 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "can1_connector",
+            "family": "legacy:jst-gh",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 -0.027 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "usb0_connector",
+            "family": "legacy:usb-c",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 -0.009 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "usb1_connector",
+            "family": "legacy:usb-c",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 0.009 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "uplink_connector",
+            "family": "legacy:m12-x",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 0.027 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "pwr_in_connector",
+            "family": "legacy:xt30",
+            "representation": {
+              "sphere": {
+                "radius": 0.005,
+                "placement": {
+                  "xyz": "0.056 0.045 0",
+                  "frame": {
+                    "component-origin": {
+                      "component": "jetson_thor"
+                    }
+                  },
+                  "rotation": {
+                    "rpy": {
+                      "value": "0 0 0"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "termination": [
+          {
+            "name": "can0_termination",
+            "kind": "hcdf:resistor",
+            "mounting": "endpoint",
+            "fidelity": "presented",
+            "profile": "hcdf:can",
+            "attachment": {
+              "connector-ref": {
+                "connector": "can0_connector",
+                "component-ref": {
+                  "component": "jetson_thor"
+                }
+              }
+            },
+            "quantity": {
+              "property": "hcdf:resistance",
+              "value": 120,
+              "unit": "ohm"
+            }
+          },
+          {
+            "name": "can1_termination",
+            "kind": "hcdf:resistor",
+            "mounting": "endpoint",
+            "fidelity": "presented",
+            "profile": "hcdf:can",
+            "attachment": {
+              "connector-ref": {
+                "connector": "can1_connector",
+                "component-ref": {
+                  "component": "jetson_thor"
+                }
+              }
+            },
+            "quantity": {
+              "property": "hcdf:resistance",
+              "value": 120,
+              "unit": "ohm"
+            }
+          }
+        ]
+      },
+      {
+        "name": "r_drive_1",
+        "role": "actuator",
+        "description": "Right arm J1: Damiao DM-J8009 CAN-FD drive (shoulder)",
+        "board": "damiao-dm-j8009",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.045,
+              "length": 0.06
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_2",
+        "role": "actuator",
+        "description": "Right arm J2: Damiao DM-J8009 CAN-FD drive (shoulder)",
+        "board": "damiao-dm-j8009",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.045,
+              "length": 0.06
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_3",
+        "role": "actuator",
+        "description": "Right arm J3: Damiao DM-J4340 CAN-FD drive (upper arm)",
+        "board": "damiao-dm-j4340",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.05
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_4",
+        "role": "actuator",
+        "description": "Right arm J4: Damiao DM-J4340 CAN-FD drive (elbow)",
+        "board": "damiao-dm-j4340",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.05
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_5",
+        "role": "actuator",
+        "description": "Right arm J5: Damiao DM-J4310 CAN-FD drive (forearm)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_6",
+        "role": "actuator",
+        "description": "Right arm J6: Damiao DM-J4310 CAN-FD drive (wrist)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "r_drive_7",
+        "role": "actuator",
+        "description": "Right arm J7: Damiao DM-J4310 CAN-FD drive (wrist roll; physical bus end)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        },
+        "termination": {
+          "name": "can_termination",
+          "kind": "hcdf:resistor",
+          "mounting": "endpoint",
+          "fidelity": "presented",
+          "profile": "hcdf:can",
+          "attachment": {
+            "connector-ref": {
+              "connector": "can_connector",
+              "component-ref": {
+                "component": "r_drive_7"
+              }
+            }
+          },
+          "quantity": {
+            "property": "hcdf:resistance",
+            "value": 120,
+            "unit": "ohm"
+          }
+        }
+      },
+      {
+        "name": "r_realsense",
+        "role": "sensor",
+        "description": "Right wrist Intel RealSense D435 depth camera (USB 3.1 gen1 device)",
+        "board": "intel-realsense-d435",
+        "collision": {
+          "name": "cam_box",
+          "geometry": {
+            "box": {
+              "size": "0.09 0.025 0.025"
+            }
+          }
+        },
+        "port": {
+          "name": "usb",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "rate": {
+              "min": 5000000000,
+              "max": 5000000000,
+              "nominal": 5000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "connector": {
+          "name": "usb_connector",
+          "family": "legacy:usb-c"
+        },
+        "sensor": {
+          "name": "wrist_cam",
+          "update-rate": 30,
+          "optical": {
+            "type": "camera",
+            "driver": {
+              "name": "realsense-d435"
+            },
+            "geometry": {
+              "box": {
+                "size": "0.09 0.025 0.025"
+              }
+            },
+            "fov": {
+              "name": "rgb",
+              "geometry": {
+                "frustum": {
+                  "shape": "pyramidal",
+                  "near": 0.1,
+                  "far": 10.0,
+                  "hfov": 1.211,
+                  "vfov": 0.742
+                }
+              },
+              "intrinsics": {
+                "width": 1920,
+                "height": 1080,
+                "format": "RGB8",
+                "fx": 1380.0,
+                "fy": 1380.0,
+                "cx": 960.0,
+                "cy": 540.0
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_1",
+        "role": "actuator",
+        "description": "Left arm J1: Damiao DM-J8009 CAN-FD drive (shoulder)",
+        "board": "damiao-dm-j8009",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.045,
+              "length": 0.06
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_2",
+        "role": "actuator",
+        "description": "Left arm J2: Damiao DM-J8009 CAN-FD drive (shoulder)",
+        "board": "damiao-dm-j8009",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.045,
+              "length": 0.06
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_3",
+        "role": "actuator",
+        "description": "Left arm J3: Damiao DM-J4340 CAN-FD drive (upper arm)",
+        "board": "damiao-dm-j4340",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.05
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_4",
+        "role": "actuator",
+        "description": "Left arm J4: Damiao DM-J4340 CAN-FD drive (elbow)",
+        "board": "damiao-dm-j4340",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.05
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_5",
+        "role": "actuator",
+        "description": "Left arm J5: Damiao DM-J4310 CAN-FD drive (forearm)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_6",
+        "role": "actuator",
+        "description": "Left arm J6: Damiao DM-J4310 CAN-FD drive (wrist)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        }
+      },
+      {
+        "name": "l_drive_7",
+        "role": "actuator",
+        "description": "Left arm J7: Damiao DM-J4310 CAN-FD drive (wrist roll; physical bus end)",
+        "board": "damiao-dm-j4310",
+        "collision": {
+          "name": "j_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.045
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 40,
+                "max": 58,
+                "nominal": 48,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can_connector",
+          "family": "legacy:jst-gh"
+        },
+        "termination": {
+          "name": "can_termination",
+          "kind": "hcdf:resistor",
+          "mounting": "endpoint",
+          "fidelity": "presented",
+          "profile": "hcdf:can",
+          "attachment": {
+            "connector-ref": {
+              "connector": "can_connector",
+              "component-ref": {
+                "component": "l_drive_7"
+              }
+            }
+          },
+          "quantity": {
+            "property": "hcdf:resistance",
+            "value": 120,
+            "unit": "ohm"
+          }
+        }
+      },
+      {
+        "name": "l_realsense",
+        "role": "sensor",
+        "description": "Left wrist Intel RealSense D435 depth camera (USB 3.1 gen1 device)",
+        "board": "intel-realsense-d435",
+        "collision": {
+          "name": "cam_box",
+          "geometry": {
+            "box": {
+              "size": "0.09 0.025 0.025"
+            }
+          }
+        },
+        "port": {
+          "name": "usb",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "rate": {
+              "min": 5000000000,
+              "max": 5000000000,
+              "nominal": 5000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "connector": {
+          "name": "usb_connector",
+          "family": "legacy:usb-c"
+        },
+        "sensor": {
+          "name": "wrist_cam",
+          "update-rate": 30,
+          "optical": {
+            "type": "camera",
+            "driver": {
+              "name": "realsense-d435"
+            },
+            "geometry": {
+              "box": {
+                "size": "0.09 0.025 0.025"
+              }
+            },
+            "fov": {
+              "name": "rgb",
+              "geometry": {
+                "frustum": {
+                  "shape": "pyramidal",
+                  "near": 0.1,
+                  "far": 10.0,
+                  "hfov": 1.211,
+                  "vfov": 0.742
+                }
+              },
+              "intrinsics": {
+                "width": 1920,
+                "height": 1080,
+                "format": "RGB8",
+                "fx": 1380.0,
+                "fy": 1380.0,
+                "cx": 960.0,
+                "cy": 540.0
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "power_dist",
+        "role": "parent",
+        "description": "Battery + power-distribution board: the single 48 V rail feeding the Thor and both arms",
+        "collision": {
+          "name": "psu_box",
+          "geometry": {
+            "box": {
+              "size": "0.16 0.12 0.08"
+            }
+          }
+        },
+        "port": {
+          "name": "vout",
+          "capabilities": {
+            "purpose": {
+              "value": "power-delivery"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "voltage": {
+              "min": 40,
+              "max": 58,
+              "nominal": 48,
+              "unit": "V"
+            },
+            "current": {
+              "max": 40,
+              "nominal": 30,
+              "unit": "A"
+            },
+            "power": {
+              "max": 2000,
+              "nominal": 1440,
+              "unit": "W"
+            }
+          }
+        },
+        "connector": {
+          "name": "vout_connector",
+          "family": "legacy:xt60"
+        },
+        "power-source": {
+          "name": "main_battery",
+          "battery": {
+            "chemistry": "Li-ion",
+            "cells-series": 13,
+            "nominal-voltage": {
+              "unit": "V",
+              "$text": 48
+            },
+            "capacity": {
+              "unit": "Ah",
+              "$text": 10
+            },
+            "energy": {
+              "unit": "Wh",
+              "$text": 480
+            },
+            "min-voltage": {
+              "unit": "V",
+              "$text": 39
+            },
+            "max-voltage": {
+              "unit": "V",
+              "$text": 54.6
+            }
+          }
+        }
+      }
+    ],
+    "binding": [
+      {
+        "name": "jetson_thor_can0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "can0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can0_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "jetson_thor_can1_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "can1"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can1_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "jetson_thor_usb0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "usb0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "usb0_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "jetson_thor_usb1_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "usb1"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "usb1_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "jetson_thor_uplink_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "uplink"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "uplink_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "jetson_thor_pwr_in_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "jetson_thor",
+            "port": "pwr_in"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "pwr_in_connector",
+            "component-ref": {
+              "component": "jetson_thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_realsense_usb_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_realsense",
+            "port": "usb"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "usb_connector",
+            "component-ref": {
+              "component": "r_realsense"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_realsense_usb_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_realsense",
+            "port": "usb"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "usb_connector",
+            "component-ref": {
+              "component": "l_realsense"
+            }
+          }
+        }
+      },
+      {
+        "name": "power_dist_vout_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "power_dist",
+            "port": "vout"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "vout_connector",
+            "component-ref": {
+              "component": "power_dist"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_1_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_1",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_2_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_2",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_3_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_3",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_4_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_4",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_5_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_5",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_6_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_6",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_6"
+            }
+          }
+        }
+      },
+      {
+        "name": "r_drive_7_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "r_drive_7",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "r_drive_7"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_1_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_1",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_2_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_2",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_3_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_3",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_4_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_4",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_5_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_5",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_6_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_6",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_6"
+            }
+          }
+        }
+      },
+      {
+        "name": "l_drive_7_can_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "l_drive_7",
+            "port": "can"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can_connector",
+            "component-ref": {
+              "component": "l_drive_7"
+            }
+          }
+        }
+      }
+    ],
+    "link": [
+      {
+        "name": "usb_right",
+        "description": "Right wrist RealSense on the Thor USB 3.2 Gen 1 host port.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 5000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "jetson_thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "jetson_thor",
+                "port": "usb0"
+              }
+            }
+          },
+          {
+            "name": "r_realsense",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_realsense",
+                "port": "usb"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "usb_left",
+        "description": "Left wrist RealSense on the Thor USB 3.2 Gen 1 host port.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 5000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "jetson_thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "jetson_thor",
+                "port": "usb1"
+              }
+            }
+          },
+          {
+            "name": "l_realsense",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_realsense",
+                "port": "usb"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "bus": [
+      {
+        "name": "can_right",
+        "description": "Right OpenArm CAN-FD bus: Thor can0 controller and seven Damiao drives.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": {
+            "id": "hcdf:can"
+          },
+          "rate": {
+            "nominal": {
+              "value": 1000000,
+              "unit": "bps"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "jetson_thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "jetson_thor",
+                "port": "can0"
+              }
+            }
+          },
+          {
+            "name": "r_drive_1",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_1",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_2",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_2",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_3",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_3",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_4",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_4",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_5",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_5",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_6",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_6",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "r_drive_7",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_7",
+                "port": "can"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "can_left",
+        "description": "Left OpenArm CAN-FD bus: Thor can1 controller and seven Damiao drives.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": {
+            "id": "hcdf:can"
+          },
+          "rate": {
+            "nominal": {
+              "value": 1000000,
+              "unit": "bps"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "jetson_thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "jetson_thor",
+                "port": "can1"
+              }
+            }
+          },
+          {
+            "name": "l_drive_1",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_1",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_2",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_2",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_3",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_3",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_4",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_4",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_5",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_5",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_6",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_6",
+                "port": "can"
+              }
+            }
+          },
+          {
+            "name": "l_drive_7",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_7",
+                "port": "can"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "power_48v",
+        "description": "Shared 48 V rail from the battery and distribution board to the Thor and both arms.",
+        "selected": {
+          "purpose": "power-delivery",
+          "carrier": "electrical",
+          "voltage": {
+            "nominal": {
+              "value": 48,
+              "unit": "V"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "power_dist",
+            "endpoint": {
+              "port-ref": {
+                "component": "power_dist",
+                "port": "vout"
+              }
+            }
+          },
+          {
+            "name": "jetson_thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "jetson_thor",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "r_drive_1",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_1",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_2",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_2",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_3",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_3",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_4",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_4",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_5",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_5",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_6",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_6",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "r_drive_7",
+            "endpoint": {
+              "port-ref": {
+                "component": "r_drive_7",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_1",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_1",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_2",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_2",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_3",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_3",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_4",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_4",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_5",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_5",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_6",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_6",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "l_drive_7",
+            "endpoint": {
+              "port-ref": {
+                "component": "l_drive_7",
+                "port": "vin"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

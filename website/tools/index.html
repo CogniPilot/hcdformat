@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -56,68 +56,88 @@
 
   <h2>HCDF CLI (Rust)</h2>
   <p>
-    The <code>hcdf</code> command-line tool provides XML and JSON conversion, file inspection,
-    and schema analysis. It is a single compiled binary with no runtime dependencies.
+    The <code>hcdf</code> command-line tool converts HCDF, URDF, SDF, xacro, and the XSD-derived
+    HCDF JSON view. Its validation commands check HCDF documents. It is a single compiled binary
+    with no external runtime toolchain.
   </p>
   <ul>
-    <li><code>hcdf convert -i file.hcdf -o file.json</code> converts XML to JSON</li>
-    <li><code>hcdf convert -i file.json -o file.hcdf --xsd hcdf.xsd</code> converts JSON back to XML (lossless roundtrip)</li>
-    <li><code>hcdf info file.hcdf</code> prints a summary: component count, joints, networks, sensors, motors</li>
-    <li><code>hcdf schema --xsd hcdf.xsd</code> reports type and enum counts</li>
+    <li><code>hcdf convert file.hcdf file.json</code> converts HCDF XML to its JSON view</li>
+    <li><code>hcdf convert file.json file.hcdf</code> converts the JSON view to canonical HCDF XML</li>
+    <li><code>hcdf convert robot.urdf robot.hcdf</code> and <code>hcdf convert world.sdf world.hcdf</code> import peer formats</li>
+    <li><code>hcdf validate file.hcdf</code> checks semantic references, networks, loops, and coverage rules</li>
+    <li><code>hcdf validate --xsd file.hcdf</code> checks raw XML schema shape, typed structure, and enum literals</li>
+    <li><code>hcdf bundle file.hcdf file.hcdfz</code> creates a self-contained bundle; <code>hcdf bundle-verify file.hcdfz</code> verifies it</li>
   </ul>
   <p>
-    The converter uses a generic tree-walking approach (not hardcoded structs) so it automatically
-    supports any schema changes without recompilation. JSON to XML conversion is XSD-aware:
-    it reads the schema to correctly distinguish attributes from child elements, handling
-    type inheritance and mixed content types.
+    XML/JSON conversion is driven by the typed Rust model and the SHA-pinned HCDF 1.0 XSD embedded
+    in the binary. It preserves modeled HCDF values, but emits canonical XML rather than preserving
+    source formatting, comments, processing instructions, or the XML declaration. A schema or model
+    change therefore requires rebuilding the tool. The development-only <code>regen</code> commands
+    below read an explicit XSD to rebuild derived artifacts.
   </p>
   <p>Build from source:</p>
-<pre class="language-bash"><code>cd tools/hcdf-cli &amp;&amp; cargo build --release
-# Binary at tools/hcdf-cli/target/release/hcdf</code></pre>
+<pre class="language-bash"><code>cargo build --release --manifest-path rust/hcdformat-rs/Cargo.toml --features cli --bin hcdf
+# Binary at rust/hcdformat-rs/target/release/hcdf</code></pre>
 
-  <h2>Python Tools</h2>
   <p>
-    Python tools are provided for validation, spec generation, JSON Schema generation, and XML/JSON conversion.
-    All require <code>lxml</code> (<code>pip install lxml</code>).
+    The CLI also owns every generated artifact: the spec pages, the JSON Schema, the editor
+    completion model, and the crate's own enum sources all regenerate from the XSD with no other
+    toolchain:
   </p>
   <ul>
-    <li><code>python3 validate.py hcdf.xsd file.hcdf</code> validates against the XSD</li>
-    <li><code>python3 convert.py file.hcdf file.json</code> bidirectional XML/JSON conversion</li>
-    <li><code>python3 generate_spec_html.py hcdf.xsd spec.html</code> generates the interactive spec browser</li>
-    <li><code>python3 generate_json_schema.py hcdf.xsd hcdf.schema.json</code> generates JSON Schema from XSD</li>
+    <li><code>hcdf regen enums hcdf.xsd rust/hcdformat-rs/src/model/enums.rs</code>, typed Rust enums</li>
+    <li><code>hcdf regen spec hcdf.xsd spec.html</code>, the interactive spec browser</li>
+    <li><code>hcdf regen schema hcdf.xsd hcdf.schema.json</code>, JSON Schema</li>
+    <li><code>hcdf regen completions hcdf.xsd hcdf.completions.json</code>, contextual v2 editor completions</li>
   </ul>
+
+  <h2>Python Binding</h2>
   <p>
-    The Python converter uses the same context-aware XSD type walker as the Rust version,
-    ensuring identical roundtrip behavior. Both support bidirectional XML to JSON conversion
-    with full schema fidelity.
+    The repository contains a maturin/PyO3 binding project under <code>rust/hcdformat-py</code>.
+    Its wheel is the compiled Rust core itself: the <code>hcdf</code> package is a native extension
+    module, accompanied by type stubs (<code>py.typed</code> + <code>.pyi</code>) and no Python
+    implementation source. It exposes the same Rust CLI and conversion API to CPython. The package
+    is not yet published on PyPI, so it must currently be built from source with maturin. Python is
+    not used for the core implementation, schema generators, or either GUI application.
   </p>
+<pre class="language-bash"><code>python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install 'maturin&gt;=1.7,&lt;2'
+maturin develop --release --manifest-path rust/hcdformat-py/Cargo.toml</code></pre>
 
   <hr class="section-divider"/>
 
-  <h2>Dendrite: HCDF Visualization &amp; Builder</h2>
+  <h2>In-Browser Apps: HCDViz &amp; Dendrite Build</h2>
 
   <p>
-    Dendrite is a Rust-based 3D visualization tool that renders HCDF descriptions as
-    interactive 3D models. It serves as both a viewer and an editor for HCDF files within
-    the CogniPilot ecosystem.
+    HCDViz and Dendrite Build are separate Rust/WebAssembly web applications for working with HCDF. Both render HCDF
+    descriptions as interactive 3D models: GLB/glTF visuals, collisions, frames, sensor FOVs,
+    port locations, kinematic articulation with loop-closure solving, and the network/comms
+    topology overlay.
   </p>
 
   <ul>
-    <li>Fetches HCDF components from hcdf.cognipilot.org with SHA verification</li>
-    <li>Renders GLB/glTF models referenced in <code>&lt;visual&gt;</code> elements</li>
-    <li>Displays port locations, sensor FOVs, and network topology</li>
-    <li>Shows device discovery state (which devices are online)</li>
-    <li>Supports editing poses and configurations</li>
+    <li><a href="https://hcdviz.hcdformat.org/"><strong>HCDViz</strong> (HCDF Viewer)</a>: open and inspect any
+      <code>.hcdf</code>/<code>.hcdfz</code>, articulate joints, toggle displays, explore networks</li>
+    <li><a href="https://dendrite.hcdformat.org/"><strong>Dendrite Build</strong> (HCDF Editor)</a>: author documents,
+      schema-aware XML editing, structured comp/joint/network inspectors, URDF/SDF/xacro import</li>
+    <li><a href="/examples/">example files</a> to try, straight from the
+      spec's example corpus (e.g. the four-bar closed-loop linkage, the OpenArm + Jetson Thor
+      network demo)</li>
   </ul>
+
+  <p>The same application crates also build as native desktop binaries.</p>
 
   <hr class="section-divider"/>
 
-  <h2>SHA-Based Content Addressing</h2>
+  <h2>Optional Content Digests</h2>
 
   <p>
-    HCDF uses SHA256 hashes for verified distribution of all referenced artifacts.
-    Every model file, stream profile, included component, and firmware image carries
-    a hash that enables integrity verification and efficient caching.
+    HCDF provides SHA-256 fields for integrity-checking model files, stream profiles, included
+    modules, connectivity models, and recorded software identity. These fields are optional in the
+    core schema unless an external project policy makes them mandatory. When a resource hash is
+    present, tooling can verify bytes before using them and can cache identical content under one
+    digest.
   </p>
 
 <pre class="language-xml"><code>&lt;!-- Model files --&gt;
@@ -130,7 +150,7 @@
 &lt;include uri="components/sensor.hcdf" sha="..."/&gt;
 
 &lt;!-- Firmware --&gt;
-&lt;software&gt;&lt;hash&gt;abc123...&lt;/hash&gt;&lt;/software&gt;</code></pre>
+&lt;software name="firmware"&gt;&lt;hash&gt;abc123...&lt;/hash&gt;&lt;/software&gt;</code></pre>
 
   <p>This enables:</p>
 
@@ -138,17 +158,21 @@
     <li><strong>Cache deduplication:</strong> same content produces the same hash, stored once</li>
     <li><strong>Integrity verification:</strong> detect corrupted or tampered downloads</li>
     <li><strong>Version pinning:</strong> a specific SHA corresponds to a specific version</li>
-    <li><strong>Vendor trust:</strong> a published hash represents vendor-verified content</li>
+    <li><strong>Reproducibility:</strong> a pinned digest selects exact bytes across builds</li>
   </ul>
+
+  <p>A digest proves content identity and integrity, not publisher identity. Authentication and
+  signature policy belong to the distribution system that publishes the HCDF document.</p>
 
   <hr class="section-divider"/>
 
-  <h2>Firmware Integration with MCUboot</h2>
+  <h2>Firmware Identity and External Update Systems</h2>
 
   <p>
     The <code>&lt;software&gt;</code> element describes firmware running on each device.
-    MCUboot image hashes match the HCDF hash, allowing agents to verify firmware identity
-    and detect mismatches that require OTA updates.
+    A deployment can record a firmware digest in HCDF and compare it with identity reported by
+    MCUboot or another firmware-management system. HCDF carries the expected identity; it does not
+    itself attest a running image or perform an OTA update.
   </p>
 
 <pre class="language-xml"><code>&lt;software name="cerebri"&gt;
@@ -158,9 +182,9 @@
 &lt;/software&gt;</code></pre>
 
   <ul>
-    <li>MCUboot image hash matches the HCDF hash; agent verifies firmware identity</li>
-    <li>Firmware manifest URI enables OTA update checking</li>
-    <li>An agent can detect firmware mismatches and trigger updates automatically</li>
+    <li>Deployment tooling can compare a reported image digest with the expected HCDF digest</li>
+    <li>A firmware manifest URI can tell external tooling where update metadata is published</li>
+    <li>Update authorization and execution remain the responsibility of the firmware-management system</li>
   </ul>
 
   <hr class="section-divider"/>
@@ -168,42 +192,34 @@
   <h2>Building from Components</h2>
 
   <p>
-    Hardware vendors provide HCDF components for their boards. System integrators compose
-    these components into a full robot description using the <code>&lt;include&gt;</code>
-    element with SHA integrity verification.
+    Hardware vendors can provide complete HCDF modules for their boards. System integrators compose
+    those modules into a full robot description using <code>&lt;include&gt;</code>, optionally pinning
+    the included bytes with a SHA-256 digest. The URI below is illustrative, not a hosted catalog entry.
   </p>
 
   <h3>Vendor-provided component</h3>
 
-<pre class="language-xml"><code>&lt;!-- Vendor provides: mr_mcxn_t1/optical-flow.hcdf --&gt;
-&lt;comp name="optical-flow" role="sensor"&gt;
-  &lt;board&gt;mr_mcxn_t1&lt;/board&gt;
-  &lt;port name="ETH0" type="ethernet"&gt;...&lt;/port&gt;
-  &lt;sensor name="imu0"&gt;...&lt;/sensor&gt;
-  ...
-&lt;/comp&gt;</code></pre>
+<pre class="language-xml"><code>&lt;!-- Vendor module: optical-flow.hcdf --&gt;
+&lt;hcdf version="1.0" name="optical-flow-module"&gt;
+  &lt;comp name="optical-flow" role="sensor"&gt;
+    &lt;board&gt;mr_mcxn_t1&lt;/board&gt;
+    &lt;port name="eth0"&gt;
+      &lt;capabilities&gt;
+        &lt;purpose value="communication"/&gt;
+        &lt;carrier value="electrical"/&gt;
+        &lt;rate min="100000000" max="100000000" nominal="100000000" unit="bit/s"/&gt;
+      &lt;/capabilities&gt;
+    &lt;/port&gt;
+  &lt;/comp&gt;
+&lt;/hcdf&gt;</code></pre>
 
   <h3>System integrator composition</h3>
 
-<pre class="language-xml"><code>&lt;hcdf version="1.0"&gt;
-  &lt;!-- Include vendor-provided components --&gt;
-  &lt;include uri="https://hcdf.cognipilot.org/mr_mcxn_t1/optical-flow/optical-flow.hcdf"
-           sha="d9507e38..." name="optical-flow-1"/&gt;
-  &lt;include uri="https://hcdf.cognipilot.org/navq95/default/default.hcdf"
-           sha="e4559866..." name="navq95"/&gt;
-
-  &lt;!-- System-level: joints, networks, groups, states --&gt;
-  &lt;joint name="mount" type="fixed"&gt;
-    &lt;parent comp="navq95"/&gt;&lt;child comp="optical-flow-1"/&gt;
-  &lt;/joint&gt;
-  &lt;network name="sensor-bus"&gt;
-    &lt;link name="nav_to_of"&gt;
-      &lt;wired standard="100base-t1"&gt;
-        &lt;port&gt;navq95/eth0:2&lt;/port&gt;
-        &lt;port&gt;optical-flow-1/ETH0&lt;/port&gt;
-      &lt;/wired&gt;
-    &lt;/link&gt;
-  &lt;/network&gt;
+<pre class="language-xml"><code>&lt;hcdf version="1.0" name="inspection-robot"&gt;
+  &lt;comp name="chassis"/&gt;
+  &lt;include uri="https://example.org/hcdf/optical-flow.hcdf"
+           sha="sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+           name="optical-flow-1" pose="0.2 0 0.1 0 0 0"/&gt;
 &lt;/hcdf&gt;</code></pre>
 
   <hr class="section-divider"/>
@@ -211,17 +227,24 @@
   <h2>Validation</h2>
 
   <p>
-    HCDF files can be validated against the XSD schema using the included Python validator.
-    The spec browser provides an interactive view of every element, attribute, type, and
-    enumeration in the schema.
+    HCDF schema-shape and semantic validation are separate CLI passes. The spec browser provides
+    an interactive view of schema structure, attributes, cardinalities, and enumerations, and
+    regenerates from the same Rust binary.
+  </p>
+  <p>
+    The standalone semantic command expects a flattened document. A document that still contains
+    <code>&lt;include&gt;</code> entries needs an include-aware document-set loader before complete
+    connectivity validation; its raw XML can still be checked with <code>validate --xsd</code>.
   </p>
 
-<pre class="language-bash"><code># Validate against schema
-python3 validate.py hcdf.xsd my-robot.hcdf
+<pre class="language-bash"><code># Validate the raw XML shape, typed structure, and enum literals
+hcdf validate --xsd my-robot.hcdf
 
-# Generate and view spec browser
-python3 generate_spec_html.py hcdf.xsd spec.html
-python3 -m http.server 8080</code></pre>
+# Validate semantic references, networks, loops, and coverage rules
+hcdf validate my-robot.hcdf
+
+# Regenerate and view the spec browser
+hcdf regen spec hcdf.xsd spec.html</code></pre>
 
 </div>
 

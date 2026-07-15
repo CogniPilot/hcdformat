@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: continuous joint carries position bounds (E_JOINT_CONTINUOUS_BOUNDS) -->
+<hcdf version="1.0" name="continuous-bounds">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="continuous">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+</hcdf>

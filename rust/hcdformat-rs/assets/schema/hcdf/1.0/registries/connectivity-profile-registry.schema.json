@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hcdf.org/schema/1.0/connectivity-profile-registry.schema.json",
+  "title": "HCDF Connectivity Profile Registry",
+  "description": "Non-executable profile identity, validator dispatch, version, and citation metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format-version",
+    "registry-version",
+    "hcdf-schema",
+    "rulesets"
+  ],
+  "properties": {
+    "format": {
+      "const": "hcdf-connectivity-profile-registry"
+    },
+    "format-version": {
+      "const": 1
+    },
+    "registry-version": {
+      "$ref": "#/$defs/version"
+    },
+    "hcdf-schema": {
+      "$ref": "#/$defs/hcdf-schema-compatibility"
+    },
+    "rulesets": {
+      "description": "Rulesets are sorted by exact profile identity and profile identities are unique.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ruleset"
+      }
+    }
+  },
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "qualified-id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9._-]*:[A-Za-z0-9][A-Za-z0-9._/+\\-]*$"
+    },
+    "nonblank-string": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "hcdf-schema-compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "major",
+        "minimum-minor"
+      ],
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "minimum-minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "ruleset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "ruleset-version",
+        "validator",
+        "citations"
+      ],
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/qualified-id"
+        },
+        "ruleset-version": {
+          "$ref": "#/$defs/version"
+        },
+        "validator": {
+          "enum": [
+            "hcdf:validator/bidirectional-dshot",
+            "hcdf:validator/can",
+            "hcdf:validator/dshot",
+            "hcdf:validator/feetech-sts",
+            "hcdf:validator/generic",
+            "hcdf:validator/pwm",
+            "hcdf:validator/rs-485",
+            "hcdf:validator/uart"
+          ]
+        },
+        "citations": {
+          "description": "Citations are sorted by key and citation keys are unique within a ruleset.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/citation"
+          }
+        }
+      }
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "organization",
+        "document",
+        "locator"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "organization": {
+          "$ref": "#/$defs/nonblank-string"
+        },
+        "document": {
+          "$ref": "#/$defs/nonblank-string"
+        },
+        "locator": {
+          "$ref": "#/$defs/nonblank-string"
+        }
+      }
+    }
+  }
+}

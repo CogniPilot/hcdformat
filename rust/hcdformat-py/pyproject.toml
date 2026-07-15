@@ -1,0 +1,58 @@
+# maturin build for the `hcdformat` wheel: the whole package is the native Rust binding, no Python source.
+#
+# This is THE build for the published PyPI wheel. The extension IS the package: maturin ships it as
+# `hcdf/__init__.abi3.so`, so `import hcdf` loads the binding directly and its `hcdf.*` submodules
+# (registered at init) resolve cold. The only non-binary files in the wheel are the generated type stubs
+# (`hcdf/*.pyi` + `py.typed`) and the schema, completion, and connectivity registry data files;
+# there is no shipped `.py`.
+#
+# The ROS/colcon path builds the SAME binding from source via `ament_cmake` + maturin (see
+# `../../package.xml` / `../../CMakeLists.txt`).
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "hcdformat"
+version = "1.0.0"
+description = "Convert and check HCDF, URDF, and SDF robot descriptions (Rust-backed)"
+license = { text = "Apache-2.0" }
+authors = [{ name = "CogniPilot Foundation" }]
+keywords = ["hcdf", "urdf", "sdf", "robot", "description", "ros"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+# No RUNTIME dependencies. The shipped package is the native Rust binding; the pure-Python layer that once
+# needed lxml/numpy/trimesh/pygltflib is gone (XML+JSON parsing, frame math, and mesh baking are all in the
+# Rust core now), so the wheel imports and runs on nothing but the stdlib (`import hcdf` + `hcdf --help`
+# with no extras). The XSD-driven drift generators that once made lxml a repo DEV/TEST dependency are
+# retired; their work is owned by the Rust core + `cargo test`, so the installed package needs only the
+# stdlib.
+dependencies = []
+
+[project.scripts]
+hcdf = "hcdf:main"
+
+[project.urls]
+Homepage = "https://github.com/CogniPilot/hcdformat"
+
+[tool.maturin]
+# The Cargo manifest for the native extension crate (this dir).
+manifest-path = "Cargo.toml"
+# The extension IS the package: the trailing `.__init__` makes maturin place the compiled module at
+# `hcdf/__init__.abi3.so`, so `import hcdf` loads the binding as the package initializer (a real package
+# with `__path__`, no `__init__.py`). The init symbol is `PyInit_hcdf` (the `#[pymodule] fn hcdf`), which
+# is what CPython calls for the `hcdf` package; maturin prints a cosmetic "PyInit___init__ not found"
+# warning based on the filename, but the import resolves correctly (proven by the wheel pytest suite).
+# maturin auto-detects the `hcdf/` package beside this file (the committed `hcdf/*.pyi` stub tree +
+# `py.typed`) as the python source, so no `python-source` setting is needed and no `.py` is generated.
+module-name = "hcdf.__init__"
+# abi3 wheel (one wheel for CPython 3.10+).
+features = ["pyo3/extension-module"]
+# Bundle the schema, completion, and connectivity registry data files plus the
+# ament markers, under the wheel's data tree at `share/...`, the SAME install layout the setuptools
+# build uses (`share/hcdformat`, `share/ament_index/...`), so the ROS/ament + runtime resolution is
+# byte-identical between the two backends. `wheel-data/` is staged from the repo-root sources.
+data = "wheel-data"

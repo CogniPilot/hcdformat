@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HCDF ros2_control Extension Schema
+  Version: 1.0
+
+  Defines the structure of content inside <extension domain="org.ros2.control">.
+  Types the ros2_control hardware-interface surface a URDF <ros2_control> block carries:
+  the hardware component (plugin class + parameter map) and the per-joint / per-sensor /
+  per-gpio command- and state-interface wiring the ros2_control controller_manager consumes.
+
+  This is DISTINCT from the org.ros2 topic-map extension (hcdf-ext-ros2.xsd): that one binds
+  HCDF devices to ROS 2 topics; THIS one captures the ros2_control hardware plumbing. (Naming
+  trap: org.ros2 and org.ros2.control are two different domains.)
+
+  Relationship to the typed core <motor><control-modes> (hcdf.xsd): the ros2_control
+  command_interface / state_interface NAMES (position / velocity / effort ...) conceptually
+  overlap the motor control-modes (position / velocity / torque / force / current / pwm), with
+  effort ~= torque/force. They are NOT the same surface, though: the typed core
+  <motor><control-modes> is the PHYSICAL ACTUATOR CAPABILITY (what the motor can do), whereas
+  this extension captures the ros2_control PLUMBING (which hardware plugin drives which joint,
+  and which interfaces it exposes, with per-interface limits/params). The two can be
+  cross-referenced (an interface name maps to a control mode) but neither absorbs the other.
+
+  A URDF <ros2_control> is re-homed under this extension's <ros2-control> root by the importer
+  (from_urdf), so the block is schema-typed and validatable rather than an opaque byte blob; the
+  exporter (to_urdf) re-emits it as a URDF <ros2_control> element, preserving round-trip fidelity.
+
+  Example usage within an HCDF file:
+
+    <extension domain="org.ros2.control" version="1.0">
+      <ros2-control name="MyRobot" type="system">
+        <hardware>
+          <plugin>mock_components/GenericSystem</plugin>
+          <param name="state_following_offset">0.0</param>
+        </hardware>
+        <joint name="shoulder_pan_joint">
+          <command_interface name="position">
+            <min>-3.14</min>
+            <max>3.14</max>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+      </ros2-control>
+    </extension>
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           version="1.0"
+           elementFormDefault="unqualified">
+
+  <!-- ================================================================== -->
+  <!-- ros2_control component type enumeration                            -->
+  <!-- ================================================================== -->
+  <xs:simpleType name="ros2_control_type">
+    <xs:annotation>
+      <xs:documentation>The ros2_control component classification, mirroring the ros2_control
+&lt;ros2_control type="..."&gt; attribute. Selects how the controller_manager treats the
+hardware component's interfaces.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="system">
+        <xs:annotation>
+          <xs:documentation>A multi-DOF hardware component exposing both command and state interfaces
+(the usual robot/arm case; can read and actuate several joints at once).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="actuator">
+        <xs:annotation>
+          <xs:documentation>A single-DOF actuator: one joint with command interfaces (and optional
+state interfaces).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="sensor">
+        <xs:annotation>
+          <xs:documentation>A read-only hardware component exposing state interfaces only
+(no command interfaces).</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ================================================================== -->
+  <!-- Parameter: a named key/value passed to a hardware plugin or        -->
+  <!-- interface (ros2_control <param name="...">value</param>)           -->
+  <!-- ================================================================== -->
+  <xs:complexType name="param">
+    <xs:annotation>
+      <xs:documentation>A single ros2_control parameter: a named string value. Carried on the
+&lt;hardware&gt; component (plugin configuration) or on a &lt;joint&gt;/&lt;sensor&gt;/&lt;gpio&gt;
+group or its interfaces (e.g. initial_position, initial_value, id, offset). The value is the
+element's text content; ros2_control parameter values are always strings the plugin parses.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>Parameter key (e.g. "state_following_offset", "initial_value", "id").</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Interface: a single command_interface or state_interface           -->
+  <!-- ================================================================== -->
+  <xs:complexType name="interface">
+    <xs:annotation>
+      <xs:documentation>A ros2_control command_interface or state_interface. The @name is the
+interface identifier (position / velocity / effort / acceleration / ...), which conceptually
+overlaps the typed core &lt;motor&gt;&lt;control-modes&gt; (effort ~= torque/force) but describes
+the ros2_control plumbing rather than the physical actuator capability. Optional &lt;min&gt;/&lt;max&gt;
+give the interface limits; &lt;param&gt; children carry per-interface values such as
+initial_value.</xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="min" type="xs:double">
+        <xs:annotation>
+          <xs:documentation>Lower limit for this interface (at most one). Native-authoring affordance;
+a URDF source expresses the same value as &lt;param name="min"&gt;.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="max" type="xs:double">
+        <xs:annotation>
+          <xs:documentation>Upper limit for this interface (at most one). Native-authoring affordance;
+a URDF source expresses the same value as &lt;param name="max"&gt;.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="param" type="param">
+        <xs:annotation>
+          <xs:documentation>Per-interface parameter (e.g. initial_value).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Interface name: position / velocity / effort / acceleration / ...
+(overlaps motor control-modes; see the schema header).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Interface group: a <joint> / <sensor> / <gpio> and its interfaces  -->
+  <!-- ================================================================== -->
+  <xs:complexType name="interface_group">
+    <xs:annotation>
+      <xs:documentation>A ros2_control interface group: a &lt;joint&gt;, &lt;sensor&gt;, or &lt;gpio&gt;
+named by @name, carrying its command_interface / state_interface wiring plus any group-level
+&lt;param&gt; values. The children are unordered (ros2_control mixes params and interfaces freely).</xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="param" type="param">
+        <xs:annotation>
+          <xs:documentation>Group-level parameter (e.g. id, offset, initial_position, p_cofficient).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="command_interface" type="interface">
+        <xs:annotation>
+          <xs:documentation>A command interface this group accepts (position / velocity / effort ...).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="state_interface" type="interface">
+        <xs:annotation>
+          <xs:documentation>A state interface this group reports (position / velocity / effort ...).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The referenced joint / sensor / gpio name.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Hardware: the hardware component (plugin class + parameter map)     -->
+  <!-- ================================================================== -->
+  <xs:complexType name="hardware">
+    <xs:annotation>
+      <xs:documentation>The ros2_control hardware component: the SystemInterface / ActuatorInterface /
+SensorInterface plugin that drives this ros2_control block, plus its configuration parameters.
+Exactly one &lt;plugin&gt; is expected (the plugin class), with any number of &lt;param&gt; entries;
+ros2_control permits &lt;plugin&gt; and &lt;param&gt; in any order.</xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="plugin" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>The hardware plugin class (e.g. "mock_components/GenericSystem",
+"my_pkg/MyRobotHardware"). ros2_control loads this SystemInterface/ActuatorInterface/SensorInterface
+implementation to drive the component.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="param" type="param">
+        <xs:annotation>
+          <xs:documentation>A hardware-plugin configuration parameter.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- ros2-control: the hardware-interface block                         -->
+  <!-- ================================================================== -->
+  <xs:complexType name="ros2_control">
+    <xs:annotation>
+      <xs:documentation>A ros2_control hardware-interface block: one &lt;hardware&gt; component and
+the &lt;joint&gt;/&lt;sensor&gt;/&lt;gpio&gt; interface groups it exposes. Mirrors a URDF
+&lt;ros2_control&gt; element (re-homed under this typed root).</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="hardware" type="hardware" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>The hardware component (plugin + params). At most one per block.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="joint" type="interface_group">
+          <xs:annotation>
+            <xs:documentation>A joint interface group (command/state interfaces + params).</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="sensor" type="interface_group">
+          <xs:annotation>
+            <xs:documentation>A sensor interface group (state interfaces + params).</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="gpio" type="interface_group">
+          <xs:annotation>
+            <xs:documentation>A GPIO interface group (command/state interfaces + params).</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The ros2_control block name (the hardware component instance name).</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="ros2_control_type" use="required">
+      <xs:annotation>
+        <xs:documentation>The component classification: system / actuator / sensor.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Root element: ros2-control                                         -->
+  <!-- ================================================================== -->
+  <xs:element name="ros2-control" type="ros2_control">
+    <xs:annotation>
+      <xs:documentation>Root element of the ros2_control extension. Types a ros2_control
+hardware-interface block: the hardware plugin + params and the per-joint/sensor/gpio
+command/state-interface wiring. Placed inside &lt;extension domain="org.ros2.control"&gt;.
+The importer re-homes a URDF &lt;ros2_control&gt; here (root renamed to &lt;ros2-control&gt;,
+children preserved); the exporter renames it back to &lt;ros2_control&gt;.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+</xs:schema>

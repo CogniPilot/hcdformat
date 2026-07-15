@@ -1,0 +1,16 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "aerospace-drone",
+    "body-frame": "FRD",
+    "world-frame": "NED",
+    "description": "Fixed-wing drone using aerospace frame conventions",
+    "author": "Test Aerospace Corp",
+    "license": "BSD-3-Clause",
+    "comp": {
+      "name": "fuselage",
+      "role": "parent",
+      "struct-type": "fuselage"
+    }
+  }
+}

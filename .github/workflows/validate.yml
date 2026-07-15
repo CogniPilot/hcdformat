@@ -8,8 +8,10 @@ on:
       - 'extensions/*.xsd'
       - 'examples/**'
       - 'tests/**'
-      - '*.py'
-      - 'convert.py'
+      - 'scripts/**'
+      - 'registries/**'
+      - 'versions/**'
+      - 'rust/**'
   pull_request:
     branches: [main]
     paths:
@@ -17,8 +19,10 @@ on:
       - 'extensions/*.xsd'
       - 'examples/**'
       - 'tests/**'
-      - '*.py'
-      - 'convert.py'
+      - 'scripts/**'
+      - 'registries/**'
+      - 'versions/**'
+      - 'rust/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -29,19 +33,102 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Python is needed ONLY for the wheel product: maturin builds the binding, and the pytest suite +
+      # pyi drift check exercise it. lxml/numpy/trimesh/pygltflib are gone entirely; the runtime core is
+      # Rust, and the XSD-driven drift checks + schema validation are now owned by `cargo test` (see the
+      # `rust` job below), not by any Python generator or `tests/run_tests.py`.
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install lxml
-        run: pip install lxml
+      - uses: dtolnay/rust-toolchain@stable
 
-      - name: Run test suite
-        run: python3 tests/run_tests.py
-
-      - name: Regenerate spec and check for drift
+      - name: Build the Rust binding wheel and run the Python acceptance suite
         run: |
-          python3 generate_spec_html.py hcdf.xsd spec.html.new
-          diff spec.html spec.html.new || (echo "spec.html is out of date — regenerate with: python3 generate_spec_html.py hcdf.xsd spec.html" && exit 1)
-          rm spec.html.new
+          pip install 'maturin>=1.7,<2' pytest
+          cargo build --manifest-path rust/hcdformat-rs/Cargo.toml --bin hcdf --features cli
+          maturin build --release --manifest-path rust/hcdformat-py/Cargo.toml --out /tmp/binding-dist
+          # The extension IS the package (`hcdf/__init__.abi3.so`), so run the suite against the EXTRACTED
+          # wheel on PYTHONPATH: `import hcdf` then resolves to the built binding, not any repo tree.
+          rm -rf /tmp/binding-ext && mkdir -p /tmp/binding-ext
+          python3 -m zipfile -e /tmp/binding-dist/*.whl /tmp/binding-ext
+          # The wheel ships NO Python source; assert the package is the native extension.
+          test -f /tmp/binding-ext/hcdf/__init__.abi3.so
+          ! find /tmp/binding-ext -name '*.py' | grep -q . || (echo "wheel unexpectedly contains a .py file" && exit 1)
+          registry_file="$(find /tmp/binding-ext -path '*/share/hcdformat/registries/connectivity-profiles.json' -print -quit)"
+          registry_schema="$(find /tmp/binding-ext -path '*/share/hcdformat/registries/connectivity-profile-registry.schema.json' -print -quit)"
+          test -n "$registry_file" && test -n "$registry_schema"
+          cmp registries/connectivity-profiles.json "$registry_file"
+          cmp registries/connectivity-profile-registry.schema.json "$registry_schema"
+          PYTHONPATH=/tmp/binding-ext python3 -c "import hcdf; assert hcdf.__version__, 'wheel is missing the Rust binding'"
+          HCDF_CLI="$PWD/rust/hcdformat-rs/target/debug/hcdf" PYTHONPATH=/tmp/binding-ext PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest rust/hcdformat-py/tests/ -q
+
+      - name: Regenerate the type stubs (.pyi) and check for drift
+        run: |
+          cargo run --manifest-path rust/hcdformat-py/Cargo.toml --bin gen_pyi
+          git diff --exit-code rust/hcdformat-py/hcdf/ || (echo "hcdf/*.pyi is out of date; regenerate with: cargo run --manifest-path rust/hcdformat-py/Cargo.toml --bin gen_pyi" && exit 1)
+
+      # Schema validation (examples/tests corpus + stream profile), the enums / JSON-schema / spec.html
+      # regen-and-diff drift checks, and the versions/ archive hash-pin check are ALL owned by `cargo
+      # test` in the `rust` job below (no Python generators, no tests/run_tests.py). The per-module
+      # pure-Python test files were removed when Rust became the sole implementation.
+
+  # The canonical core is Rust: gate it on every push, not just at tag time: tests + clippy (zero
+  # warnings) on native AND wasm32 for hcdformat-rs. The native `cargo test` OWNS the XSD-driven drift
+  # gates: it regenerates the Rust enums, hcdf.schema.json and spec.html from the frozen schema and
+  # asserts byte-equality, and verifies the versions/ archive hash pins, so there is no Python generator
+  # in CI anymore.
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+          targets: wasm32-unknown-unknown
+
+      # rustfmt is the canonical layout for the workspace (there is no `rust/` workspace root, so each
+      # crate is checked by manifest). The generated `enums.rs` carries a file-level rustfmt::skip and the
+      # domgen output is already rustfmt-normalized, so this stays consistent with the regen drift gates.
+      - name: cargo fmt --check (workspace crates)
+        run: |
+          cargo fmt --check --manifest-path rust/hcdformat-rs/Cargo.toml
+          cargo fmt --check --manifest-path rust/hcdformat-py/Cargo.toml
+          cargo fmt --check --manifest-path rust/hcdformat-pyderive/Cargo.toml
+          cargo fmt --check --manifest-path rust/hcdformat-domgen/Cargo.toml
+
+      # Drift check for the #[pydom] DOM mirrors (committed output, like the XSD-driven enums / schema /
+      # spec.html drift gates the `cargo test` step below owns): the AST-driven generator re-emits
+      # dom_generated.rs from the model and must byte-match the committed file.
+      - name: Regenerate the DOM mirrors and check for drift
+        run: |
+          bash scripts/generate_dom_mirrors.sh
+          git diff --exit-code rust/hcdformat-py/src/dom_generated.rs rust/hcdformat-py/src/stream_profile_dom_generated.rs || (echo "Rust DOM owner modules are out of date; regenerate with: bash scripts/generate_dom_mirrors.sh" && exit 1)
+
+      - name: hcdformat-domgen clippy (zero warnings)
+        working-directory: rust/hcdformat-domgen
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: hcdformat-pyderive clippy (zero warnings)
+        working-directory: rust/hcdformat-pyderive
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: hcdformat-py clippy (zero warnings)
+        working-directory: rust/hcdformat-py
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: hcdformat-rs test (full native feature surface)
+        working-directory: rust/hcdformat-rs
+        run: cargo test --features cli,xsd,remote,bake-dae
+
+      - name: hcdformat-rs clippy (native, zero warnings)
+        working-directory: rust/hcdformat-rs
+        run: cargo clippy --all-targets --features cli,xsd,remote,bake-dae -- -D warnings
+
+      # `cli` (the clap bin) and `remote` (ureq) are native-only; the wasm gate covers the browser
+      # feature set the apps enable (`xacro` pulls `urdf`, `bake-dae` pulls `bake`).
+      - name: hcdformat-rs clippy (wasm32, zero warnings)
+        working-directory: rust/hcdformat-rs
+        run: cargo clippy --all-targets --target wasm32-unknown-unknown --features xsd,xacro,sdf,bake-dae -- -D warnings

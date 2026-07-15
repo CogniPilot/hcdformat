@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: frame relative-to names nothing (E_FRAME_RELATIVE_TO) -->
+<hcdf version="1.0" name="dangling-relative-to">
+  <comp name="a">
+    <frame name="f" relative-to="ghost"/>
+  </comp>
+</hcdf>

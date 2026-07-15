@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- visual submesh selection: a <model> may draw the UNION of named subtrees (<submesh>) OR the
+     whole model MINUS named subtrees (<exclude-submesh>), but NOT both; the two modes are mutually
+     exclusive. This visual mixes an include and an exclude in one model, which the grammar cannot
+     forbid (both lists are optional/repeated), tripping E_MODEL_SUBMESH_MIX. XSD-shape-valid; a purely
+     semantic fault. -->
+<hcdf version="1.0" name="cov-bad-submesh-mix">
+  <comp name="drive" role="parent">
+    <visual name="body"><model uri="drive.glb" sha="abc">
+      <submesh name="case"/>
+      <exclude-submesh name="flange"/>
+    </model></visual>
+  </comp>
+</hcdf>

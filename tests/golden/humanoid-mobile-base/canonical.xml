@@ -1,0 +1,2863 @@
+<!--
+  HCDF 1.0 Humanoid Mobile Base
+  19-device system: S32N79 + E810 + AGX Thor, dual 802.3dm arms (MCN1-4 + camera),
+  S32J100 base zone controller, i.MX95 head, SPAD lidars, Cubtek radar,
+  ZLAC8015D wheel drive (1722+CAN), MR-BMS771.
+
+  5 separate networks: backbone, left-arm, right-arm, base, power
+--><hcdf name="cogni-humanoid-mobile-base" version="1.0" body-frame="FLU" world-frame="ENU">
+  <description>CogniPilot humanoid mobile base: S32N79 + E810 spine, AGX Thor compute, dual 802.3dm 7-DOF arms, S32J100 base zone, i.MX95 head, TSN backbone with MACsec</description>
+  <author>CogniPilot Foundation</author>
+  <license>Apache-2.0</license>
+  <url>https://github.com/CogniPilot/hcdformat</url>
+  <!-- ================================================================ -->
+  <!-- COMPONENTS                                                       -->
+  <!-- ================================================================ -->
+  <!-- AGX Thor: perception, planning, ML inference -->
+  <comp name="agx-thor" role="compute">
+    <description>NVIDIA AGX Thor SoC: perception, planning, ML inference. 2x 25G MGBE uplinks to S32N79.</description>
+    <board>nvidia-agx-thor</board>
+    <inertial>
+      <mass>1.5</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="mgbe0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="guided-optical"/>
+        <rate min="25000000000" max="25000000000" nominal="25000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="mgbe1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="guided-optical"/>
+        <rate min="25000000000" max="25000000000" nominal="25000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="12.5" nominal="10" unit="A"/>
+        <power max="300" nominal="200" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="mgbe0_connector" family="legacy:sfp28"/>
+    <connector name="mgbe1_connector" family="legacy:sfp28"/>
+  </comp>
+  <!-- S32N79: central motion control + CNC agent + integrated TSN switch + E810 PCIe -->
+  <comp name="s32n79" role="compute" ip-rating="IP54">
+    <description>NXP S32N79: central motion control, CNC agent, integrated TSN switch. Intel E810 on PCIe for 25G uplink to AGX Thor.</description>
+    <board>nxp-s32n79-evb</board>
+    <operating-temp unit="degC" min="-40" max="105"/>
+    <inertial>
+      <mass>0.8</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <!-- Integrated TSN switch fabric: XFI + QXGMII ports are bridged -->
+    <port name="xfi_left">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="xfi_right">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="qxgmii_p0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="qxgmii_p1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="qxgmii_p2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="qxgmii_p3">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <!-- E810 25G uplinks: independent ports (NOT on the integrated switch) -->
+    <port name="e810_p0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="guided-optical"/>
+        <rate min="25000000000" max="25000000000" nominal="25000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="e810_p1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="guided-optical"/>
+        <rate min="25000000000" max="25000000000" nominal="25000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="3" nominal="2" unit="A"/>
+        <power max="72" nominal="48" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="e810_p0_connector" family="legacy:sfp28"/>
+    <connector name="e810_p1_connector" family="legacy:sfp28"/>
+    <switch name="s32n79-integrated">
+      <bidirectional>
+        <port-ref component="s32n79" port="xfi_left"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32n79" port="xfi_right"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32n79" port="qxgmii_p0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32n79" port="qxgmii_p1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32n79" port="qxgmii_p2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32n79" port="qxgmii_p3"/>
+      </bidirectional>
+    </switch>
+  </comp>
+  <!-- S32J100: base zone controller, bridges Ethernet to CAN-FD + peripherals -->
+  <comp name="s32j100" role="compute" ip-rating="IP54">
+    <description>NXP S32J100: base zone controller. Bridges Ethernet to CAN-FD (wheels, BMS) and base peripherals (lidars, radar, head). Decapsulates 1722+CAN from S32N79.</description>
+    <board>nxp-s32j100-rdb</board>
+    <operating-temp unit="degC" min="-40" max="125"/>
+    <inertial>
+      <mass>0.3</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth_up0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_up1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_up2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_up3">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="2500000000" max="2500000000" nominal="2500000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_head">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_lidar_front">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_lidar_rear">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="eth_radar">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="can0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="5000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="1.5" nominal="1" unit="A"/>
+        <power max="36" nominal="24" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="can0_connector" family="legacy:can-bus"/>
+    <switch name="s32j100-integrated">
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_up0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_up1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_up2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_up3"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_head"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_lidar_front"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_lidar_rear"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="s32j100" port="eth_radar"/>
+      </bidirectional>
+    </switch>
+    <termination name="can0_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment>
+        <connector-ref connector="can0_connector">
+          <component-ref component="s32j100"/>
+        </connector-ref>
+      </attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+  </comp>
+  <!-- i.MX95 head: display + microphones -->
+  <comp name="head" role="compute">
+    <description>i.MX95 head unit: display, microphones, user interaction</description>
+    <board>nxp-imx95-evk</board>
+    <inertial>
+      <mass>0.6</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="1" nominal="0.5" unit="A"/>
+        <power max="24" nominal="12" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="mic_array">
+      <force type="pressure">
+        <range unit="dB">120</range>
+      </force>
+    </sensor>
+  </comp>
+  <!-- NXP SPAD front base lidar -->
+  <comp name="lidar-front" role="sensor">
+    <description>NXP SPAD front base lidar: solid-state, 200m range</description>
+    <inertial>
+      <mass>0.4</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="1" nominal="0.6" unit="A"/>
+        <power max="24" nominal="15" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="lidar_front_sensor" update-rate="20">
+      <optical type="lidar">
+        <fov name="scan" color="#00ff00">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.5</near>
+              <far>200.0</far>
+              <hfov>2.094</hfov>
+              <vfov>0.436</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">400</bandwidth>
+        </data-output>
+        <lidar-params>
+          <scan-type>solid-state</scan-type>
+          <channels>64</channels>
+          <points-per-second>600000</points-per-second>
+          <scan-rate unit="Hz">20</scan-rate>
+          <returns>dual</returns>
+          <wavelength unit="nm">905</wavelength>
+          <horizontal-fov unit="deg">120</horizontal-fov>
+          <vertical-fov unit="deg" min="-12.5" max="12.5">25</vertical-fov>
+        </lidar-params>
+      </optical>
+    </sensor>
+  </comp>
+  <!-- NXP SPAD rear base lidar -->
+  <comp name="lidar-rear" role="sensor">
+    <description>NXP SPAD rear base lidar: solid-state, 200m range</description>
+    <inertial>
+      <mass>0.4</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="1" nominal="0.6" unit="A"/>
+        <power max="24" nominal="15" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="lidar_rear_sensor" update-rate="20">
+      <optical type="lidar">
+        <fov name="scan" color="#00ff00">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.5</near>
+              <far>200.0</far>
+              <hfov>2.094</hfov>
+              <vfov>0.436</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">400</bandwidth>
+        </data-output>
+        <lidar-params>
+          <scan-type>solid-state</scan-type>
+          <channels>64</channels>
+          <points-per-second>600000</points-per-second>
+          <scan-rate unit="Hz">20</scan-rate>
+          <returns>dual</returns>
+          <wavelength unit="nm">905</wavelength>
+          <horizontal-fov unit="deg">120</horizontal-fov>
+          <vertical-fov unit="deg" min="-12.5" max="12.5">25</vertical-fov>
+        </lidar-params>
+      </optical>
+    </sensor>
+  </comp>
+  <!-- Cubtek 4D imaging radar -->
+  <comp name="radar-4d" role="sensor">
+    <description>Cubtek 4D imaging radar: 77GHz FMCW, 120-degree FOV</description>
+    <inertial>
+      <mass>0.3</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="0.8" nominal="0.5" unit="A"/>
+        <power max="20" nominal="12" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="radar_4d_sensor" update-rate="20">
+      <rf type="radar">
+        <range unit="m">200</range>
+        <data-output>
+          <bandwidth unit="Mbps">100</bandwidth>
+        </data-output>
+        <radar-params>
+          <frequency unit="GHz">77</frequency>
+          <modulation>fmcw</modulation>
+          <azimuth-fov unit="deg">120</azimuth-fov>
+          <elevation-fov unit="deg">30</elevation-fov>
+          <azimuth-resolution unit="deg">1.0</azimuth-resolution>
+          <elevation-resolution unit="deg">2.0</elevation-resolution>
+          <range-resolution unit="m">0.1</range-resolution>
+          <velocity-range unit="m/s" min="-60" max="60">60</velocity-range>
+          <velocity-resolution unit="m/s">0.1</velocity-resolution>
+          <max-detections>512</max-detections>
+          <mimo>3tx4rx</mimo>
+        </radar-params>
+      </rf>
+    </sensor>
+  </comp>
+  <!-- ZLAC8015D: dual-channel servo controller (separate from hub motors) -->
+  <comp name="zlac8015d" role="actuator">
+    <description>ZLTECH ZLAC8015D v4.0 dual-channel servo controller. Drives 2x ZLLG65ASM250-L hub motors via SIGNAL connectors. CANopen on CAN-FD bus.</description>
+    <inertial>
+      <mass>0.8</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="can0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="5000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="sig_left">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sig_right">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="phase_left">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="phase_right">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="40" nominal="10" unit="A"/>
+        <power max="960" nominal="240" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="sig_left_connector" family="legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"/>
+    <connector name="sig_right_connector" family="legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"/>
+    <connector name="phase_left_connector" family="legacy:3-pin-bldc-phase-u-v-w"/>
+    <connector name="phase_right_connector" family="legacy:3-pin-bldc-phase-u-v-w"/>
+  </comp>
+  <!-- Left hub motor: ZLLG65ASM250-L -->
+  <comp name="wheel-left" role="actuator">
+    <description>ZLLG65ASM250-L 24V BLDC hub motor (left). 170mm diameter, 2.92 kg, 250W rated.</description>
+    <inertial>
+      <mass>2.92</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="sig0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="phase0">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="19" nominal="6.5" unit="A"/>
+        <power max="456" nominal="156" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="sig0_connector" family="legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"/>
+    <connector name="phase0_connector" family="legacy:3-pin-bldc-phase-u-v-w"/>
+    <sensor name="encoder_left">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <sensor name="hall_left">
+      <em type="mag">
+        <range unit="mT">100</range>
+      </em>
+    </sensor>
+    <sensor name="temp_left">
+      <temperature type="thermistor">
+        <range unit="degC">150</range>
+      </temperature>
+    </sensor>
+    <motor name="left_wheel_motor" type="bldc" encoder="encoder_left" hall="hall_left" thermistor="temp_left">
+      <voltage unit="V" nominal="24" max="28"/>
+      <current unit="A" continuous="6.5" peak="19"/>
+      <resistance unit="ohm">0.5</resistance>
+      <torque-constant unit="Nm/A">0.29</torque-constant>
+      <velocity-constant unit="V/RPM">0.109</velocity-constant>
+      <max-speed unit="rpm">260</max-speed>
+      <stall-torque unit="Nm">19.76</stall-torque>
+      <no-load-speed unit="rpm">257.9</no-load-speed>
+      <no-load-current unit="A">0.974</no-load-current>
+      <max-power-out unit="W">158.8</max-power-out>
+      <max-efficiency unit="percent">68.4</max-efficiency>
+      <control-modes>
+        <mode>velocity</mode>
+        <mode>position</mode>
+        <mode>torque</mode>
+      </control-modes>
+    </motor>
+    <dynamic-surface name="left-wheel">
+      <wheel type="driven">
+        <radius unit="m">0.085</radius>
+        <width unit="m">0.041</width>
+        <friction static="0.9" dynamic="0.7"/>
+      </wheel>
+    </dynamic-surface>
+  </comp>
+  <!-- Right hub motor: ZLLG65ASM250-L -->
+  <comp name="wheel-right" role="actuator">
+    <description>ZLLG65ASM250-L 24V BLDC hub motor (right). 170mm diameter, 2.92 kg, 250W rated.</description>
+    <inertial>
+      <mass>2.92</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="sig0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="phase0">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="19" nominal="6.5" unit="A"/>
+        <power max="456" nominal="156" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="sig0_connector" family="legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"/>
+    <connector name="phase0_connector" family="legacy:3-pin-bldc-phase-u-v-w"/>
+    <sensor name="encoder_right">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <sensor name="hall_right">
+      <em type="mag">
+        <range unit="mT">100</range>
+      </em>
+    </sensor>
+    <sensor name="temp_right">
+      <temperature type="thermistor">
+        <range unit="degC">150</range>
+      </temperature>
+    </sensor>
+    <motor name="right_wheel_motor" type="bldc" encoder="encoder_right" hall="hall_right" thermistor="temp_right">
+      <voltage unit="V" nominal="24" max="28"/>
+      <current unit="A" continuous="6.5" peak="19"/>
+      <resistance unit="ohm">0.5</resistance>
+      <torque-constant unit="Nm/A">0.29</torque-constant>
+      <velocity-constant unit="V/RPM">0.109</velocity-constant>
+      <max-speed unit="rpm">260</max-speed>
+      <stall-torque unit="Nm">19.76</stall-torque>
+      <no-load-speed unit="rpm">257.9</no-load-speed>
+      <no-load-current unit="A">0.974</no-load-current>
+      <max-power-out unit="W">158.8</max-power-out>
+      <max-efficiency unit="percent">68.4</max-efficiency>
+      <control-modes>
+        <mode>velocity</mode>
+        <mode>position</mode>
+        <mode>torque</mode>
+      </control-modes>
+    </motor>
+    <dynamic-surface name="right-wheel">
+      <wheel type="driven">
+        <radius unit="m">0.085</radius>
+        <width unit="m">0.041</width>
+        <friction static="0.9" dynamic="0.7"/>
+      </wheel>
+    </dynamic-surface>
+  </comp>
+  <!-- Omni caster front-left -->
+  <comp name="caster-fl" role="parent">
+    <description>Front-left passive omni caster wheel</description>
+    <inertial>
+      <mass>0.15</mass>
+      <inertia_origin xyz="0 0 -0.015"/>
+    </inertial>
+    <dynamic-surface name="caster">
+      <wheel type="omni">
+        <radius unit="m">0.025</radius>
+        <width unit="m">0.02</width>
+        <friction static="0.6" dynamic="0.4"/>
+      </wheel>
+    </dynamic-surface>
+  </comp>
+  <!-- Omni caster front-right -->
+  <comp name="caster-fr" role="parent">
+    <description>Front-right passive omni caster wheel</description>
+    <inertial>
+      <mass>0.15</mass>
+      <inertia_origin xyz="0 0 -0.015"/>
+    </inertial>
+    <dynamic-surface name="caster">
+      <wheel type="omni">
+        <radius unit="m">0.025</radius>
+        <width unit="m">0.02</width>
+        <friction static="0.6" dynamic="0.4"/>
+      </wheel>
+    </dynamic-surface>
+  </comp>
+  <!-- MR-BMS771: 8S LiFePO4 battery management system -->
+  <comp name="bms" role="sensor">
+    <description>CogniPilot MR-BMS771: 8S LiFePO4 (~25.6V nominal). CAN-FD. Battery management + power distribution.</description>
+    <inertial>
+      <mass>3.0</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="can0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="5000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="bat_out">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="25.6" unit="V"/>
+        <current max="36" nominal="20" unit="A"/>
+        <power max="922" nominal="512" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="can0_connector" family="legacy:can-bus"/>
+    <termination name="can0_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment>
+        <connector-ref connector="can0_connector">
+          <component-ref component="bms"/>
+        </connector-ref>
+      </attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+    <power-source name="main_battery">
+      <battery>
+        <chemistry>LiFePO4</chemistry>
+        <cells-series>8</cells-series>
+        <nominal-voltage unit="V">25.6</nominal-voltage>
+        <capacity unit="Ah">12</capacity>
+        <energy unit="Wh">307</energy>
+        <max-discharge unit="C">3</max-discharge>
+        <min-voltage unit="V">20.0</min-voltage>
+        <max-voltage unit="V">29.2</max-voltage>
+      </battery>
+    </power-source>
+  </comp>
+  <!-- Chassis (root of kinematic tree) -->
+  <comp name="chassis" role="parent" struct-type="chassis">
+    <description>Mobile base chassis frame: structural root of kinematic tree</description>
+    <inertial>
+      <mass>45.0</mass>
+      <inertia_origin xyz="0 0 0.15"/>
+      <inertia>1.35 0 0 0.6 0 1.68</inertia>
+    </inertial>
+    <collision name="chassis_box">
+      <geometry>
+        <box>
+          <size>0.6 0.4 0.3</size>
+        </box>
+      </geometry>
+      <surface>
+        <friction static="0.6" dynamic="0.4"/>
+        <restitution>0.1</restitution>
+      </surface>
+    </collision>
+  </comp>
+  <!-- Torso (connects chassis to arms) -->
+  <comp name="torso" struct-type="frame">
+    <description>Upper body torso structure: mounts both arm chains</description>
+    <inertial>
+      <mass>8.0</mass>
+      <inertia_origin xyz="0 0 0.2"/>
+      <inertia>0.16 0 0 0.08 0 0.12</inertia>
+    </inertial>
+    <collision name="torso_box">
+      <geometry>
+        <box>
+          <size>0.35 0.4 0.45</size>
+        </box>
+      </geometry>
+      <surface>
+        <friction static="0.5" dynamic="0.3"/>
+      </surface>
+    </collision>
+  </comp>
+  <!-- ===== LEFT ARM MCNs ===== -->
+  <!-- MCN1-L: Left shoulder, 3 motors, 802.3dm switch bridge -->
+  <comp name="mcn1-l" role="actuator">
+    <description>Left Motor Control Node 1: Shoulder (3 BLDC motors, yaw, pitch, roll). 802.3dm bridging switch.</description>
+    <inertial>
+      <mass>1.2</mass>
+      <inertia_origin xyz="0 0 -0.05"/>
+    </inertial>
+    <collision name="mcn1l_col">
+      <geometry>
+        <cylinder>
+          <radius>0.04</radius>
+          <length>0.12</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="6" nominal="3" unit="A"/>
+        <power max="144" nominal="72" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn1-l" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-l" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-l" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-l" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="shoulder_l_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="shoulder_yaw_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+    <motor name="shoulder_pitch_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.15</torque-constant>
+      <max-speed unit="rpm">4000</max-speed>
+    </motor>
+    <motor name="shoulder_roll_motor" type="bldc" encoder="shoulder_l_encoders">
+      <torque-constant unit="Nm/A">0.10</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN2-L: Left elbow, 1 motor -->
+  <comp name="mcn2-l" role="actuator">
+    <description>Left Motor Control Node 2: Elbow (1 BLDC motor)</description>
+    <inertial>
+      <mass>0.8</mass>
+      <inertia_origin xyz="0 0 -0.04"/>
+    </inertial>
+    <collision name="mcn2l_col">
+      <geometry>
+        <cylinder>
+          <radius>0.035</radius>
+          <length>0.1</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="4" nominal="2" unit="A"/>
+        <power max="96" nominal="48" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn2-l" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-l" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-l" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-l" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="elbow_l_encoder">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="elbow_l_motor" type="bldc" encoder="elbow_l_encoder">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN3-L: Left wrist, 2 motors + camera port + TCP frame -->
+  <comp name="mcn3-l" role="actuator">
+    <description>Left Motor Control Node 3: Wrist (2 BLDC motors, pitch, roll) + camera spur port</description>
+    <inertial>
+      <mass>0.6</mass>
+      <inertia_origin xyz="0 0 -0.03"/>
+    </inertial>
+    <collision name="mcn3l_col">
+      <geometry>
+        <cylinder>
+          <radius>0.03</radius>
+          <length>0.08</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <frame name="tcp_left" type="tcp">
+      <description>Left arm tool center point for end-effector control</description>
+      <pose xyz="0 0 -0.12" rpy="0 0 0"/>
+    </frame>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="3" nominal="1.5" unit="A"/>
+        <power max="72" nominal="36" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn3-l" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-l" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-l" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-l" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="wrist_l_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="wrist_pitch_l_motor" type="bldc" encoder="wrist_l_encoders">
+      <torque-constant unit="Nm/A">0.08</torque-constant>
+      <max-speed unit="rpm">6000</max-speed>
+    </motor>
+    <motor name="wrist_roll_l_motor" type="bldc" encoder="wrist_l_encoders">
+      <torque-constant unit="Nm/A">0.06</torque-constant>
+      <max-speed unit="rpm">8000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN4-L: Left dextrous hand -->
+  <comp name="mcn4-l" role="actuator">
+    <description>Left Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
+    <inertial>
+      <mass>0.4</mass>
+      <inertia_origin xyz="0 0 -0.02"/>
+    </inertial>
+    <collision name="mcn4l_col">
+      <geometry>
+        <box>
+          <size>0.08 0.06 0.04</size>
+        </box>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="3" nominal="1" unit="A"/>
+        <power max="72" nominal="24" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn4-l" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-l" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-l" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-l" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+  </comp>
+  <!-- Left wrist stereo camera -->
+  <comp name="cam-l" role="sensor">
+    <description>Left wrist stereo camera: ~7 Gbps raw via 802.3dm upstream to S32N79</description>
+    <inertial>
+      <mass>0.05</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="0.3" nominal="0.2" unit="A"/>
+        <power max="7" nominal="5" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="stereo_cam_l" update-rate="30">
+      <optical type="camera">
+        <fov name="left_eye" color="#44ff44">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>960</fx>
+            <fy>960</fy>
+            <cx>960</cx>
+            <cy>540</cy>
+          </intrinsics>
+        </fov>
+        <fov name="right_eye" color="#4444ff">
+          <pose xyz="-0.06 0 0" rpy="0 0 0"/>
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">7000</bandwidth>
+          <frame-size unit="bytes">6220800</frame-size>
+        </data-output>
+        <camera-params>
+          <shutter>global</shutter>
+          <hdr>true</hdr>
+          <compression>raw</compression>
+          <trigger>hardware</trigger>
+        </camera-params>
+      </optical>
+    </sensor>
+  </comp>
+  <!-- ===== RIGHT ARM MCNs (mirror of left) ===== -->
+  <!-- MCN1-R: Right shoulder, 3 motors -->
+  <comp name="mcn1-r" role="actuator">
+    <description>Right Motor Control Node 1: Shoulder (3 BLDC motors, yaw, pitch, roll)</description>
+    <inertial>
+      <mass>1.2</mass>
+      <inertia_origin xyz="0 0 -0.05"/>
+    </inertial>
+    <collision name="mcn1r_col">
+      <geometry>
+        <cylinder>
+          <radius>0.04</radius>
+          <length>0.12</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="6" nominal="3" unit="A"/>
+        <power max="144" nominal="72" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn1-r" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-r" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-r" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn1-r" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="shoulder_r_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="shoulder_yaw_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+    <motor name="shoulder_pitch_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.15</torque-constant>
+      <max-speed unit="rpm">4000</max-speed>
+    </motor>
+    <motor name="shoulder_roll_r_motor" type="bldc" encoder="shoulder_r_encoders">
+      <torque-constant unit="Nm/A">0.10</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN2-R: Right elbow, 1 motor -->
+  <comp name="mcn2-r" role="actuator">
+    <description>Right Motor Control Node 2: Elbow (1 BLDC motor)</description>
+    <inertial>
+      <mass>0.8</mass>
+      <inertia_origin xyz="0 0 -0.04"/>
+    </inertial>
+    <collision name="mcn2r_col">
+      <geometry>
+        <cylinder>
+          <radius>0.035</radius>
+          <length>0.1</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="4" nominal="2" unit="A"/>
+        <power max="96" nominal="48" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn2-r" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-r" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-r" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn2-r" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="elbow_r_encoder">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="elbow_r_motor" type="bldc" encoder="elbow_r_encoder">
+      <torque-constant unit="Nm/A">0.12</torque-constant>
+      <max-speed unit="rpm">5000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN3-R: Right wrist, 2 motors + camera port + TCP frame -->
+  <comp name="mcn3-r" role="actuator">
+    <description>Right Motor Control Node 3: Wrist (2 BLDC motors, pitch, roll) + camera spur port</description>
+    <inertial>
+      <mass>0.6</mass>
+      <inertia_origin xyz="0 0 -0.03"/>
+    </inertial>
+    <collision name="mcn3r_col">
+      <geometry>
+        <cylinder>
+          <radius>0.03</radius>
+          <length>0.08</length>
+        </cylinder>
+      </geometry>
+    </collision>
+    <frame name="tcp_right" type="tcp">
+      <description>Right arm tool center point for end-effector control</description>
+      <pose xyz="0 0 -0.12" rpy="0 0 0"/>
+    </frame>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="3" nominal="1.5" unit="A"/>
+        <power max="72" nominal="36" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn3-r" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-r" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-r" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn3-r" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+    <sensor name="wrist_r_encoders">
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+      <encoder type="incremental" principle="magnetic">
+        <resolution unit="counts">4096</resolution>
+      </encoder>
+    </sensor>
+    <motor name="wrist_pitch_r_motor" type="bldc" encoder="wrist_r_encoders">
+      <torque-constant unit="Nm/A">0.08</torque-constant>
+      <max-speed unit="rpm">6000</max-speed>
+    </motor>
+    <motor name="wrist_roll_r_motor" type="bldc" encoder="wrist_r_encoders">
+      <torque-constant unit="Nm/A">0.06</torque-constant>
+      <max-speed unit="rpm">8000</max-speed>
+    </motor>
+  </comp>
+  <!-- MCN4-R: Right dextrous hand -->
+  <comp name="mcn4-r" role="actuator">
+    <description>Right Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)</description>
+    <inertial>
+      <mass>0.4</mass>
+      <inertia_origin xyz="0 0 -0.02"/>
+    </inertial>
+    <collision name="mcn4r_col">
+      <geometry>
+        <box>
+          <size>0.08 0.06 0.04</size>
+        </box>
+      </geometry>
+    </collision>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="eth2">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="sgmii0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="3" nominal="1" unit="A"/>
+        <power max="72" nominal="24" unit="W"/>
+      </capabilities>
+    </port>
+    <switch name="integrated_switch">
+      <bidirectional>
+        <port-ref component="mcn4-r" port="eth0"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-r" port="eth1"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-r" port="eth2"/>
+      </bidirectional>
+      <bidirectional>
+        <port-ref component="mcn4-r" port="sgmii0"/>
+      </bidirectional>
+    </switch>
+  </comp>
+  <!-- Right wrist stereo camera -->
+  <comp name="cam-r" role="sensor">
+    <description>Right wrist stereo camera: ~7 Gbps raw via 802.3dm upstream to S32N79</description>
+    <inertial>
+      <mass>0.05</mass>
+      <inertia_origin xyz="0 0 0"/>
+    </inertial>
+    <port name="eth0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="20" max="29.2" nominal="24" unit="V"/>
+        <current max="0.3" nominal="0.2" unit="A"/>
+        <power max="7" nominal="5" unit="W"/>
+      </capabilities>
+    </port>
+    <sensor name="stereo_cam_r" update-rate="30">
+      <optical type="camera">
+        <fov name="left_eye" color="#44ff44">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>960</fx>
+            <fy>960</fy>
+            <cx>960</cx>
+            <cy>540</cy>
+          </intrinsics>
+        </fov>
+        <fov name="right_eye" color="#4444ff">
+          <pose xyz="-0.06 0 0" rpy="0 0 0"/>
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>20.0</far>
+              <hfov>1.22</hfov>
+              <vfov>0.96</vfov>
+            </frustum>
+          </geometry>
+        </fov>
+        <data-output>
+          <bandwidth unit="Mbps">7000</bandwidth>
+          <frame-size unit="bytes">6220800</frame-size>
+        </data-output>
+        <camera-params>
+          <shutter>global</shutter>
+          <hdr>true</hdr>
+          <compression>raw</compression>
+          <trigger>hardware</trigger>
+        </camera-params>
+      </optical>
+    </sensor>
+  </comp>
+  <!-- ================================================================ -->
+  <!-- JOINTS (kinematic tree)                                          -->
+  <!-- ================================================================ -->
+  <!-- Base structure -->
+  <joint name="chassis_to_torso" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="torso"/>
+    <origin xyz="0 0 0.35"/>
+  </joint>
+  <joint name="chassis_to_s32n79" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="s32n79"/>
+    <origin xyz="0.1 0 0.05"/>
+  </joint>
+  <joint name="chassis_to_agx_thor" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="agx-thor"/>
+    <origin xyz="-0.1 0 0.05"/>
+  </joint>
+  <joint name="chassis_to_s32j100" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="s32j100"/>
+    <origin xyz="0 0 0.02"/>
+  </joint>
+  <joint name="chassis_to_zlac8015d" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="zlac8015d"/>
+    <origin xyz="0 0 -0.05"/>
+  </joint>
+  <joint name="chassis_to_wheel_left" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="wheel-left"/>
+    <origin xyz="-0.15 0.18 -0.1"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  <joint name="chassis_to_wheel_right" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="wheel-right"/>
+    <origin xyz="-0.15 -0.18 -0.1"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  <joint name="chassis_to_bms" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="bms"/>
+    <origin xyz="0 0 0.1"/>
+  </joint>
+  <joint name="chassis_to_caster_fl" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="caster-fl"/>
+    <origin xyz="0.25 0.15 -0.15"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="chassis_to_caster_fr" type="continuous">
+    <parent comp="chassis"/>
+    <child comp="caster-fr"/>
+    <origin xyz="0.25 -0.15 -0.15"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <joint name="torso_to_head" type="fixed">
+    <parent comp="torso"/>
+    <child comp="head"/>
+    <origin xyz="0 0 0.4"/>
+  </joint>
+  <joint name="chassis_to_lidar_front" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="lidar-front"/>
+    <origin xyz="0.3 0 0.15" rpy="0 0 0"/>
+  </joint>
+  <joint name="chassis_to_lidar_rear" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="lidar-rear"/>
+    <origin xyz="-0.3 0 0.15" rpy="0 0 3.14159"/>
+  </joint>
+  <joint name="chassis_to_radar" type="fixed">
+    <parent comp="chassis"/>
+    <child comp="radar-4d"/>
+    <origin xyz="0.3 0 0.2" rpy="0 0 0"/>
+  </joint>
+  <!-- Left arm joints -->
+  <joint name="l_shoulder_yaw" type="revolute">
+    <parent comp="torso"/>
+    <child comp="mcn1-l"/>
+    <origin xyz="0 0.18 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.96" upper="2.96" effort="50" velocity="3.14"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+  <joint name="l_elbow" type="revolute">
+    <parent comp="mcn1-l"/>
+    <child comp="mcn2-l"/>
+    <origin xyz="0 0 -0.3" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.5" effort="30" velocity="3.14"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+  <joint name="l_wrist_pitch" type="revolute">
+    <parent comp="mcn2-l"/>
+    <child comp="mcn3-l"/>
+    <origin xyz="0 0 -0.25" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="6.28"/>
+    <dynamics damping="0.1" friction="0.02"/>
+  </joint>
+  <joint name="l_hand" type="fixed">
+    <parent comp="mcn3-l"/>
+    <child comp="mcn4-l"/>
+    <origin xyz="0 0 -0.1"/>
+  </joint>
+  <joint name="l_cam_mount" type="fixed">
+    <parent comp="mcn3-l"/>
+    <child comp="cam-l"/>
+    <origin xyz="0.03 0 -0.02" rpy="0 0.3 0"/>
+  </joint>
+  <!-- Right arm joints -->
+  <joint name="r_shoulder_yaw" type="revolute">
+    <parent comp="torso"/>
+    <child comp="mcn1-r"/>
+    <origin xyz="0 -0.18 0.25" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.96" upper="2.96" effort="50" velocity="3.14"/>
+    <dynamics damping="0.5" friction="0.1"/>
+  </joint>
+  <joint name="r_elbow" type="revolute">
+    <parent comp="mcn1-r"/>
+    <child comp="mcn2-r"/>
+    <origin xyz="0 0 -0.3"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.5" effort="30" velocity="3.14"/>
+    <dynamics damping="0.3" friction="0.05"/>
+  </joint>
+  <joint name="r_wrist_pitch" type="revolute">
+    <parent comp="mcn2-r"/>
+    <child comp="mcn3-r"/>
+    <origin xyz="0 0 -0.25"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="6.28"/>
+    <dynamics damping="0.1" friction="0.02"/>
+  </joint>
+  <joint name="r_hand" type="fixed">
+    <parent comp="mcn3-r"/>
+    <child comp="mcn4-r"/>
+    <origin xyz="0 0 -0.1"/>
+  </joint>
+  <joint name="r_cam_mount" type="fixed">
+    <parent comp="mcn3-r"/>
+    <child comp="cam-r"/>
+    <origin xyz="0.03 0 -0.02" rpy="0 0.3 0"/>
+  </joint>
+  <!-- ================================================================ -->
+  <!-- GROUPS                                                           -->
+  <!-- ================================================================ -->
+  <group name="left_arm" type="kinematic-chain">
+    <description>Left arm kinematic chain (shoulder to wrist)</description>
+    <joint ref="l_shoulder_yaw"/>
+    <joint ref="l_elbow"/>
+    <joint ref="l_wrist_pitch"/>
+  </group>
+  <group name="right_arm" type="kinematic-chain">
+    <description>Right arm kinematic chain (shoulder to wrist)</description>
+    <joint ref="r_shoulder_yaw"/>
+    <joint ref="r_elbow"/>
+    <joint ref="r_wrist_pitch"/>
+  </group>
+  <group name="left_hand" type="end-effector" tip-comp="mcn4-l">
+    <description>Left dextrous hand</description>
+    <joint ref="l_hand"/>
+  </group>
+  <group name="right_hand" type="end-effector" tip-comp="mcn4-r">
+    <description>Right dextrous hand</description>
+    <joint ref="r_hand"/>
+  </group>
+  <group name="left_manipulation">
+    <description>Left arm + hand for manipulation tasks</description>
+    <group ref="left_arm"/>
+    <group ref="left_hand"/>
+  </group>
+  <group name="right_manipulation">
+    <description>Right arm + hand for manipulation tasks</description>
+    <group ref="right_arm"/>
+    <group ref="right_hand"/>
+  </group>
+  <group name="locomotion" type="locomotion">
+    <description>Differential drive wheels + passive casters</description>
+    <joint ref="chassis_to_wheel_left"/>
+    <joint ref="chassis_to_wheel_right"/>
+    <joint ref="chassis_to_caster_fl"/>
+    <joint ref="chassis_to_caster_fr"/>
+  </group>
+  <group name="head_group">
+    <description>Head unit for display and microphone interaction</description>
+    <joint ref="torso_to_head"/>
+  </group>
+  <!-- ================================================================ -->
+  <!-- STATES (named kinematic configurations)                          -->
+  <!-- ================================================================ -->
+  <state name="home" default="true">
+    <description>Default home position: arms at sides, elbows slightly bent</description>
+    <joint-position joint="l_shoulder_yaw" value="0"/>
+    <joint-position joint="l_elbow" value="0.5"/>
+    <joint-position joint="l_wrist_pitch" value="0"/>
+    <joint-position joint="r_shoulder_yaw" value="0"/>
+    <joint-position joint="r_elbow" value="0.5"/>
+    <joint-position joint="r_wrist_pitch" value="0"/>
+  </state>
+  <state name="transport">
+    <description>Compact transport position: arms folded tight against torso</description>
+    <joint-position joint="l_shoulder_yaw" value="0"/>
+    <joint-position joint="l_elbow" value="2.4"/>
+    <joint-position joint="l_wrist_pitch" value="1.0"/>
+    <joint-position joint="r_shoulder_yaw" value="0"/>
+    <joint-position joint="r_elbow" value="2.4"/>
+    <joint-position joint="r_wrist_pitch" value="1.0"/>
+  </state>
+  <!-- ================================================================ -->
+  <!-- SELF-COLLISION DISABLE                                           -->
+  <!-- ================================================================ -->
+  <self-collision-disable>
+    <!-- Left arm adjacent pairs -->
+    <pair comp1="torso" comp2="mcn1-l" reason="adjacent"/>
+    <pair comp1="mcn1-l" comp2="mcn2-l" reason="adjacent"/>
+    <pair comp1="mcn2-l" comp2="mcn3-l" reason="adjacent"/>
+    <pair comp1="mcn3-l" comp2="mcn4-l" reason="adjacent"/>
+    <pair comp1="mcn3-l" comp2="cam-l" reason="mounted"/>
+    <!-- Right arm adjacent pairs -->
+    <pair comp1="torso" comp2="mcn1-r" reason="adjacent"/>
+    <pair comp1="mcn1-r" comp2="mcn2-r" reason="adjacent"/>
+    <pair comp1="mcn2-r" comp2="mcn3-r" reason="adjacent"/>
+    <pair comp1="mcn3-r" comp2="mcn4-r" reason="adjacent"/>
+    <pair comp1="mcn3-r" comp2="cam-r" reason="mounted"/>
+    <!-- Cross-body pairs that cannot collide -->
+    <pair comp1="mcn1-l" comp2="mcn1-r" reason="unreachable"/>
+    <pair comp1="mcn2-l" comp2="mcn2-r" reason="unreachable"/>
+    <!-- Chassis-mounted -->
+    <pair comp1="chassis" comp2="torso" reason="adjacent"/>
+    <pair comp1="chassis" comp2="s32n79" reason="mounted"/>
+    <pair comp1="chassis" comp2="agx-thor" reason="mounted"/>
+    <pair comp1="chassis" comp2="s32j100" reason="mounted"/>
+    <pair comp1="chassis" comp2="zlac8015d" reason="mounted"/>
+    <pair comp1="chassis" comp2="wheel-left" reason="adjacent"/>
+    <pair comp1="chassis" comp2="wheel-right" reason="adjacent"/>
+    <pair comp1="chassis" comp2="bms" reason="mounted"/>
+    <pair comp1="chassis" comp2="lidar-front" reason="mounted"/>
+    <pair comp1="chassis" comp2="lidar-rear" reason="mounted"/>
+    <pair comp1="chassis" comp2="radar-4d" reason="mounted"/>
+    <pair comp1="chassis" comp2="caster-fl" reason="adjacent"/>
+    <pair comp1="chassis" comp2="caster-fr" reason="adjacent"/>
+    <pair comp1="torso" comp2="head" reason="adjacent"/>
+  </self-collision-disable>
+  <!-- ================================================================ -->
+  <!-- NETWORKS                                                         -->
+  <!-- ================================================================ -->
+  <!-- Network 1: Backbone (S32N79 E810 <-> AGX Thor 25G) -->
+  <binding name="agx-thor_mgbe0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="agx-thor" port="mgbe0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="mgbe0_connector">
+        <component-ref component="agx-thor"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="agx-thor_mgbe1_presented" fidelity="presented">
+    <functional>
+      <port-ref component="agx-thor" port="mgbe1"/>
+    </functional>
+    <physical>
+      <connector-ref connector="mgbe1_connector">
+        <component-ref component="agx-thor"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="s32n79_e810_p0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="s32n79" port="e810_p0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="e810_p0_connector">
+        <component-ref component="s32n79"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="s32n79_e810_p1_presented" fidelity="presented">
+    <functional>
+      <port-ref component="s32n79" port="e810_p1"/>
+    </functional>
+    <physical>
+      <connector-ref connector="e810_p1_connector">
+        <component-ref component="s32n79"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="zlac8015d_sig_left_presented" fidelity="presented">
+    <functional>
+      <port-ref component="zlac8015d" port="sig_left"/>
+    </functional>
+    <physical>
+      <connector-ref connector="sig_left_connector">
+        <component-ref component="zlac8015d"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="zlac8015d_sig_right_presented" fidelity="presented">
+    <functional>
+      <port-ref component="zlac8015d" port="sig_right"/>
+    </functional>
+    <physical>
+      <connector-ref connector="sig_right_connector">
+        <component-ref component="zlac8015d"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="zlac8015d_phase_left_presented" fidelity="presented">
+    <functional>
+      <port-ref component="zlac8015d" port="phase_left"/>
+    </functional>
+    <physical>
+      <connector-ref connector="phase_left_connector">
+        <component-ref component="zlac8015d"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="zlac8015d_phase_right_presented" fidelity="presented">
+    <functional>
+      <port-ref component="zlac8015d" port="phase_right"/>
+    </functional>
+    <physical>
+      <connector-ref connector="phase_right_connector">
+        <component-ref component="zlac8015d"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="wheel-left_sig0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="wheel-left" port="sig0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="sig0_connector">
+        <component-ref component="wheel-left"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="wheel-left_phase0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="wheel-left" port="phase0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="phase0_connector">
+        <component-ref component="wheel-left"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="wheel-right_sig0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="wheel-right" port="sig0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="sig0_connector">
+        <component-ref component="wheel-right"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="wheel-right_phase0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="wheel-right" port="phase0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="phase0_connector">
+        <component-ref component="wheel-right"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="s32j100_can0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="s32j100" port="can0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="can0_connector">
+        <component-ref component="s32j100"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <binding name="bms_can0_presented" fidelity="presented">
+    <functional>
+      <port-ref component="bms" port="can0"/>
+    </functional>
+    <physical>
+      <connector-ref connector="can0_connector">
+        <component-ref component="bms"/>
+      </connector-ref>
+    </physical>
+  </binding>
+  <link name="s32n79_to_thor_p0">
+    <description>Primary 25 Gb/s optical backbone link.</description>
+    <selected purpose="communication" carrier="guided-optical">
+      <rate>
+        <nominal value="25000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <gptp-domain name="default" number="0">
+        <clock name="primary" kind="ordinary" gm-capable="true" priority1="128" priority2="128">
+          <participant-ref network="s32n79_to_thor_p0" participant="s32n79"/>
+        </clock>
+        <clock name="secondary" kind="ordinary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="s32n79_to_thor_p0" participant="agx-thor"/>
+        </clock>
+        <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-threshold-ns="800"/>
+      </gptp-domain>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-256" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="tpm0"/>
+        <default-policy>
+          <macsec-policy-ref network="s32n79_to_thor_p0" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="e810_p0"/>
+      </endpoint>
+    </participant>
+    <participant name="agx-thor">
+      <endpoint>
+        <port-ref component="agx-thor" port="mgbe0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="s32n79_to_thor_p1">
+    <description>Redundant 25 Gb/s optical backbone link.</description>
+    <selected purpose="communication" carrier="guided-optical">
+      <rate>
+        <nominal value="25000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-256" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="tpm0"/>
+        <default-policy>
+          <macsec-policy-ref network="s32n79_to_thor_p1" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="e810_p1"/>
+      </endpoint>
+    </participant>
+    <participant name="agx-thor">
+      <endpoint>
+        <port-ref component="agx-thor" port="mgbe1"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="left-wrist-camera">
+    <description>Left wrist camera spur from MCN3-L.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <participant name="mcn3-l">
+      <endpoint>
+        <port-ref component="mcn3-l" port="eth2"/>
+      </endpoint>
+    </participant>
+    <participant name="cam-l">
+      <endpoint>
+        <port-ref component="cam-l" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="right-wrist-camera">
+    <description>Right wrist camera spur from MCN3-R.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <participant name="mcn3-r">
+      <endpoint>
+        <port-ref component="mcn3-r" port="eth2"/>
+      </endpoint>
+    </participant>
+    <participant name="cam-r">
+      <endpoint>
+        <port-ref component="cam-r" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="n79_to_j100_p0">
+    <description>S32N79 QXGMII lane 0 to the S32J100 base-zone switch.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="2500000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <gptp-domain name="default" number="3">
+        <clock name="primary" kind="ordinary" gm-capable="true" priority1="128" priority2="128">
+          <participant-ref network="n79_to_j100_p0" participant="s32n79"/>
+        </clock>
+        <clock name="secondary" kind="ordinary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="n79_to_j100_p0" participant="s32j100"/>
+        </clock>
+        <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-threshold-ns="2000"/>
+      </gptp-domain>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="n79_to_j100_p0" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="qxgmii_p0"/>
+      </endpoint>
+    </participant>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_up0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="n79_to_j100_p1">
+    <description>S32N79 QXGMII lane 1 to the S32J100 base-zone switch.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="2500000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="n79_to_j100_p1" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="qxgmii_p1"/>
+      </endpoint>
+    </participant>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_up1"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="n79_to_j100_p2">
+    <description>S32N79 QXGMII lane 2 to the S32J100 base-zone switch.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="2500000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="n79_to_j100_p2" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="qxgmii_p2"/>
+      </endpoint>
+    </participant>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_up2"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="n79_to_j100_p3">
+    <description>S32N79 QXGMII lane 3 to the S32J100 base-zone switch.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="2500000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <configuration>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="n79_to_j100_p3" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="qxgmii_p3"/>
+      </endpoint>
+    </participant>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_up3"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="j100_to_head">
+    <description>Head controller link.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="1000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_head"/>
+      </endpoint>
+    </participant>
+    <participant name="head">
+      <endpoint>
+        <port-ref component="head" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="j100_to_lidar_f">
+    <description>Front lidar link.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="1000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_lidar_front"/>
+      </endpoint>
+    </participant>
+    <participant name="lidar-front">
+      <endpoint>
+        <port-ref component="lidar-front" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="j100_to_lidar_r">
+    <description>Rear lidar link.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="1000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_lidar_rear"/>
+      </endpoint>
+    </participant>
+    <participant name="lidar-rear">
+      <endpoint>
+        <port-ref component="lidar-rear" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="j100_to_radar">
+    <description>4D radar link.</description>
+    <selected purpose="communication" carrier="electrical">
+      <rate>
+        <nominal value="1000000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="eth_radar"/>
+      </endpoint>
+    </participant>
+    <participant name="radar-4d">
+      <endpoint>
+        <port-ref component="radar-4d" port="eth0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="zlac_to_wheel_left_sig">
+    <description>Left wheel encoder, Hall, and temperature signals.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="sig_left"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-left">
+      <endpoint>
+        <port-ref component="wheel-left" port="sig0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="zlac_to_wheel_left_phase">
+    <description>Left wheel three-phase motor power.</description>
+    <selected purpose="power-delivery" carrier="electrical"/>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="phase_left"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-left">
+      <endpoint>
+        <port-ref component="wheel-left" port="phase0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="zlac_to_wheel_right_sig">
+    <description>Right wheel encoder, Hall, and temperature signals.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="sig_right"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-right">
+      <endpoint>
+        <port-ref component="wheel-right" port="sig0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <link name="zlac_to_wheel_right_phase">
+    <description>Right wheel three-phase motor power.</description>
+    <selected purpose="power-delivery" carrier="electrical"/>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="phase_right"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-right">
+      <endpoint>
+        <port-ref component="wheel-right" port="phase0"/>
+      </endpoint>
+    </participant>
+  </link>
+  <bus name="base_can">
+    <description>CAN-FD bus joining the base-zone controller, dual motor controller, and BMS.</description>
+    <selected purpose="communication" carrier="electrical">
+      <profile id="hcdf:can"/>
+      <rate>
+        <nominal value="1000000" unit="bit/s"/>
+      </rate>
+    </selected>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="can0"/>
+      </endpoint>
+    </participant>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="can0"/>
+      </endpoint>
+    </participant>
+    <participant name="bms">
+      <endpoint>
+        <port-ref component="bms" port="can0"/>
+      </endpoint>
+    </participant>
+  </bus>
+  <bus name="power_bus">
+    <description>24 V DC distribution from the BMS to every powered module.</description>
+    <selected purpose="power-delivery" carrier="electrical">
+      <voltage>
+        <nominal value="24" unit="V"/>
+      </voltage>
+    </selected>
+    <participant name="bms">
+      <endpoint>
+        <port-ref component="bms" port="bat_out"/>
+      </endpoint>
+    </participant>
+    <participant name="agx-thor">
+      <endpoint>
+        <port-ref component="agx-thor" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="s32j100">
+      <endpoint>
+        <port-ref component="s32j100" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="head">
+      <endpoint>
+        <port-ref component="head" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="lidar-front">
+      <endpoint>
+        <port-ref component="lidar-front" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="lidar-rear">
+      <endpoint>
+        <port-ref component="lidar-rear" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="radar-4d">
+      <endpoint>
+        <port-ref component="radar-4d" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="zlac8015d">
+      <endpoint>
+        <port-ref component="zlac8015d" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-left">
+      <endpoint>
+        <port-ref component="wheel-left" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="wheel-right">
+      <endpoint>
+        <port-ref component="wheel-right" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-l">
+      <endpoint>
+        <port-ref component="mcn1-l" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-l">
+      <endpoint>
+        <port-ref component="mcn2-l" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-l">
+      <endpoint>
+        <port-ref component="mcn3-l" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn4-l">
+      <endpoint>
+        <port-ref component="mcn4-l" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="cam-l">
+      <endpoint>
+        <port-ref component="cam-l" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-r">
+      <endpoint>
+        <port-ref component="mcn1-r" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-r">
+      <endpoint>
+        <port-ref component="mcn2-r" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-r">
+      <endpoint>
+        <port-ref component="mcn3-r" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn4-r">
+      <endpoint>
+        <port-ref component="mcn4-r" port="pwr_in"/>
+      </endpoint>
+    </participant>
+    <participant name="cam-r">
+      <endpoint>
+        <port-ref component="cam-r" port="pwr_in"/>
+      </endpoint>
+    </participant>
+  </bus>
+  <chain name="left-arm-chain">
+    <description>Switched left arm path from the S32N79 through four motor-control nodes.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <configuration>
+      <gptp-domain name="default" number="1">
+        <clock name="clock-0" kind="ordinary" gm-capable="true" priority1="128" priority2="128">
+          <participant-ref network="left-arm-chain" participant="s32n79"/>
+        </clock>
+        <clock name="clock-1" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="left-arm-chain" participant="mcn1-l-in"/>
+        </clock>
+        <clock name="clock-2" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="left-arm-chain" participant="mcn2-l-in"/>
+        </clock>
+        <clock name="clock-3" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="left-arm-chain" participant="mcn3-l-in"/>
+        </clock>
+        <clock name="clock-4" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="left-arm-chain" participant="mcn4-l"/>
+        </clock>
+        <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-threshold-ns="2000"/>
+      </gptp-domain>
+      <traffic-class name="ptp" number="7" preemption="express">
+        <pcp value="7"/>
+      </traffic-class>
+      <traffic-class name="safety" number="6" preemption="express">
+        <pcp value="6"/>
+      </traffic-class>
+      <traffic-class name="motion" number="5" preemption="express">
+        <pcp value="5"/>
+      </traffic-class>
+      <traffic-class name="sensor" number="4" preemption="express">
+        <pcp value="4"/>
+      </traffic-class>
+      <traffic-class name="camera" number="3" preemption="preemptable">
+        <pcp value="3"/>
+      </traffic-class>
+      <traffic-class name="lidar" number="2" preemption="preemptable">
+        <pcp value="2"/>
+      </traffic-class>
+      <traffic-class name="config" number="1" preemption="preemptable">
+        <pcp value="1"/>
+      </traffic-class>
+      <traffic-class name="bulk" number="0" preemption="preemptable">
+        <pcp value="0"/>
+      </traffic-class>
+      <gate-schedule name="arm-chain-1ms" cycle-time-ns="1000000">
+        <gate duration-ns="20000">
+          <open>
+            <traffic-class-ref network="left-arm-chain" traffic-class="ptp"/>
+          </open>
+        </gate>
+        <gate duration-ns="80000">
+          <open>
+            <traffic-class-ref network="left-arm-chain" traffic-class="safety"/>
+            <traffic-class-ref network="left-arm-chain" traffic-class="motion"/>
+          </open>
+        </gate>
+        <gate duration-ns="50000">
+          <open>
+            <traffic-class-ref network="left-arm-chain" traffic-class="sensor"/>
+          </open>
+        </gate>
+        <gate duration-ns="850000">
+          <open>
+            <traffic-class-ref network="left-arm-chain" traffic-class="camera"/>
+            <traffic-class-ref network="left-arm-chain" traffic-class="lidar"/>
+            <traffic-class-ref network="left-arm-chain" traffic-class="config"/>
+            <traffic-class-ref network="left-arm-chain" traffic-class="bulk"/>
+          </open>
+        </gate>
+      </gate-schedule>
+      <schedule-assignment name="arm-chain">
+        <schedule-ref network="left-arm-chain" schedule="arm-chain-1ms"/>
+        <target>
+          <participant-ref network="left-arm-chain" participant="s32n79"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn1-l-in"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn1-l-out"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn2-l-in"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn2-l-out"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn3-l-in"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn3-l-out"/>
+        </target>
+        <target>
+          <participant-ref network="left-arm-chain" participant="mcn4-l"/>
+        </target>
+      </schedule-assignment>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="left-arm-chain" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="xfi_left"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-l-in">
+      <endpoint>
+        <port-ref component="mcn1-l" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-l-out">
+      <endpoint>
+        <port-ref component="mcn1-l" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-l-in">
+      <endpoint>
+        <port-ref component="mcn2-l" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-l-out">
+      <endpoint>
+        <port-ref component="mcn2-l" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-l-in">
+      <endpoint>
+        <port-ref component="mcn3-l" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-l-out">
+      <endpoint>
+        <port-ref component="mcn3-l" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn4-l">
+      <endpoint>
+        <port-ref component="mcn4-l" port="eth0"/>
+      </endpoint>
+    </participant>
+    <hop name="s32n79">
+      <owner>
+        <function-ref component="s32n79" function="s32n79-integrated"/>
+      </owner>
+    </hop>
+    <hop name="mcn1-l">
+      <owner>
+        <function-ref component="mcn1-l" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn2-l">
+      <owner>
+        <function-ref component="mcn2-l" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn3-l">
+      <owner>
+        <function-ref component="mcn3-l" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn4-l">
+      <owner>
+        <function-ref component="mcn4-l" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <leg name="s32n79-to-mcn1-l">
+      <from>
+        <hop-ref network="left-arm-chain" hop="s32n79"/>
+        <participant-ref network="left-arm-chain" participant="s32n79"/>
+      </from>
+      <to>
+        <hop-ref network="left-arm-chain" hop="mcn1-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn1-l-in"/>
+      </to>
+    </leg>
+    <leg name="mcn1-l-to-mcn2-l">
+      <from>
+        <hop-ref network="left-arm-chain" hop="mcn1-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn1-l-out"/>
+      </from>
+      <to>
+        <hop-ref network="left-arm-chain" hop="mcn2-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn2-l-in"/>
+      </to>
+    </leg>
+    <leg name="mcn2-l-to-mcn3-l">
+      <from>
+        <hop-ref network="left-arm-chain" hop="mcn2-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn2-l-out"/>
+      </from>
+      <to>
+        <hop-ref network="left-arm-chain" hop="mcn3-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn3-l-in"/>
+      </to>
+    </leg>
+    <leg name="mcn3-l-to-mcn4-l">
+      <from>
+        <hop-ref network="left-arm-chain" hop="mcn3-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn3-l-out"/>
+      </from>
+      <to>
+        <hop-ref network="left-arm-chain" hop="mcn4-l"/>
+        <participant-ref network="left-arm-chain" participant="mcn4-l"/>
+      </to>
+    </leg>
+  </chain>
+  <chain name="right-arm-chain">
+    <description>Switched right arm path from the S32N79 through four motor-control nodes.</description>
+    <selected purpose="communication" carrier="electrical"/>
+    <configuration>
+      <gptp-domain name="default" number="2">
+        <clock name="clock-0" kind="ordinary" gm-capable="true" priority1="128" priority2="128">
+          <participant-ref network="right-arm-chain" participant="s32n79"/>
+        </clock>
+        <clock name="clock-1" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="right-arm-chain" participant="mcn1-r-in"/>
+        </clock>
+        <clock name="clock-2" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="right-arm-chain" participant="mcn2-r-in"/>
+        </clock>
+        <clock name="clock-3" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="right-arm-chain" participant="mcn3-r-in"/>
+        </clock>
+        <clock name="clock-4" kind="boundary" gm-capable="false" priority1="255" priority2="255">
+          <participant-ref network="right-arm-chain" participant="mcn4-r"/>
+        </clock>
+        <port-defaults log-sync-interval="-3" log-announce-interval="0" log-pdelay-req-interval="0" neighbor-prop-delay-threshold-ns="2000"/>
+      </gptp-domain>
+      <traffic-class name="ptp" number="7" preemption="express">
+        <pcp value="7"/>
+      </traffic-class>
+      <traffic-class name="safety" number="6" preemption="express">
+        <pcp value="6"/>
+      </traffic-class>
+      <traffic-class name="motion" number="5" preemption="express">
+        <pcp value="5"/>
+      </traffic-class>
+      <traffic-class name="sensor" number="4" preemption="express">
+        <pcp value="4"/>
+      </traffic-class>
+      <traffic-class name="camera" number="3" preemption="preemptable">
+        <pcp value="3"/>
+      </traffic-class>
+      <traffic-class name="lidar" number="2" preemption="preemptable">
+        <pcp value="2"/>
+      </traffic-class>
+      <traffic-class name="config" number="1" preemption="preemptable">
+        <pcp value="1"/>
+      </traffic-class>
+      <traffic-class name="bulk" number="0" preemption="preemptable">
+        <pcp value="0"/>
+      </traffic-class>
+      <gate-schedule name="arm-chain-1ms" cycle-time-ns="1000000">
+        <gate duration-ns="20000">
+          <open>
+            <traffic-class-ref network="right-arm-chain" traffic-class="ptp"/>
+          </open>
+        </gate>
+        <gate duration-ns="80000">
+          <open>
+            <traffic-class-ref network="right-arm-chain" traffic-class="safety"/>
+            <traffic-class-ref network="right-arm-chain" traffic-class="motion"/>
+          </open>
+        </gate>
+        <gate duration-ns="50000">
+          <open>
+            <traffic-class-ref network="right-arm-chain" traffic-class="sensor"/>
+          </open>
+        </gate>
+        <gate duration-ns="850000">
+          <open>
+            <traffic-class-ref network="right-arm-chain" traffic-class="camera"/>
+            <traffic-class-ref network="right-arm-chain" traffic-class="lidar"/>
+            <traffic-class-ref network="right-arm-chain" traffic-class="config"/>
+            <traffic-class-ref network="right-arm-chain" traffic-class="bulk"/>
+          </open>
+        </gate>
+      </gate-schedule>
+      <schedule-assignment name="arm-chain">
+        <schedule-ref network="right-arm-chain" schedule="arm-chain-1ms"/>
+        <target>
+          <participant-ref network="right-arm-chain" participant="s32n79"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn1-r-in"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn1-r-out"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn2-r-in"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn2-r-out"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn3-r-in"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn3-r-out"/>
+        </target>
+        <target>
+          <participant-ref network="right-arm-chain" participant="mcn4-r"/>
+        </target>
+      </schedule-assignment>
+      <macsec>
+        <policy name="must-secure" enforcement="must-secure" cipher="ieee8021ae:gcm-aes-128" key-agreement="local:psk" rekey-interval-ns="3600000000000" credential-store-ref="se051"/>
+        <default-policy>
+          <macsec-policy-ref network="right-arm-chain" policy="must-secure"/>
+        </default-policy>
+      </macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="s32n79">
+      <endpoint>
+        <port-ref component="s32n79" port="xfi_right"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-r-in">
+      <endpoint>
+        <port-ref component="mcn1-r" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn1-r-out">
+      <endpoint>
+        <port-ref component="mcn1-r" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-r-in">
+      <endpoint>
+        <port-ref component="mcn2-r" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn2-r-out">
+      <endpoint>
+        <port-ref component="mcn2-r" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-r-in">
+      <endpoint>
+        <port-ref component="mcn3-r" port="eth0"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn3-r-out">
+      <endpoint>
+        <port-ref component="mcn3-r" port="eth1"/>
+      </endpoint>
+    </participant>
+    <participant name="mcn4-r">
+      <endpoint>
+        <port-ref component="mcn4-r" port="eth0"/>
+      </endpoint>
+    </participant>
+    <hop name="s32n79">
+      <owner>
+        <function-ref component="s32n79" function="s32n79-integrated"/>
+      </owner>
+    </hop>
+    <hop name="mcn1-r">
+      <owner>
+        <function-ref component="mcn1-r" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn2-r">
+      <owner>
+        <function-ref component="mcn2-r" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn3-r">
+      <owner>
+        <function-ref component="mcn3-r" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <hop name="mcn4-r">
+      <owner>
+        <function-ref component="mcn4-r" function="integrated_switch"/>
+      </owner>
+    </hop>
+    <leg name="s32n79-to-mcn1-r">
+      <from>
+        <hop-ref network="right-arm-chain" hop="s32n79"/>
+        <participant-ref network="right-arm-chain" participant="s32n79"/>
+      </from>
+      <to>
+        <hop-ref network="right-arm-chain" hop="mcn1-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn1-r-in"/>
+      </to>
+    </leg>
+    <leg name="mcn1-r-to-mcn2-r">
+      <from>
+        <hop-ref network="right-arm-chain" hop="mcn1-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn1-r-out"/>
+      </from>
+      <to>
+        <hop-ref network="right-arm-chain" hop="mcn2-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn2-r-in"/>
+      </to>
+    </leg>
+    <leg name="mcn2-r-to-mcn3-r">
+      <from>
+        <hop-ref network="right-arm-chain" hop="mcn2-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn2-r-out"/>
+      </from>
+      <to>
+        <hop-ref network="right-arm-chain" hop="mcn3-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn3-r-in"/>
+      </to>
+    </leg>
+    <leg name="mcn3-r-to-mcn4-r">
+      <from>
+        <hop-ref network="right-arm-chain" hop="mcn3-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn3-r-out"/>
+      </from>
+      <to>
+        <hop-ref network="right-arm-chain" hop="mcn4-r"/>
+        <participant-ref network="right-arm-chain" participant="mcn4-r"/>
+      </to>
+    </leg>
+  </chain>
+  <stream-profile uri="profiles/operational.streams.xml" selection-role="default"/>
+  <!-- ================================================================ -->
+  <!-- TRANSMISSIONS                                                    -->
+  <!-- ================================================================ -->
+  <transmission name="l_shoulder_yaw_tx" type="planetary">
+    <motor ref="shoulder_yaw_motor"/>
+    <joint ref="l_shoulder_yaw"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+  <transmission name="l_shoulder_pitch_tx" type="planetary">
+    <motor ref="shoulder_pitch_motor"/>
+    <joint ref="l_shoulder_yaw"/>
+    <reduction>80</reduction>
+    <efficiency>0.82</efficiency>
+  </transmission>
+  <transmission name="l_elbow_tx" type="planetary">
+    <motor ref="elbow_l_motor"/>
+    <joint ref="l_elbow"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+  <transmission name="l_wrist_pitch_tx" type="planetary">
+    <motor ref="wrist_pitch_l_motor"/>
+    <joint ref="l_wrist_pitch"/>
+    <reduction>30</reduction>
+    <efficiency>0.88</efficiency>
+  </transmission>
+  <transmission name="r_shoulder_yaw_tx" type="planetary">
+    <motor ref="shoulder_yaw_r_motor"/>
+    <joint ref="r_shoulder_yaw"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+  <transmission name="r_shoulder_pitch_tx" type="planetary">
+    <motor ref="shoulder_pitch_r_motor"/>
+    <joint ref="r_shoulder_yaw"/>
+    <reduction>80</reduction>
+    <efficiency>0.82</efficiency>
+  </transmission>
+  <transmission name="r_elbow_tx" type="planetary">
+    <motor ref="elbow_r_motor"/>
+    <joint ref="r_elbow"/>
+    <reduction>50</reduction>
+    <efficiency>0.85</efficiency>
+  </transmission>
+  <transmission name="r_wrist_pitch_tx" type="planetary">
+    <motor ref="wrist_pitch_r_motor"/>
+    <joint ref="r_wrist_pitch"/>
+    <reduction>30</reduction>
+    <efficiency>0.88</efficiency>
+  </transmission>
+  <transmission name="wheel_left_tx" type="simple">
+    <motor ref="left_wheel_motor"/>
+    <joint ref="chassis_to_wheel_left"/>
+    <reduction>1</reduction>
+    <efficiency>0.95</efficiency>
+  </transmission>
+  <transmission name="wheel_right_tx" type="simple">
+    <motor ref="right_wheel_motor"/>
+    <joint ref="chassis_to_wheel_right"/>
+    <reduction>1</reduction>
+    <efficiency>0.95</efficiency>
+  </transmission>
+  <!-- ================================================================ -->
+  <!-- MATERIALS                                                        -->
+  <!-- ================================================================ -->
+  <color name="aluminum-anodized" rgba="0.7 0.7 0.7 1.0" description="Anodized aluminum chassis and structural components"/>
+  <color name="rubber-tire" rgba="0.15 0.15 0.15 1.0" description="Rubber tire compound for driven wheels"/>
+  <color name="abs-black" rgba="0.1 0.1 0.1 1.0" description="ABS plastic enclosure material"/>
+</hcdf>

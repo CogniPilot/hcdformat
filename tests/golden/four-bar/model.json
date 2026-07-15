@@ -1,0 +1,215 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "four-bar",
+    "comp": [
+      {
+        "name": "ground",
+        "role": "parent",
+        "description": "Fixed link (frame 0), the kinematic root; spans the two grounded pivots A and B.",
+        "visual": {
+          "name": "ground_bar",
+          "pose": {
+            "xyz": "0.15 0 0"
+          },
+          "geometry": {
+            "box": {
+              "size": "0.30 0.03 0.03"
+            }
+          },
+          "color": {
+            "name": "ground_gray"
+          }
+        }
+      },
+      {
+        "name": "crank",
+        "role": "actuator",
+        "description": "Driven input bar, pivots on the ground at A; length 0.20 m along +Y at zero.",
+        "visual": {
+          "name": "crank_bar",
+          "pose": {
+            "xyz": "0 0.10 0"
+          },
+          "geometry": {
+            "box": {
+              "size": "0.03 0.20 0.03"
+            }
+          },
+          "color": {
+            "name": "crank_red"
+          }
+        }
+      },
+      {
+        "name": "coupler",
+        "description": "Floating coupler bar, spans crank tip C1 to rocker tip C2; length 0.30 m along +X.",
+        "visual": {
+          "name": "coupler_bar",
+          "pose": {
+            "xyz": "0.15 0 0"
+          },
+          "geometry": {
+            "box": {
+              "size": "0.30 0.03 0.03"
+            }
+          },
+          "color": {
+            "name": "coupler_green"
+          }
+        }
+      },
+      {
+        "name": "rocker",
+        "description": "Output bar, pivots on the ground at B; length 0.20 m along +Y at zero (== crank).",
+        "visual": {
+          "name": "rocker_bar",
+          "pose": {
+            "xyz": "0 0.10 0"
+          },
+          "geometry": {
+            "box": {
+              "size": "0.03 0.20 0.03"
+            }
+          },
+          "color": {
+            "name": "rocker_blue"
+          }
+        }
+      },
+      {
+        "name": "rocker_tip",
+        "description": "Massless reference frame fixed to the rocker's far end C2, the physical pin the coupler\n                closes onto. Zero DOF (j_tip is fixed); it exists so the closure's child frame sits at\n                the moving pin rather than the rocker's ground pivot. No geometry (a kinematic marker)."
+      }
+    ],
+    "joint": [
+      {
+        "name": "j_crank",
+        "type": "revolute",
+        "description": "Driven crank pivot on the ground link (the input; drive this to move the mechanism).",
+        "parent": {
+          "comp": "ground"
+        },
+        "child": {
+          "comp": "crank"
+        },
+        "origin": {
+          "xyz": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -1.0472,
+          "upper": 1.0472,
+          "effort": 20,
+          "velocity": 3
+        }
+      },
+      {
+        "name": "j_coupler",
+        "type": "revolute",
+        "description": "Coupler hinge at the crank tip C1.",
+        "parent": {
+          "comp": "crank"
+        },
+        "child": {
+          "comp": "coupler"
+        },
+        "origin": {
+          "xyz": "0 0.20 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        }
+      },
+      {
+        "name": "j_rocker",
+        "type": "revolute",
+        "description": "Rocker pivot on the ground link at B.",
+        "parent": {
+          "comp": "ground"
+        },
+        "child": {
+          "comp": "rocker"
+        },
+        "origin": {
+          "xyz": "0.30 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        }
+      },
+      {
+        "name": "j_tip",
+        "type": "fixed",
+        "description": "Rigidly fixes the rocker_tip reference frame to the rocker's far end C2.",
+        "parent": {
+          "comp": "rocker"
+        },
+        "child": {
+          "comp": "rocker_tip"
+        },
+        "origin": {
+          "xyz": "0 0.20 0"
+        }
+      },
+      {
+        "name": "j_close",
+        "type": "revolute",
+        "description": "Loop closure: the coupler's far end pins to the rocker's tip. Constrained in every DOF\n                 but the shared +Z rotation; residual is identically zero at the authored zero pose.",
+        "parent": {
+          "comp": "coupler"
+        },
+        "child": {
+          "comp": "rocker_tip"
+        },
+        "origin": {
+          "xyz": "0.30 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        },
+        "loop": {
+          "predecessor": "coupler",
+          "successor": "rocker_tip",
+          "constraint-axes": "1 1 1 1 1 0"
+        }
+      }
+    ],
+    "color": [
+      {
+        "name": "ground_gray",
+        "rgba": "0.6 0.6 0.6 1.0",
+        "description": "Fixed base link"
+      },
+      {
+        "name": "crank_red",
+        "rgba": "0.85 0.2 0.2 1.0",
+        "description": "Driven crank"
+      },
+      {
+        "name": "coupler_green",
+        "rgba": "0.2 0.7 0.3 1.0",
+        "description": "Floating coupler"
+      },
+      {
+        "name": "rocker_blue",
+        "rgba": "0.2 0.4 0.85 1.0",
+        "description": "Output rocker"
+      }
+    ]
+  }
+}

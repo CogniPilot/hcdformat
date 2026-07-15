@@ -7,17 +7,17 @@
 
     <inertial>
       <mass>0.5</mass>
-      <com>0 0 0.005</com>
+      <inertia_origin xyz="0 0 0.005"/>
       <inertia>1.2e-5 0 0 1.1e-5 0 2.0e-5</inertia>
     </inertial>
 
     <visual name="board">
-      <pose>0 0 0 0 0 0</pose>
+      <pose xyz="0 0 0" rpy="0 0 0"/>
       <model uri="models/test-board.glb" sha="abc123def456"/>
     </visual>
 
     <collision name="board_col">
-      <pose>0 0 -0.005 0 0 0</pose>
+      <pose xyz="0 0 -0.005" rpy="0 0 0"/>
       <geometry>
         <box><size>0.048 0.044 0.012</size></box>
       </geometry>
@@ -29,71 +29,25 @@
 
     <frame name="sensor_origin" relative-to="test-board">
       <description>Sensor reference frame</description>
-      <pose>0 0 0.01 0 0 0</pose>
+      <pose xyz="0 0 0.01" rpy="0 0 0"/>
     </frame>
 
-    <switch chip="test-switch">
-      <port name="eth0" iface="swp0" type="ethernet">
-        <capabilities>
-          <speed-tx unit="Mbps">10000</speed-tx>
-          <speed-rx unit="Mbps">100</speed-rx>
-          <standard>802.3dm</standard>
-          <phy role="master"/>
-          <tsn>
-            <gptp hw-timestamping="true" gm-capable="true"/>
-            <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
-            <preemption min-fragment-size="64"/>
-          </tsn>
-          <macsec><cipher>gcm-aes-128</cipher></macsec>
-          <eee supported="true"/>
-          <connector>Micro-Lock Plus 2.0 4C</connector>
-        </capabilities>
-      </port>
-      <port name="eth1" iface="swp1" type="ethernet">
-        <capabilities>
-          <speed unit="Mbps">1000</speed>
-          <standard>1000BASE-T1</standard>
-          <phy role="slave"/>
-        </capabilities>
-      </port>
-    </switch>
-
-    <port name="can0" type="CAN">
-      <capabilities>
-        <bitrate unit="bps">5000000</bitrate>
-      </capabilities>
-    </port>
-
-    <port name="sig_motor" type="SIGNAL">
-      <capabilities>
-        <connector>12-pin Molex</connector>
-      </capabilities>
-    </port>
-
-    <port name="phase_motor" type="SIGNAL">
-      <capabilities>
-        <connector>3-pin power</connector>
-      </capabilities>
-    </port>
-
-    <port name="pwr_in" type="POWER">
-      <capabilities>
-        <voltage unit="V" min="20" max="29.2">24</voltage>
-        <current unit="A" max="6">3</current>
-        <power unit="W" max="144">72</power>
-      </capabilities>
-    </port>
-
-    <antenna name="gnss0" type="gnss">
-      <capabilities>
-        <gain unit="dBi">3.5</gain>
-        <polarization>RHCP</polarization>
-      </capabilities>
-    </antenna>
+    <port name="eth0"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="100000000" max="10000000000" nominal="100000000" unit="bit/s"/></capabilities></port>
+    <port name="eth1"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="1000000000" max="1000000000" nominal="1000000000" unit="bit/s"/></capabilities></port>
+    <port name="can0"><capabilities><purpose value="communication"/><carrier value="electrical"/><profile id="hcdf:can"/><rate min="5000000" max="5000000" nominal="5000000" unit="bit/s"/></capabilities></port>
+    <port name="sig_motor"><capabilities><purpose value="communication"/><carrier value="electrical"/></capabilities></port>
+    <port name="phase_motor"><capabilities><purpose value="power-delivery"/><carrier value="electrical"/></capabilities></port>
+    <port name="pwr_in"><capabilities><purpose value="power-delivery"/><carrier value="electrical"/><voltage min="20" max="29.2" nominal="24" unit="V"/><current min="0" max="6" nominal="3" unit="A"/><power min="0" max="144" nominal="72" unit="W"/></capabilities></port>
+    <port name="gnss0"><capabilities><purpose value="communication"/><carrier value="radiated-rf"/><frequency min="1575420000" max="1575420000" nominal="1575420000" unit="Hz"/></capabilities></port>
+    <connector name="eth0_connector" family="molex:micro-lock-plus-2.0-4c"/>
+    <connector name="sig_motor_connector" family="molex:12-pin"/>
+    <connector name="phase_motor_connector" family="hcdf:three-phase-power"/>
+    <antenna name="gnss0"><radiated-port component="test-board" port="gnss0"/></antenna>
+    <switch name="test-switch"><bidirectional><port-ref component="test-board" port="eth0"/></bidirectional><bidirectional><port-ref component="test-board" port="eth1"/></bidirectional></switch>
 
     <sensor name="imu0" update-rate="1000">
       <inertial type="accel_gyro">
-        <pose>0.016 -0.001 -0.008 0 0 0</pose>
+        <pose xyz="0.016 -0.001 -0.008" rpy="0 0 0"/>
         <driver name="icm45686">
           <axis-align x="Y" y="-X" z="Z"/>
         </driver>
@@ -117,10 +71,10 @@
 
     <sensor name="tof0">
       <optical type="tof">
-        <pose>-0.008 0 0.003 0 0 0</pose>
+        <pose xyz="-0.008 0 0.003" rpy="0 0 0"/>
         <driver name="afbr_s50"/>
         <fov name="collector" color="#4488ff">
-          <pose>0 0 0 0 0.0471 0</pose>
+          <pose xyz="0 0 0" rpy="0 0.0471 0"/>
           <geometry>
             <frustum shape="pyramidal">
               <near>0.05</near>
@@ -131,7 +85,7 @@
           </geometry>
         </fov>
         <fov name="emitter" color="#ff4444">
-          <pose>-0.005 0 0 0 0 0</pose>
+          <pose xyz="-0.005 0 0" rpy="0 0 0"/>
           <geometry>
             <frustum shape="conical">
               <near>0.001</near>
@@ -180,13 +134,13 @@
       </control-modes>
     </motor>
 
-    <surface name="wheel">
+    <dynamic-surface name="wheel">
       <wheel type="driven">
         <radius unit="m">0.085</radius>
         <width unit="m">0.041</width>
         <friction static="0.9" dynamic="0.7"/>
       </wheel>
-    </surface>
+    </dynamic-surface>
 
     <software name="firmware">
       <version>1.0.0</version>
@@ -198,7 +152,7 @@
   <comp name="parent-body" role="parent">
     <inertial>
       <mass>5.0</mass>
-      <com>0 0 0</com>
+      <inertia_origin xyz="0 0 0"/>
     </inertial>
     <collision name="parent_col">
       <geometry><cylinder><radius>0.05</radius><length>0.2</length></cylinder></geometry>
@@ -215,25 +169,8 @@
     <collision name="parent_cone">
       <geometry><cone><radius>0.03</radius><length>0.08</length></cone></geometry>
     </collision>
-    <port name="eth0" type="ethernet">
-      <capabilities>
-        <speed-tx unit="Mbps">10000</speed-tx>
-        <speed-rx unit="Mbps">100</speed-rx>
-        <standard>802.3dm</standard>
-        <phy role="slave"/>
-        <tsn>
-          <gptp hw-timestamping="true" gm-capable="false"/>
-          <qbv traffic-classes="8" hw-queues="4" max-gcl-entries="64"/>
-          <preemption min-fragment-size="64"/>
-        </tsn>
-        <macsec><cipher>gcm-aes-128</cipher></macsec>
-      </capabilities>
-    </port>
-    <port name="can0" type="CAN">
-      <capabilities>
-        <bitrate unit="bps">5000000</bitrate>
-      </capabilities>
-    </port>
+    <port name="eth0"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="100000000" max="10000000000" nominal="100000000" unit="bit/s"/></capabilities></port>
+    <port name="can0"><capabilities><purpose value="communication"/><carrier value="electrical"/><profile id="hcdf:can"/><rate min="5000000" max="5000000" nominal="5000000" unit="bit/s"/></capabilities></port>
   </comp>
 
   <!-- Joints -->
@@ -268,67 +205,56 @@
     <pair comp1="parent-body" comp2="test-board" reason="adjacent"/>
   </self-collision-disable>
 
-  <!-- Network: contains link, bus, chain, gPTP, schedule, macsec -->
-  <network name="test">
-    <description>Test network exercising all topology types</description>
+  <!-- Physical presentation of the authored connector-bearing ports. -->
+  <binding name="test_board_eth0_presented" fidelity="presented"><functional><port-ref component="test-board" port="eth0"/></functional><physical><connector-ref connector="eth0_connector"><component-ref component="test-board"/></connector-ref></physical></binding>
+  <binding name="test_board_motor_signal_presented" fidelity="presented"><functional><port-ref component="test-board" port="sig_motor"/></functional><physical><connector-ref connector="sig_motor_connector"><component-ref component="test-board"/></connector-ref></physical></binding>
+  <binding name="test_board_motor_phase_presented" fidelity="presented"><functional><port-ref component="test-board" port="phase_motor"/></functional><physical><connector-ref connector="phase_motor_connector"><component-ref component="test-board"/></connector-ref></physical></binding>
 
-    <link name="test_link">
-      <wired standard="802.3dm">
-        <port>parent-body/eth0</port>
-        <port>test-board/eth0</port>
-        <vlan id="10" pcp="5"/>
-        <macsec policy="must-secure" cipher="gcm-aes-128"
-                key-agreement="psk" key-ref="test-key"/>
-      </wired>
-    </link>
+  <!-- Connectivity: point-to-point link, CAN bus, and switched chain with link-owned configuration. -->
+  <link name="test_link">
+    <description>Point-to-point electrical communication link between the parent and test board.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="100000000" unit="bit/s"/></rate></selected>
+    <participant name="parent-body"><endpoint><port-ref component="parent-body" port="eth0"/></endpoint></participant>
+    <participant name="test-board"><endpoint><port-ref component="test-board" port="eth0"/></endpoint></participant>
+  </link>
 
-    <bus name="test_can" type="CAN" topology="daisy-chain">
-      <bitrate>5000000</bitrate>
-      <participant device="parent-body" port="can0" role="controller" position="1"/>
-      <participant device="test-board" port="can0" position="2" id="0x601" terminator="true"/>
-    </bus>
+  <bus name="test_can">
+    <description>CAN communication bus between the parent controller and test board target.</description>
+    <selected purpose="communication" carrier="electrical"><profile id="hcdf:can"/><rate><nominal value="5000000" unit="bit/s"/></rate></selected>
+    <participant name="parent-body" role="hcdf:controller"><endpoint><port-ref component="parent-body" port="can0"/></endpoint></participant>
+    <participant name="test-board" role="hcdf:target"><endpoint><port-ref component="test-board" port="can0"/></endpoint></participant>
+  </bus>
 
-    <chain name="test-chain" type="802.3dm" mode="switched" topology="line">
-      <vlan id="10" pcp="5"/>
-      <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk"/>
-      <hop device="parent-body" port="eth0" role="root"/>
-      <hop device="test-board" ingress="eth0" role="tail"/>
-    </chain>
+  <chain name="test-chain">
+    <description>Two-hop switched communication chain with timing, scheduling, MACsec, and EEE configuration.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="100000000" unit="bit/s"/></rate></selected>
+    <configuration>
+      <gptp-domain name="time" number="0">
+        <clock name="parent-clock" kind="ordinary" gm-capable="true" priority1="128" priority2="128"><participant-ref network="test-chain" participant="parent-body"/></clock>
+        <clock name="board-clock" kind="ordinary" gm-capable="false" priority1="255" priority2="255"><participant-ref network="test-chain" participant="test-board"/></clock>
+        <port-defaults log-sync-interval="-3" neighbor-prop-delay-threshold-ns="800"/>
+      </gptp-domain>
+      <traffic-class name="ptp" number="7" preemption="express"><pcp value="7"/></traffic-class>
+      <traffic-class name="safety" number="6" preemption="express"><pcp value="6"/></traffic-class>
+      <traffic-class name="motion" number="5" preemption="express"><pcp value="5"/></traffic-class>
+      <traffic-class name="bulk" number="0" preemption="preemptable"><pcp value="0"/></traffic-class>
+      <gate-schedule name="1ms-control" cycle-time-ns="1000000">
+        <gate duration-ns="50000"><open><traffic-class-ref network="test-chain" traffic-class="ptp"/></open></gate>
+        <gate duration-ns="200000"><open><traffic-class-ref network="test-chain" traffic-class="safety"/><traffic-class-ref network="test-chain" traffic-class="motion"/></open></gate>
+        <gate duration-ns="750000"><open><traffic-class-ref network="test-chain" traffic-class="bulk"/></open></gate>
+      </gate-schedule>
+      <schedule-assignment name="chain-participants"><schedule-ref network="test-chain" schedule="1ms-control"/><target><participant-ref network="test-chain" participant="parent-body"/></target><target><participant-ref network="test-chain" participant="test-board"/></target></schedule-assignment>
+      <macsec><policy name="secure" enforcement="must-secure" cipher="ieee:gcm-aes-128" key-agreement="vendor:psk" credential-store-ref="se051"/><default-policy><macsec-policy-ref network="test-chain" policy="secure"/></default-policy></macsec>
+      <eee default-mode="disabled"/>
+    </configuration>
+    <participant name="parent-body"><endpoint><port-ref component="parent-body" port="eth0"/></endpoint></participant>
+    <participant name="test-board"><endpoint><port-ref component="test-board" port="eth0"/></endpoint></participant>
+    <hop name="parent-body" role="root"><owner><component-ref component="parent-body"/></owner></hop>
+    <hop name="test-board" role="tail"><owner><function-ref component="test-board" function="test-switch"/></owner></hop>
+    <leg name="parent-to-board"><from><hop-ref network="test-chain" hop="parent-body"/><participant-ref network="test-chain" participant="parent-body"/></from><to><hop-ref network="test-chain" hop="test-board"/><participant-ref network="test-chain" participant="test-board"/></to></leg>
+  </chain>
 
-    <gptp domain="0">
-      <clock device="parent-body" port="eth0"
-             gm-capable="true" priority1="128" priority2="128"/>
-      <clock device="test-board" port="eth0"
-             gm-capable="false" priority1="255" priority2="255"/>
-      <port-defaults log-sync-interval="-3" neighbor-prop-delay-thresh-ns="800"/>
-    </gptp>
-
-    <traffic-classes count="8">
-      <class tc="7" pcp="7" name="ptp" preemption="express"/>
-      <class tc="6" pcp="6" name="safety" preemption="express"/>
-      <class tc="5" pcp="5" name="motion" preemption="express"/>
-      <class tc="0" pcp="0" name="bulk" preemption="preemptable"/>
-    </traffic-classes>
-
-    <schedule name="1ms-control" cycle-time-us="1000">
-      <gate tc-mask="0x80" duration-us="50"/>
-      <gate tc-mask="0x60" duration-us="200"/>
-      <gate tc-mask="0x0F" duration-us="750"/>
-    </schedule>
-
-    <schedule-assignment>
-      <assign schedule="1ms-control" ports="parent-body/eth0 test-board/eth0"/>
-      <assign schedule="1ms-control" chains="test-chain"/>
-    </schedule-assignment>
-
-    <stream-profile uri="profiles/operational.streams.xml" active="true"/>
-
-    <macsec policy="must-secure" cipher="gcm-aes-128" key-agreement="psk">
-      <key-store type="secure-element" ref="se051"/>
-    </macsec>
-
-    <eee-policy>disabled</eee-policy>
-  </network>
+  <stream-profile uri="profiles/operational.streams.xml" selection-role="default"/>
 
   <!-- Transmission -->
   <transmission name="shoulder_transmission" type="planetary">
@@ -338,14 +264,8 @@
     <efficiency>0.85</efficiency>
   </transmission>
 
-  <!-- Material -->
-  <material name="rubber">
-    <color rgba="0.1 0.1 0.1 1.0"/>
-    <surface>
-      <friction static="0.8" dynamic="0.6"/>
-      <restitution>0.3</restitution>
-    </surface>
-  </material>
+  <!-- Color palette -->
+  <color name="rubber" rgba="0.1 0.1 0.1 1.0"/>
 
   <!-- Include -->
   <include uri="components/sensor-module.hcdf" sha="abc123" name="sensor-1" pose="0 0 0.1 0 0 0"/>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- validator-loop: <constraint-axes> is present but is not exactly six 0/1 tokens
+     (E_LOOP_AXES_MALFORMED). The mask is machine-consumed by the closure projector,
+     so a wrong token count cannot be projected and is a hard error. The
+     predecessor/successor restate the joint's own bodies, so only the mask is at
+     fault. -->
+<hcdf version="1.0" name="loop-bad-axes">
+  <comp name="ground"/>
+  <comp name="coupler"/>
+  <comp name="rocker"/>
+  <joint name="j_close" type="revolute">
+    <parent comp="coupler"/>
+    <child comp="rocker"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>coupler</predecessor>
+      <successor>rocker</successor>
+      <constraint-axes>1 1 1</constraint-axes>
+    </loop>
+  </joint>
+</hcdf>

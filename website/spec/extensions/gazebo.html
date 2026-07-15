@@ -59,6 +59,7 @@ h1 small { font-size:14px; color:#8b949e; }
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -68,7 +69,6 @@ h1 small { font-size:14px; color:#8b949e; }
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -99,6 +99,9 @@ h1 small { font-size:14px; color:#8b949e; }
 <li class="active"><a href="#tab-gazebo-sim" data-toggle="tab">Gazebo Sim</a></li>
 <li><a href="#tab-physics" data-toggle="tab">Physics</a></li>
 <li><a href="#tab-plugin" data-toggle="tab">Plugin</a></li>
+<li><a href="#tab-velocity-decay" data-toggle="tab">Velocity Decay</a></li>
+<li><a href="#tab-model-physics" data-toggle="tab">Model Physics</a></li>
+<li><a href="#tab-link-physics" data-toggle="tab">Link Physics</a></li>
 </ul>
 <div class="tab-content">
 <div class="tab-pane active" id="tab-gazebo-sim">
@@ -106,6 +109,10 @@ h1 small { font-size:14px; color:#8b949e; }
 <li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('physics')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('physics')"><h5>&lt;physics&gt; <small>Element</small></h5><div class="desc">Physics engine configuration. At most one per extension block.</div></span></li>
 <li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('plugin')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('plugin')"><h5>&lt;plugin&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Simulation plugin declaration. Zero or more plugins can be defined,
 each with its own name, library filename, and plugin-specific parameters.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('model-physics')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('model-physics')"><h5>&lt;model-physics&gt; <small>Element</small></h5><div class="desc">Model-scope simulation flags (static, self_collide, allow_auto_disable,
+enable_wind, canonical_link) round-tripped through the gazebo extension. At most one.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('link-physics')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('link-physics')"><h5>&lt;link-physics&gt; <small>Element</small></h5> <small class="mult">[0..*]</small><div class="desc">Per-link simulation flags (gravity, self_collide, kinematic,
+must_be_base_link, velocity_decay), one entry per link, round-tripped through the extension.</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-physics">
 <div class="tree"><ul>
@@ -120,11 +127,35 @@ Set to 0 for maximum speed (no throttling).</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-plugin">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Unique name identifying this plugin instance within the model
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required): Unique name identifying this plugin instance within the model
 (e.g., &quot;aerodynamics&quot;, &quot;motor_model&quot;, &quot;contact_sensor&quot;).</div></span></li>
-<li><span class="tree-attribute"><h5>filename <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Shared library filename for the plugin
+<li><span class="tree-attribute"><h5>filename <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required): Shared library filename for the plugin
 (e.g., &quot;libAerodynamicsPlugin.so&quot;, &quot;libMotorModelPlugin.so&quot;).
 Gazebo searches its plugin path for this library at load time.</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-velocity-decay">
+<div class="tree"><ul>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;linear&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:double</div><div class="desc">Linear velocity decay factor (SDF velocity_decay/linear).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;angular&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:double</div><div class="desc">Angular velocity decay factor (SDF velocity_decay/angular).</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-model-physics">
+<div class="tree"><ul>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;static&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Model is immovable (SDF model/static).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;self-collide&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Links within the model collide with each other (SDF model/self_collide).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;allow-auto-disable&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Allow the physics engine to auto-disable the model when at rest
+(SDF model/allow_auto_disable).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;enable-wind&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Model is affected by wind (SDF model/enable_wind).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;canonical-link&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:string</div><div class="desc">Name of the model's canonical link: the implicit model-frame anchor
+(SDF model/@canonical_link).</div></span></li>
+</ul></div></div>
+<div class="tab-pane " id="tab-link-physics">
+<div class="tree"><ul>
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required): Name of the link (HCDF comp) these flags apply to.</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;gravity&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Link is affected by gravity (SDF link/gravity).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;self-collide&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Link collides with other links of the same model (SDF link/self_collide).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;kinematic&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Link is kinematic: pose-driven, not force-driven (SDF link/kinematic).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-minus"></span><span class="tree-element"><h5>&lt;must-be-base-link&gt; <small>Element</small></h5><div class="type-info"><b>Type:</b> xs:boolean</div><div class="desc">Link must be the model's base link (SDF link/must_be_base_link).</div></span></li>
+<li><span class="tree-collapse glyphicon glyphicon-chevron-right" style="cursor:pointer" onclick="switchTab('velocity-decay')"></span><span class="tree-element" style="cursor:pointer" onclick="switchTab('velocity-decay')"><h5>&lt;velocity-decay&gt; <small>Element</small></h5><div class="desc">Per-link linear/angular velocity damping (SDF link/velocity_decay).</div></span></li>
 </ul></div></div>
 </div>
 

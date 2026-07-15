@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a clean actuator that exercises every coverage check and trips
+     NONE, so validate_coverage is silent (empty oracle). A self-collision pair names two distinct
+     real comps; the transmission's motor and joint endpoints resolve to a comp-scoped motor and
+     a doc joint; the motor's encoder names a sensor on its own comp; the CAN port uses typed
+     connectivity capabilities. This is the minimal self-contained allow; the
+     collaborative qdd-actuator EXAMPLE will be the rich positive. -->
+<hcdf version="1.0" name="cov-ok-actuator">
+  <comp name="case">
+    <port name="can0"><capabilities><purpose value="communication"/><carrier value="electrical"/><profile id="hcdf:can"/></capabilities></port>
+    <sensor name="enc"><encoder type="incremental"/></sensor>
+    <motor name="m1" type="bldc" encoder="enc"/>
+  </comp>
+  <comp name="flange"/>
+  <joint name="j_out" type="revolute">
+    <parent comp="case"/>
+    <child comp="flange"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14"/>
+  </joint>
+  <self-collision-disable>
+    <pair comp1="case" comp2="flange" reason="adjacent"/>
+  </self-collision-disable>
+  <transmission name="tx" type="planetary">
+    <motor ref="m1"/>
+    <joint ref="j_out"/>
+    <reduction>9</reduction>
+  </transmission>
+</hcdf>

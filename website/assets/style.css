@@ -1,5 +1,5 @@
 /* ================================================================
-   HCDF Website — style.css
+   HCDF Website: style.css
    Dark theme. GitHub-dark inspired color palette.
    ================================================================ */
 
@@ -582,7 +582,7 @@ footer a:hover {
 }
 
 /* ================================================================
-   Prism.js Dark Override — "Tomorrow Night" style
+   Prism.js Dark Override: "Tomorrow Night" style
    Forces dark syntax highlighting regardless of which Prism CSS
    theme is loaded in the HTML files.
    ================================================================ */
@@ -618,7 +618,7 @@ code[class*="language-"] ::selection {
   color: #484f58 !important;
 }
 
-/* Token colors — Tomorrow Night / GitHub Dark palette */
+/* Token colors: Tomorrow Night / GitHub Dark palette */
 .token.comment,
 .token.prolog,
 .token.doctype,

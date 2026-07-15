@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Composition: a torso plus the same sensor-module included twice (left/right) at
+     different poses. Flattening must prefix names (left/..., right/...) so the two
+     instances don't collide, and rigidly place each by its @pose. -->
+<hcdf version="1.0" name="composed-robot" body-frame="FLU">
+  <comp name="torso"/>
+  <include uri="sensor-module.hcdf" name="left" pose="1 0 0 0 0 0"/>
+  <include uri="sensor-module.hcdf" name="right" pose="-1 0 0 0 0 0"/>
+</hcdf>

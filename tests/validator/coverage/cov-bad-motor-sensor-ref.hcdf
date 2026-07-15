@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a <motor>'s @thermistor names no sensor on its own comp
+     ("ghost_temp"), tripping E_MOTOR_SENSOR_REF. The @encoder resolves to the sensor enc on the same comp,
+     so only the thermistor ref dangles. An unresolved feedback-device ref is an error, matching
+     every other dangling-reference check in the validator. -->
+<hcdf version="1.0" name="cov-bad-motor-sensor-ref">
+  <comp name="case">
+    <sensor name="enc"><encoder type="incremental"/></sensor>
+    <motor name="m1" type="bldc" encoder="enc" thermistor="ghost_temp"/>
+  </comp>
+</hcdf>

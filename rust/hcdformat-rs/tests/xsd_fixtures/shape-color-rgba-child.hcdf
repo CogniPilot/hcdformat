@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hcdf name="shape-color-rgba-child" version="1.0">
+  <comp name="base"/>
+  <color name="rubber">
+    <rgba>0.1 0.1 0.1 1.0</rgba>
+  </color>
+</hcdf>

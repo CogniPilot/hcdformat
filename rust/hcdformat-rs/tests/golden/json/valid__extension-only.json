@@ -1,0 +1,15 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "extension-test",
+    "comp": {
+      "name": "board",
+      "extension": {
+        "domain": "gazebo",
+        "version": 1.0,
+        "gravity": true,
+        "self_collide": false
+      }
+    }
+  }
+}

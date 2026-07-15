@@ -1,5 +1,5 @@
 /* ================================================================
-   HCDF Website — nav.js
+   HCDF Website: nav.js
    Dropdown menus, collapsible sections, hamburger, active page.
    ================================================================ */
 

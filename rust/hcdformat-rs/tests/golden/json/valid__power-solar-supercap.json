@@ -1,0 +1,95 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "solar-supercap-test",
+    "comp": {
+      "name": "chassis",
+      "role": "parent",
+      "power-source": [
+        {
+          "name": "main-battery",
+          "role": "primary",
+          "battery": {
+            "chemistry": "LiFePO4",
+            "cells-series": 8,
+            "cells-parallel": 2,
+            "nominal-voltage": {
+              "unit": "V",
+              "$text": 25.6
+            },
+            "capacity": {
+              "unit": "Ah",
+              "$text": 24
+            },
+            "energy": {
+              "unit": "Wh",
+              "$text": 614
+            }
+          }
+        },
+        {
+          "name": "roof-solar",
+          "role": "primary",
+          "solar": {
+            "cell-type": "monocrystalline",
+            "peak-power": {
+              "unit": "Wp",
+              "$text": 200
+            },
+            "area": {
+              "unit": "m2",
+              "$text": 0.9
+            },
+            "efficiency": 0.22,
+            "voltage-mpp": {
+              "unit": "V",
+              "$text": 36
+            },
+            "current-mpp": {
+              "unit": "A",
+              "$text": 5.56
+            },
+            "open-circuit-voltage": {
+              "unit": "V",
+              "$text": 42
+            },
+            "mppt": true
+          }
+        },
+        {
+          "name": "burst-cap",
+          "role": "primary",
+          "group": "motor-power",
+          "supercapacitor": {
+            "capacitance": {
+              "unit": "F",
+              "$text": 500
+            },
+            "max-voltage": {
+              "unit": "V",
+              "$text": 48
+            },
+            "esr": {
+              "unit": "mohm",
+              "$text": 3.2
+            },
+            "max-current": {
+              "unit": "A",
+              "$text": 150
+            },
+            "peak-current": {
+              "unit": "A",
+              "$text": 400
+            },
+            "energy": {
+              "unit": "Wh",
+              "$text": 160
+            },
+            "cells-series": 18,
+            "cycle-life": 1000000
+          }
+        }
+      ]
+    }
+  }
+}

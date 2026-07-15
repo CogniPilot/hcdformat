@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: a loop-closure predecessor names a non-existent comp (E_LOOP_REF) -->
+<hcdf version="1.0" name="loop-bad-ref">
+  <comp name="ground"/>
+  <comp name="link"/>
+  <joint name="j" type="revolute">
+    <parent comp="ground"/>
+    <child comp="link"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+    <loop>
+      <predecessor>ghost</predecessor>
+      <successor>link</successor>
+    </loop>
+  </joint>
+</hcdf>

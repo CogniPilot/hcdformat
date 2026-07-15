@@ -1,0 +1,6327 @@
+{
+  "hcdf": {
+    "name": "cogni-humanoid-mobile-base",
+    "version": 1.0,
+    "body-frame": "FLU",
+    "world-frame": "ENU",
+    "description": "CogniPilot humanoid mobile base: S32N79 + E810 spine, AGX Thor compute, dual 802.3dm 7-DOF arms, S32J100 base zone, i.MX95 head, TSN backbone with MACsec",
+    "author": "CogniPilot Foundation",
+    "license": "Apache-2.0",
+    "url": "https://github.com/CogniPilot/hcdformat",
+    "comp": [
+      {
+        "name": "agx-thor",
+        "role": "compute",
+        "description": "NVIDIA AGX Thor SoC: perception, planning, ML inference. 2x 25G MGBE uplinks to S32N79.",
+        "board": "nvidia-agx-thor",
+        "inertial": {
+          "mass": 1.5,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "mgbe0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "guided-optical"
+              },
+              "rate": {
+                "min": 25000000000,
+                "max": 25000000000,
+                "nominal": 25000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "mgbe1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "guided-optical"
+              },
+              "rate": {
+                "min": 25000000000,
+                "max": 25000000000,
+                "nominal": 25000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 12.5,
+                "nominal": 10,
+                "unit": "A"
+              },
+              "power": {
+                "max": 300,
+                "nominal": 200,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "mgbe0_connector",
+            "family": "legacy:sfp28"
+          },
+          {
+            "name": "mgbe1_connector",
+            "family": "legacy:sfp28"
+          }
+        ]
+      },
+      {
+        "name": "s32n79",
+        "role": "compute",
+        "ip-rating": "IP54",
+        "description": "NXP S32N79: central motion control, CNC agent, integrated TSN switch. Intel E810 on PCIe for 25G uplink to AGX Thor.",
+        "board": "nxp-s32n79-evb",
+        "operating-temp": {
+          "unit": "degC",
+          "min": -40,
+          "max": 105
+        },
+        "inertial": {
+          "mass": 0.8,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "xfi_left",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "xfi_right",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "qxgmii_p0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "qxgmii_p1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "qxgmii_p2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "qxgmii_p3",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "e810_p0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "guided-optical"
+              },
+              "rate": {
+                "min": 25000000000,
+                "max": 25000000000,
+                "nominal": 25000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "e810_p1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "guided-optical"
+              },
+              "rate": {
+                "min": 25000000000,
+                "max": 25000000000,
+                "nominal": 25000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 3,
+                "nominal": 2,
+                "unit": "A"
+              },
+              "power": {
+                "max": 72,
+                "nominal": 48,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "e810_p0_connector",
+            "family": "legacy:sfp28"
+          },
+          {
+            "name": "e810_p1_connector",
+            "family": "legacy:sfp28"
+          }
+        ],
+        "switch": {
+          "name": "s32n79-integrated",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "xfi_left"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "xfi_right"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p3"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "s32j100",
+        "role": "compute",
+        "ip-rating": "IP54",
+        "description": "NXP S32J100: base zone controller. Bridges Ethernet to CAN-FD (wheels, BMS) and base peripherals (lidars, radar, head). Decapsulates 1722+CAN from S32N79.",
+        "board": "nxp-s32j100-rdb",
+        "operating-temp": {
+          "unit": "degC",
+          "min": -40,
+          "max": 125
+        },
+        "inertial": {
+          "mass": 0.3,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth_up0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_up1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_up2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_up3",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 2500000000,
+                "max": 2500000000,
+                "nominal": 2500000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_head",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_lidar_front",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_lidar_rear",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth_radar",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 5000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 1.5,
+                "nominal": 1,
+                "unit": "A"
+              },
+              "power": {
+                "max": 36,
+                "nominal": 24,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can0_connector",
+          "family": "legacy:can-bus"
+        },
+        "switch": {
+          "name": "s32j100-integrated",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up3"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_head"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_lidar_front"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_lidar_rear"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_radar"
+              }
+            }
+          ]
+        },
+        "termination": {
+          "name": "can0_termination",
+          "kind": "hcdf:resistor",
+          "mounting": "endpoint",
+          "fidelity": "presented",
+          "profile": "hcdf:can",
+          "attachment": {
+            "connector-ref": {
+              "connector": "can0_connector",
+              "component-ref": {
+                "component": "s32j100"
+              }
+            }
+          },
+          "quantity": {
+            "property": "hcdf:resistance",
+            "value": 120,
+            "unit": "ohm"
+          }
+        }
+      },
+      {
+        "name": "head",
+        "role": "compute",
+        "description": "i.MX95 head unit: display, microphones, user interaction",
+        "board": "nxp-imx95-evk",
+        "inertial": {
+          "mass": 0.6,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 1,
+                "nominal": 0.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 24,
+                "nominal": 12,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "mic_array",
+          "force": {
+            "type": "pressure",
+            "range": {
+              "unit": "dB",
+              "$text": 120
+            }
+          }
+        }
+      },
+      {
+        "name": "lidar-front",
+        "role": "sensor",
+        "description": "NXP SPAD front base lidar: solid-state, 200m range",
+        "inertial": {
+          "mass": 0.4,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 1,
+                "nominal": 0.6,
+                "unit": "A"
+              },
+              "power": {
+                "max": 24,
+                "nominal": 15,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "lidar_front_sensor",
+          "update-rate": 20,
+          "optical": {
+            "type": "lidar",
+            "fov": {
+              "name": "scan",
+              "color": "#00ff00",
+              "geometry": {
+                "frustum": {
+                  "shape": "pyramidal",
+                  "near": 0.5,
+                  "far": 200.0,
+                  "hfov": 2.094,
+                  "vfov": 0.436
+                }
+              }
+            },
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 400
+              }
+            },
+            "lidar-params": {
+              "scan-type": "solid-state",
+              "channels": 64,
+              "points-per-second": 600000,
+              "scan-rate": {
+                "unit": "Hz",
+                "$text": 20
+              },
+              "returns": "dual",
+              "wavelength": {
+                "unit": "nm",
+                "$text": 905
+              },
+              "horizontal-fov": {
+                "unit": "deg",
+                "$text": 120
+              },
+              "vertical-fov": {
+                "unit": "deg",
+                "min": -12.5,
+                "max": 12.5,
+                "$text": 25
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "lidar-rear",
+        "role": "sensor",
+        "description": "NXP SPAD rear base lidar: solid-state, 200m range",
+        "inertial": {
+          "mass": 0.4,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 1,
+                "nominal": 0.6,
+                "unit": "A"
+              },
+              "power": {
+                "max": 24,
+                "nominal": 15,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "lidar_rear_sensor",
+          "update-rate": 20,
+          "optical": {
+            "type": "lidar",
+            "fov": {
+              "name": "scan",
+              "color": "#00ff00",
+              "geometry": {
+                "frustum": {
+                  "shape": "pyramidal",
+                  "near": 0.5,
+                  "far": 200.0,
+                  "hfov": 2.094,
+                  "vfov": 0.436
+                }
+              }
+            },
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 400
+              }
+            },
+            "lidar-params": {
+              "scan-type": "solid-state",
+              "channels": 64,
+              "points-per-second": 600000,
+              "scan-rate": {
+                "unit": "Hz",
+                "$text": 20
+              },
+              "returns": "dual",
+              "wavelength": {
+                "unit": "nm",
+                "$text": 905
+              },
+              "horizontal-fov": {
+                "unit": "deg",
+                "$text": 120
+              },
+              "vertical-fov": {
+                "unit": "deg",
+                "min": -12.5,
+                "max": 12.5,
+                "$text": 25
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "radar-4d",
+        "role": "sensor",
+        "description": "Cubtek 4D imaging radar: 77GHz FMCW, 120-degree FOV",
+        "inertial": {
+          "mass": 0.3,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 0.8,
+                "nominal": 0.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 20,
+                "nominal": 12,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "radar_4d_sensor",
+          "update-rate": 20,
+          "rf": {
+            "type": "radar",
+            "range": {
+              "unit": "m",
+              "$text": 200
+            },
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 100
+              }
+            },
+            "radar-params": {
+              "frequency": {
+                "unit": "GHz",
+                "$text": 77
+              },
+              "modulation": "fmcw",
+              "azimuth-fov": {
+                "unit": "deg",
+                "$text": 120
+              },
+              "elevation-fov": {
+                "unit": "deg",
+                "$text": 30
+              },
+              "azimuth-resolution": {
+                "unit": "deg",
+                "$text": 1.0
+              },
+              "elevation-resolution": {
+                "unit": "deg",
+                "$text": 2.0
+              },
+              "range-resolution": {
+                "unit": "m",
+                "$text": 0.1
+              },
+              "velocity-range": {
+                "unit": "m/s",
+                "min": -60,
+                "max": 60,
+                "$text": 60
+              },
+              "velocity-resolution": {
+                "unit": "m/s",
+                "$text": 0.1
+              },
+              "max-detections": 512,
+              "mimo": "3tx4rx"
+            }
+          }
+        }
+      },
+      {
+        "name": "zlac8015d",
+        "role": "actuator",
+        "description": "ZLTECH ZLAC8015D v4.0 dual-channel servo controller. Drives 2x ZLLG65ASM250-L hub motors via SIGNAL connectors. CANopen on CAN-FD bus.",
+        "inertial": {
+          "mass": 0.8,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 5000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "sig_left",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sig_right",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "phase_left",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "phase_right",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 40,
+                "nominal": 10,
+                "unit": "A"
+              },
+              "power": {
+                "max": 960,
+                "nominal": 240,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "sig_left_connector",
+            "family": "legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"
+          },
+          {
+            "name": "sig_right_connector",
+            "family": "legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"
+          },
+          {
+            "name": "phase_left_connector",
+            "family": "legacy:3-pin-bldc-phase-u-v-w"
+          },
+          {
+            "name": "phase_right_connector",
+            "family": "legacy:3-pin-bldc-phase-u-v-w"
+          }
+        ]
+      },
+      {
+        "name": "wheel-left",
+        "role": "actuator",
+        "description": "ZLLG65ASM250-L 24V BLDC hub motor (left). 170mm diameter, 2.92 kg, 250W rated.",
+        "inertial": {
+          "mass": 2.92,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "sig0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "phase0",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 19,
+                "nominal": 6.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 456,
+                "nominal": 156,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "sig0_connector",
+            "family": "legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"
+          },
+          {
+            "name": "phase0_connector",
+            "family": "legacy:3-pin-bldc-phase-u-v-w"
+          }
+        ],
+        "sensor": [
+          {
+            "name": "encoder_left",
+            "encoder": {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          },
+          {
+            "name": "hall_left",
+            "em": {
+              "type": "mag",
+              "range": {
+                "unit": "mT",
+                "$text": 100
+              }
+            }
+          },
+          {
+            "name": "temp_left",
+            "temperature": {
+              "type": "thermistor",
+              "range": {
+                "unit": "degC",
+                "$text": 150
+              }
+            }
+          }
+        ],
+        "motor": {
+          "name": "left_wheel_motor",
+          "type": "bldc",
+          "encoder": "encoder_left",
+          "hall": "hall_left",
+          "thermistor": "temp_left",
+          "voltage": {
+            "unit": "V",
+            "nominal": 24,
+            "max": 28
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 6.5,
+            "peak": 19
+          },
+          "resistance": {
+            "unit": "ohm",
+            "$text": 0.5
+          },
+          "torque-constant": {
+            "unit": "Nm/A",
+            "$text": 0.29
+          },
+          "velocity-constant": {
+            "unit": "V/RPM",
+            "$text": 0.109
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 260
+          },
+          "stall-torque": {
+            "unit": "Nm",
+            "$text": 19.76
+          },
+          "no-load-speed": {
+            "unit": "rpm",
+            "$text": 257.9
+          },
+          "no-load-current": {
+            "unit": "A",
+            "$text": 0.974
+          },
+          "max-power-out": {
+            "unit": "W",
+            "$text": 158.8
+          },
+          "max-efficiency": {
+            "unit": "percent",
+            "$text": 68.4
+          },
+          "control-modes": {
+            "mode": [
+              "velocity",
+              "position",
+              "torque"
+            ]
+          }
+        },
+        "dynamic-surface": {
+          "name": "left-wheel",
+          "wheel": {
+            "type": "driven",
+            "radius": {
+              "unit": "m",
+              "$text": 0.085
+            },
+            "width": {
+              "unit": "m",
+              "$text": 0.041
+            },
+            "friction": {
+              "static": 0.9,
+              "dynamic": 0.7
+            }
+          }
+        }
+      },
+      {
+        "name": "wheel-right",
+        "role": "actuator",
+        "description": "ZLLG65ASM250-L 24V BLDC hub motor (right). 170mm diameter, 2.92 kg, 250W rated.",
+        "inertial": {
+          "mass": 2.92,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "sig0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "phase0",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 19,
+                "nominal": 6.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 456,
+                "nominal": 156,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "sig0_connector",
+            "family": "legacy:12-pin-encoder-ab-hall-uvw-ntc-thermistor"
+          },
+          {
+            "name": "phase0_connector",
+            "family": "legacy:3-pin-bldc-phase-u-v-w"
+          }
+        ],
+        "sensor": [
+          {
+            "name": "encoder_right",
+            "encoder": {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          },
+          {
+            "name": "hall_right",
+            "em": {
+              "type": "mag",
+              "range": {
+                "unit": "mT",
+                "$text": 100
+              }
+            }
+          },
+          {
+            "name": "temp_right",
+            "temperature": {
+              "type": "thermistor",
+              "range": {
+                "unit": "degC",
+                "$text": 150
+              }
+            }
+          }
+        ],
+        "motor": {
+          "name": "right_wheel_motor",
+          "type": "bldc",
+          "encoder": "encoder_right",
+          "hall": "hall_right",
+          "thermistor": "temp_right",
+          "voltage": {
+            "unit": "V",
+            "nominal": 24,
+            "max": 28
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 6.5,
+            "peak": 19
+          },
+          "resistance": {
+            "unit": "ohm",
+            "$text": 0.5
+          },
+          "torque-constant": {
+            "unit": "Nm/A",
+            "$text": 0.29
+          },
+          "velocity-constant": {
+            "unit": "V/RPM",
+            "$text": 0.109
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 260
+          },
+          "stall-torque": {
+            "unit": "Nm",
+            "$text": 19.76
+          },
+          "no-load-speed": {
+            "unit": "rpm",
+            "$text": 257.9
+          },
+          "no-load-current": {
+            "unit": "A",
+            "$text": 0.974
+          },
+          "max-power-out": {
+            "unit": "W",
+            "$text": 158.8
+          },
+          "max-efficiency": {
+            "unit": "percent",
+            "$text": 68.4
+          },
+          "control-modes": {
+            "mode": [
+              "velocity",
+              "position",
+              "torque"
+            ]
+          }
+        },
+        "dynamic-surface": {
+          "name": "right-wheel",
+          "wheel": {
+            "type": "driven",
+            "radius": {
+              "unit": "m",
+              "$text": 0.085
+            },
+            "width": {
+              "unit": "m",
+              "$text": 0.041
+            },
+            "friction": {
+              "static": 0.9,
+              "dynamic": 0.7
+            }
+          }
+        }
+      },
+      {
+        "name": "caster-fl",
+        "role": "parent",
+        "description": "Front-left passive omni caster wheel",
+        "inertial": {
+          "mass": 0.15,
+          "inertia_origin": {
+            "xyz": "0 0 -0.015"
+          }
+        },
+        "dynamic-surface": {
+          "name": "caster",
+          "wheel": {
+            "type": "omni",
+            "radius": {
+              "unit": "m",
+              "$text": 0.025
+            },
+            "width": {
+              "unit": "m",
+              "$text": 0.02
+            },
+            "friction": {
+              "static": 0.6,
+              "dynamic": 0.4
+            }
+          }
+        }
+      },
+      {
+        "name": "caster-fr",
+        "role": "parent",
+        "description": "Front-right passive omni caster wheel",
+        "inertial": {
+          "mass": 0.15,
+          "inertia_origin": {
+            "xyz": "0 0 -0.015"
+          }
+        },
+        "dynamic-surface": {
+          "name": "caster",
+          "wheel": {
+            "type": "omni",
+            "radius": {
+              "unit": "m",
+              "$text": 0.025
+            },
+            "width": {
+              "unit": "m",
+              "$text": 0.02
+            },
+            "friction": {
+              "static": 0.6,
+              "dynamic": 0.4
+            }
+          }
+        }
+      },
+      {
+        "name": "bms",
+        "role": "sensor",
+        "description": "CogniPilot MR-BMS771: 8S LiFePO4 (~25.6V nominal). CAN-FD. Battery management + power distribution.",
+        "inertial": {
+          "mass": 3.0,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 5000000,
+                "nominal": 1000000,
+                "unit": "bps"
+              }
+            }
+          },
+          {
+            "name": "bat_out",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 25.6,
+                "unit": "V"
+              },
+              "current": {
+                "max": 36,
+                "nominal": 20,
+                "unit": "A"
+              },
+              "power": {
+                "max": 922,
+                "nominal": 512,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "connector": {
+          "name": "can0_connector",
+          "family": "legacy:can-bus"
+        },
+        "termination": {
+          "name": "can0_termination",
+          "kind": "hcdf:resistor",
+          "mounting": "endpoint",
+          "fidelity": "presented",
+          "profile": "hcdf:can",
+          "attachment": {
+            "connector-ref": {
+              "connector": "can0_connector",
+              "component-ref": {
+                "component": "bms"
+              }
+            }
+          },
+          "quantity": {
+            "property": "hcdf:resistance",
+            "value": 120,
+            "unit": "ohm"
+          }
+        },
+        "power-source": {
+          "name": "main_battery",
+          "battery": {
+            "chemistry": "LiFePO4",
+            "cells-series": 8,
+            "nominal-voltage": {
+              "unit": "V",
+              "$text": 25.6
+            },
+            "capacity": {
+              "unit": "Ah",
+              "$text": 12
+            },
+            "energy": {
+              "unit": "Wh",
+              "$text": 307
+            },
+            "max-discharge": {
+              "unit": "C",
+              "$text": 3
+            },
+            "min-voltage": {
+              "unit": "V",
+              "$text": 20.0
+            },
+            "max-voltage": {
+              "unit": "V",
+              "$text": 29.2
+            }
+          }
+        }
+      },
+      {
+        "name": "chassis",
+        "role": "parent",
+        "struct-type": "chassis",
+        "description": "Mobile base chassis frame: structural root of kinematic tree",
+        "inertial": {
+          "mass": 45.0,
+          "inertia_origin": {
+            "xyz": "0 0 0.15"
+          },
+          "inertia": "1.35 0 0 0.6 0 1.68"
+        },
+        "collision": {
+          "name": "chassis_box",
+          "geometry": {
+            "box": {
+              "size": "0.6 0.4 0.3"
+            }
+          },
+          "surface": {
+            "friction": {
+              "static": 0.6,
+              "dynamic": 0.4
+            },
+            "restitution": 0.1
+          }
+        }
+      },
+      {
+        "name": "torso",
+        "struct-type": "frame",
+        "description": "Upper body torso structure: mounts both arm chains",
+        "inertial": {
+          "mass": 8.0,
+          "inertia_origin": {
+            "xyz": "0 0 0.2"
+          },
+          "inertia": "0.16 0 0 0.08 0 0.12"
+        },
+        "collision": {
+          "name": "torso_box",
+          "geometry": {
+            "box": {
+              "size": "0.35 0.4 0.45"
+            }
+          },
+          "surface": {
+            "friction": {
+              "static": 0.5,
+              "dynamic": 0.3
+            }
+          }
+        }
+      },
+      {
+        "name": "mcn1-l",
+        "role": "actuator",
+        "description": "Left Motor Control Node 1: Shoulder (3 BLDC motors, yaw, pitch, roll). 802.3dm bridging switch.",
+        "inertial": {
+          "mass": 1.2,
+          "inertia_origin": {
+            "xyz": "0 0 -0.05"
+          }
+        },
+        "collision": {
+          "name": "mcn1l_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.04,
+              "length": 0.12
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 6,
+                "nominal": 3,
+                "unit": "A"
+              },
+              "power": {
+                "max": 144,
+                "nominal": 72,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "shoulder_l_encoders",
+          "encoder": [
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          ]
+        },
+        "motor": [
+          {
+            "name": "shoulder_yaw_motor",
+            "type": "bldc",
+            "encoder": "shoulder_l_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.12
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 5000
+            }
+          },
+          {
+            "name": "shoulder_pitch_motor",
+            "type": "bldc",
+            "encoder": "shoulder_l_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.15
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 4000
+            }
+          },
+          {
+            "name": "shoulder_roll_motor",
+            "type": "bldc",
+            "encoder": "shoulder_l_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.1
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 5000
+            }
+          }
+        ]
+      },
+      {
+        "name": "mcn2-l",
+        "role": "actuator",
+        "description": "Left Motor Control Node 2: Elbow (1 BLDC motor)",
+        "inertial": {
+          "mass": 0.8,
+          "inertia_origin": {
+            "xyz": "0 0 -0.04"
+          }
+        },
+        "collision": {
+          "name": "mcn2l_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.1
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 4,
+                "nominal": 2,
+                "unit": "A"
+              },
+              "power": {
+                "max": 96,
+                "nominal": 48,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "elbow_l_encoder",
+          "encoder": {
+            "type": "incremental",
+            "principle": "magnetic",
+            "resolution": {
+              "unit": "counts",
+              "$text": 4096
+            }
+          }
+        },
+        "motor": {
+          "name": "elbow_l_motor",
+          "type": "bldc",
+          "encoder": "elbow_l_encoder",
+          "torque-constant": {
+            "unit": "Nm/A",
+            "$text": 0.12
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 5000
+          }
+        }
+      },
+      {
+        "name": "mcn3-l",
+        "role": "actuator",
+        "description": "Left Motor Control Node 3: Wrist (2 BLDC motors, pitch, roll) + camera spur port",
+        "inertial": {
+          "mass": 0.6,
+          "inertia_origin": {
+            "xyz": "0 0 -0.03"
+          }
+        },
+        "collision": {
+          "name": "mcn3l_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.08
+            }
+          }
+        },
+        "frame": {
+          "name": "tcp_left",
+          "type": "tcp",
+          "description": "Left arm tool center point for end-effector control",
+          "pose": {
+            "xyz": "0 0 -0.12",
+            "rpy": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 3,
+                "nominal": 1.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 72,
+                "nominal": 36,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "wrist_l_encoders",
+          "encoder": [
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          ]
+        },
+        "motor": [
+          {
+            "name": "wrist_pitch_l_motor",
+            "type": "bldc",
+            "encoder": "wrist_l_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.08
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 6000
+            }
+          },
+          {
+            "name": "wrist_roll_l_motor",
+            "type": "bldc",
+            "encoder": "wrist_l_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.06
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 8000
+            }
+          }
+        ]
+      },
+      {
+        "name": "mcn4-l",
+        "role": "actuator",
+        "description": "Left Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)",
+        "inertial": {
+          "mass": 0.4,
+          "inertia_origin": {
+            "xyz": "0 0 -0.02"
+          }
+        },
+        "collision": {
+          "name": "mcn4l_col",
+          "geometry": {
+            "box": {
+              "size": "0.08 0.06 0.04"
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 3,
+                "nominal": 1,
+                "unit": "A"
+              },
+              "power": {
+                "max": 72,
+                "nominal": 24,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "cam-l",
+        "role": "sensor",
+        "description": "Left wrist stereo camera: ~7 Gbps raw via 802.3dm upstream to S32N79",
+        "inertial": {
+          "mass": 0.05,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 0.3,
+                "nominal": 0.2,
+                "unit": "A"
+              },
+              "power": {
+                "max": 7,
+                "nominal": 5,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "stereo_cam_l",
+          "update-rate": 30,
+          "optical": {
+            "type": "camera",
+            "fov": [
+              {
+                "name": "left_eye",
+                "color": "#44ff44",
+                "geometry": {
+                  "frustum": {
+                    "shape": "pyramidal",
+                    "near": 0.1,
+                    "far": 20.0,
+                    "hfov": 1.22,
+                    "vfov": 0.96
+                  }
+                },
+                "intrinsics": {
+                  "width": 1920,
+                  "height": 1080,
+                  "format": "RGB8",
+                  "fx": 960,
+                  "fy": 960,
+                  "cx": 960,
+                  "cy": 540
+                }
+              },
+              {
+                "name": "right_eye",
+                "color": "#4444ff",
+                "pose": {
+                  "xyz": "-0.06 0 0",
+                  "rpy": "0 0 0"
+                },
+                "geometry": {
+                  "frustum": {
+                    "shape": "pyramidal",
+                    "near": 0.1,
+                    "far": 20.0,
+                    "hfov": 1.22,
+                    "vfov": 0.96
+                  }
+                }
+              }
+            ],
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 7000
+              },
+              "frame-size": {
+                "unit": "bytes",
+                "$text": 6220800
+              }
+            },
+            "camera-params": {
+              "shutter": "global",
+              "hdr": true,
+              "compression": "raw",
+              "trigger": "hardware"
+            }
+          }
+        }
+      },
+      {
+        "name": "mcn1-r",
+        "role": "actuator",
+        "description": "Right Motor Control Node 1: Shoulder (3 BLDC motors, yaw, pitch, roll)",
+        "inertial": {
+          "mass": 1.2,
+          "inertia_origin": {
+            "xyz": "0 0 -0.05"
+          }
+        },
+        "collision": {
+          "name": "mcn1r_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.04,
+              "length": 0.12
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 6,
+                "nominal": 3,
+                "unit": "A"
+              },
+              "power": {
+                "max": 144,
+                "nominal": 72,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "shoulder_r_encoders",
+          "encoder": [
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          ]
+        },
+        "motor": [
+          {
+            "name": "shoulder_yaw_r_motor",
+            "type": "bldc",
+            "encoder": "shoulder_r_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.12
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 5000
+            }
+          },
+          {
+            "name": "shoulder_pitch_r_motor",
+            "type": "bldc",
+            "encoder": "shoulder_r_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.15
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 4000
+            }
+          },
+          {
+            "name": "shoulder_roll_r_motor",
+            "type": "bldc",
+            "encoder": "shoulder_r_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.1
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 5000
+            }
+          }
+        ]
+      },
+      {
+        "name": "mcn2-r",
+        "role": "actuator",
+        "description": "Right Motor Control Node 2: Elbow (1 BLDC motor)",
+        "inertial": {
+          "mass": 0.8,
+          "inertia_origin": {
+            "xyz": "0 0 -0.04"
+          }
+        },
+        "collision": {
+          "name": "mcn2r_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.035,
+              "length": 0.1
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 4,
+                "nominal": 2,
+                "unit": "A"
+              },
+              "power": {
+                "max": 96,
+                "nominal": 48,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "elbow_r_encoder",
+          "encoder": {
+            "type": "incremental",
+            "principle": "magnetic",
+            "resolution": {
+              "unit": "counts",
+              "$text": 4096
+            }
+          }
+        },
+        "motor": {
+          "name": "elbow_r_motor",
+          "type": "bldc",
+          "encoder": "elbow_r_encoder",
+          "torque-constant": {
+            "unit": "Nm/A",
+            "$text": 0.12
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 5000
+          }
+        }
+      },
+      {
+        "name": "mcn3-r",
+        "role": "actuator",
+        "description": "Right Motor Control Node 3: Wrist (2 BLDC motors, pitch, roll) + camera spur port",
+        "inertial": {
+          "mass": 0.6,
+          "inertia_origin": {
+            "xyz": "0 0 -0.03"
+          }
+        },
+        "collision": {
+          "name": "mcn3r_col",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.08
+            }
+          }
+        },
+        "frame": {
+          "name": "tcp_right",
+          "type": "tcp",
+          "description": "Right arm tool center point for end-effector control",
+          "pose": {
+            "xyz": "0 0 -0.12",
+            "rpy": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 3,
+                "nominal": 1.5,
+                "unit": "A"
+              },
+              "power": {
+                "max": 72,
+                "nominal": 36,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        },
+        "sensor": {
+          "name": "wrist_r_encoders",
+          "encoder": [
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            },
+            {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          ]
+        },
+        "motor": [
+          {
+            "name": "wrist_pitch_r_motor",
+            "type": "bldc",
+            "encoder": "wrist_r_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.08
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 6000
+            }
+          },
+          {
+            "name": "wrist_roll_r_motor",
+            "type": "bldc",
+            "encoder": "wrist_r_encoders",
+            "torque-constant": {
+              "unit": "Nm/A",
+              "$text": 0.06
+            },
+            "max-speed": {
+              "unit": "rpm",
+              "$text": 8000
+            }
+          }
+        ]
+      },
+      {
+        "name": "mcn4-r",
+        "role": "actuator",
+        "description": "Right Motor Control Node 4: Dextrous hand (many small BLDC motors for finger articulation)",
+        "inertial": {
+          "mass": 0.4,
+          "inertia_origin": {
+            "xyz": "0 0 -0.02"
+          }
+        },
+        "collision": {
+          "name": "mcn4r_col",
+          "geometry": {
+            "box": {
+              "size": "0.08 0.06 0.04"
+            }
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "eth2",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "sgmii0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 3,
+                "nominal": 1,
+                "unit": "A"
+              },
+              "power": {
+                "max": 72,
+                "nominal": 24,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "switch": {
+          "name": "integrated_switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "eth1"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "eth2"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "sgmii0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "cam-r",
+        "role": "sensor",
+        "description": "Right wrist stereo camera: ~7 Gbps raw via 802.3dm upstream to S32N79",
+        "inertial": {
+          "mass": 0.05,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "max": 0.3,
+                "nominal": 0.2,
+                "unit": "A"
+              },
+              "power": {
+                "max": 7,
+                "nominal": 5,
+                "unit": "W"
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "stereo_cam_r",
+          "update-rate": 30,
+          "optical": {
+            "type": "camera",
+            "fov": [
+              {
+                "name": "left_eye",
+                "color": "#44ff44",
+                "geometry": {
+                  "frustum": {
+                    "shape": "pyramidal",
+                    "near": 0.1,
+                    "far": 20.0,
+                    "hfov": 1.22,
+                    "vfov": 0.96
+                  }
+                },
+                "intrinsics": {
+                  "width": 1920,
+                  "height": 1080,
+                  "format": "RGB8",
+                  "fx": 960,
+                  "fy": 960,
+                  "cx": 960,
+                  "cy": 540
+                }
+              },
+              {
+                "name": "right_eye",
+                "color": "#4444ff",
+                "pose": {
+                  "xyz": "-0.06 0 0",
+                  "rpy": "0 0 0"
+                },
+                "geometry": {
+                  "frustum": {
+                    "shape": "pyramidal",
+                    "near": 0.1,
+                    "far": 20.0,
+                    "hfov": 1.22,
+                    "vfov": 0.96
+                  }
+                }
+              }
+            ],
+            "data-output": {
+              "bandwidth": {
+                "unit": "Mbps",
+                "$text": 7000
+              },
+              "frame-size": {
+                "unit": "bytes",
+                "$text": 6220800
+              }
+            },
+            "camera-params": {
+              "shutter": "global",
+              "hdr": true,
+              "compression": "raw",
+              "trigger": "hardware"
+            }
+          }
+        }
+      }
+    ],
+    "joint": [
+      {
+        "name": "chassis_to_torso",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "torso"
+        },
+        "origin": {
+          "xyz": "0 0 0.35"
+        }
+      },
+      {
+        "name": "chassis_to_s32n79",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "s32n79"
+        },
+        "origin": {
+          "xyz": "0.1 0 0.05"
+        }
+      },
+      {
+        "name": "chassis_to_agx_thor",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "agx-thor"
+        },
+        "origin": {
+          "xyz": "-0.1 0 0.05"
+        }
+      },
+      {
+        "name": "chassis_to_s32j100",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "s32j100"
+        },
+        "origin": {
+          "xyz": "0 0 0.02"
+        }
+      },
+      {
+        "name": "chassis_to_zlac8015d",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "zlac8015d"
+        },
+        "origin": {
+          "xyz": "0 0 -0.05"
+        }
+      },
+      {
+        "name": "chassis_to_wheel_left",
+        "type": "continuous",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "wheel-left"
+        },
+        "origin": {
+          "xyz": "-0.15 0.18 -0.1"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        }
+      },
+      {
+        "name": "chassis_to_wheel_right",
+        "type": "continuous",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "wheel-right"
+        },
+        "origin": {
+          "xyz": "-0.15 -0.18 -0.1"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        }
+      },
+      {
+        "name": "chassis_to_bms",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "bms"
+        },
+        "origin": {
+          "xyz": "0 0 0.1"
+        }
+      },
+      {
+        "name": "chassis_to_caster_fl",
+        "type": "continuous",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "caster-fl"
+        },
+        "origin": {
+          "xyz": "0.25 0.15 -0.15"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        }
+      },
+      {
+        "name": "chassis_to_caster_fr",
+        "type": "continuous",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "caster-fr"
+        },
+        "origin": {
+          "xyz": "0.25 -0.15 -0.15"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        }
+      },
+      {
+        "name": "torso_to_head",
+        "type": "fixed",
+        "parent": {
+          "comp": "torso"
+        },
+        "child": {
+          "comp": "head"
+        },
+        "origin": {
+          "xyz": "0 0 0.4"
+        }
+      },
+      {
+        "name": "chassis_to_lidar_front",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "lidar-front"
+        },
+        "origin": {
+          "xyz": "0.3 0 0.15",
+          "rpy": "0 0 0"
+        }
+      },
+      {
+        "name": "chassis_to_lidar_rear",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "lidar-rear"
+        },
+        "origin": {
+          "xyz": "-0.3 0 0.15",
+          "rpy": "0 0 3.14159"
+        }
+      },
+      {
+        "name": "chassis_to_radar",
+        "type": "fixed",
+        "parent": {
+          "comp": "chassis"
+        },
+        "child": {
+          "comp": "radar-4d"
+        },
+        "origin": {
+          "xyz": "0.3 0 0.2",
+          "rpy": "0 0 0"
+        }
+      },
+      {
+        "name": "l_shoulder_yaw",
+        "type": "revolute",
+        "parent": {
+          "comp": "torso"
+        },
+        "child": {
+          "comp": "mcn1-l"
+        },
+        "origin": {
+          "xyz": "0 0.18 0.25",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.96,
+          "upper": 2.96,
+          "effort": 50,
+          "velocity": 3.14
+        },
+        "dynamics": {
+          "damping": 0.5,
+          "friction": 0.1
+        }
+      },
+      {
+        "name": "l_elbow",
+        "type": "revolute",
+        "parent": {
+          "comp": "mcn1-l"
+        },
+        "child": {
+          "comp": "mcn2-l"
+        },
+        "origin": {
+          "xyz": "0 0 -0.3",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": 0,
+          "upper": 2.5,
+          "effort": 30,
+          "velocity": 3.14
+        },
+        "dynamics": {
+          "damping": 0.3,
+          "friction": 0.05
+        }
+      },
+      {
+        "name": "l_wrist_pitch",
+        "type": "revolute",
+        "parent": {
+          "comp": "mcn2-l"
+        },
+        "child": {
+          "comp": "mcn3-l"
+        },
+        "origin": {
+          "xyz": "0 0 -0.25",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -1.57,
+          "upper": 1.57,
+          "effort": 10,
+          "velocity": 6.28
+        },
+        "dynamics": {
+          "damping": 0.1,
+          "friction": 0.02
+        }
+      },
+      {
+        "name": "l_hand",
+        "type": "fixed",
+        "parent": {
+          "comp": "mcn3-l"
+        },
+        "child": {
+          "comp": "mcn4-l"
+        },
+        "origin": {
+          "xyz": "0 0 -0.1"
+        }
+      },
+      {
+        "name": "l_cam_mount",
+        "type": "fixed",
+        "parent": {
+          "comp": "mcn3-l"
+        },
+        "child": {
+          "comp": "cam-l"
+        },
+        "origin": {
+          "xyz": "0.03 0 -0.02",
+          "rpy": "0 0.3 0"
+        }
+      },
+      {
+        "name": "r_shoulder_yaw",
+        "type": "revolute",
+        "parent": {
+          "comp": "torso"
+        },
+        "child": {
+          "comp": "mcn1-r"
+        },
+        "origin": {
+          "xyz": "0 -0.18 0.25",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.96,
+          "upper": 2.96,
+          "effort": 50,
+          "velocity": 3.14
+        },
+        "dynamics": {
+          "damping": 0.5,
+          "friction": 0.1
+        }
+      },
+      {
+        "name": "r_elbow",
+        "type": "revolute",
+        "parent": {
+          "comp": "mcn1-r"
+        },
+        "child": {
+          "comp": "mcn2-r"
+        },
+        "origin": {
+          "xyz": "0 0 -0.3"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": 0,
+          "upper": 2.5,
+          "effort": 30,
+          "velocity": 3.14
+        },
+        "dynamics": {
+          "damping": 0.3,
+          "friction": 0.05
+        }
+      },
+      {
+        "name": "r_wrist_pitch",
+        "type": "revolute",
+        "parent": {
+          "comp": "mcn2-r"
+        },
+        "child": {
+          "comp": "mcn3-r"
+        },
+        "origin": {
+          "xyz": "0 0 -0.25"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -1.57,
+          "upper": 1.57,
+          "effort": 10,
+          "velocity": 6.28
+        },
+        "dynamics": {
+          "damping": 0.1,
+          "friction": 0.02
+        }
+      },
+      {
+        "name": "r_hand",
+        "type": "fixed",
+        "parent": {
+          "comp": "mcn3-r"
+        },
+        "child": {
+          "comp": "mcn4-r"
+        },
+        "origin": {
+          "xyz": "0 0 -0.1"
+        }
+      },
+      {
+        "name": "r_cam_mount",
+        "type": "fixed",
+        "parent": {
+          "comp": "mcn3-r"
+        },
+        "child": {
+          "comp": "cam-r"
+        },
+        "origin": {
+          "xyz": "0.03 0 -0.02",
+          "rpy": "0 0.3 0"
+        }
+      }
+    ],
+    "group": [
+      {
+        "name": "left_arm",
+        "type": "kinematic-chain",
+        "description": "Left arm kinematic chain (shoulder to wrist)",
+        "joint": [
+          {
+            "ref": "l_shoulder_yaw"
+          },
+          {
+            "ref": "l_elbow"
+          },
+          {
+            "ref": "l_wrist_pitch"
+          }
+        ]
+      },
+      {
+        "name": "right_arm",
+        "type": "kinematic-chain",
+        "description": "Right arm kinematic chain (shoulder to wrist)",
+        "joint": [
+          {
+            "ref": "r_shoulder_yaw"
+          },
+          {
+            "ref": "r_elbow"
+          },
+          {
+            "ref": "r_wrist_pitch"
+          }
+        ]
+      },
+      {
+        "name": "left_hand",
+        "type": "end-effector",
+        "tip-comp": "mcn4-l",
+        "description": "Left dextrous hand",
+        "joint": {
+          "ref": "l_hand"
+        }
+      },
+      {
+        "name": "right_hand",
+        "type": "end-effector",
+        "tip-comp": "mcn4-r",
+        "description": "Right dextrous hand",
+        "joint": {
+          "ref": "r_hand"
+        }
+      },
+      {
+        "name": "left_manipulation",
+        "description": "Left arm + hand for manipulation tasks",
+        "group": [
+          {
+            "ref": "left_arm"
+          },
+          {
+            "ref": "left_hand"
+          }
+        ]
+      },
+      {
+        "name": "right_manipulation",
+        "description": "Right arm + hand for manipulation tasks",
+        "group": [
+          {
+            "ref": "right_arm"
+          },
+          {
+            "ref": "right_hand"
+          }
+        ]
+      },
+      {
+        "name": "locomotion",
+        "type": "locomotion",
+        "description": "Differential drive wheels + passive casters",
+        "joint": [
+          {
+            "ref": "chassis_to_wheel_left"
+          },
+          {
+            "ref": "chassis_to_wheel_right"
+          },
+          {
+            "ref": "chassis_to_caster_fl"
+          },
+          {
+            "ref": "chassis_to_caster_fr"
+          }
+        ]
+      },
+      {
+        "name": "head_group",
+        "description": "Head unit for display and microphone interaction",
+        "joint": {
+          "ref": "torso_to_head"
+        }
+      }
+    ],
+    "state": [
+      {
+        "name": "home",
+        "default": true,
+        "description": "Default home position: arms at sides, elbows slightly bent",
+        "joint-position": [
+          {
+            "joint": "l_shoulder_yaw",
+            "value": 0
+          },
+          {
+            "joint": "l_elbow",
+            "value": 0.5
+          },
+          {
+            "joint": "l_wrist_pitch",
+            "value": 0
+          },
+          {
+            "joint": "r_shoulder_yaw",
+            "value": 0
+          },
+          {
+            "joint": "r_elbow",
+            "value": 0.5
+          },
+          {
+            "joint": "r_wrist_pitch",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "name": "transport",
+        "description": "Compact transport position: arms folded tight against torso",
+        "joint-position": [
+          {
+            "joint": "l_shoulder_yaw",
+            "value": 0
+          },
+          {
+            "joint": "l_elbow",
+            "value": 2.4
+          },
+          {
+            "joint": "l_wrist_pitch",
+            "value": 1.0
+          },
+          {
+            "joint": "r_shoulder_yaw",
+            "value": 0
+          },
+          {
+            "joint": "r_elbow",
+            "value": 2.4
+          },
+          {
+            "joint": "r_wrist_pitch",
+            "value": 1.0
+          }
+        ]
+      }
+    ],
+    "self-collision-disable": {
+      "pair": [
+        {
+          "comp1": "torso",
+          "comp2": "mcn1-l",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn1-l",
+          "comp2": "mcn2-l",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn2-l",
+          "comp2": "mcn3-l",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn3-l",
+          "comp2": "mcn4-l",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn3-l",
+          "comp2": "cam-l",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "torso",
+          "comp2": "mcn1-r",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn1-r",
+          "comp2": "mcn2-r",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn2-r",
+          "comp2": "mcn3-r",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn3-r",
+          "comp2": "mcn4-r",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "mcn3-r",
+          "comp2": "cam-r",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "mcn1-l",
+          "comp2": "mcn1-r",
+          "reason": "unreachable"
+        },
+        {
+          "comp1": "mcn2-l",
+          "comp2": "mcn2-r",
+          "reason": "unreachable"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "torso",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "s32n79",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "agx-thor",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "s32j100",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "zlac8015d",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "wheel-left",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "wheel-right",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "bms",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "lidar-front",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "lidar-rear",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "radar-4d",
+          "reason": "mounted"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "caster-fl",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "chassis",
+          "comp2": "caster-fr",
+          "reason": "adjacent"
+        },
+        {
+          "comp1": "torso",
+          "comp2": "head",
+          "reason": "adjacent"
+        }
+      ]
+    },
+    "binding": [
+      {
+        "name": "agx-thor_mgbe0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "agx-thor",
+            "port": "mgbe0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "mgbe0_connector",
+            "component-ref": {
+              "component": "agx-thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "agx-thor_mgbe1_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "agx-thor",
+            "port": "mgbe1"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "mgbe1_connector",
+            "component-ref": {
+              "component": "agx-thor"
+            }
+          }
+        }
+      },
+      {
+        "name": "s32n79_e810_p0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "s32n79",
+            "port": "e810_p0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "e810_p0_connector",
+            "component-ref": {
+              "component": "s32n79"
+            }
+          }
+        }
+      },
+      {
+        "name": "s32n79_e810_p1_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "s32n79",
+            "port": "e810_p1"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "e810_p1_connector",
+            "component-ref": {
+              "component": "s32n79"
+            }
+          }
+        }
+      },
+      {
+        "name": "zlac8015d_sig_left_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "zlac8015d",
+            "port": "sig_left"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "sig_left_connector",
+            "component-ref": {
+              "component": "zlac8015d"
+            }
+          }
+        }
+      },
+      {
+        "name": "zlac8015d_sig_right_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "zlac8015d",
+            "port": "sig_right"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "sig_right_connector",
+            "component-ref": {
+              "component": "zlac8015d"
+            }
+          }
+        }
+      },
+      {
+        "name": "zlac8015d_phase_left_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "zlac8015d",
+            "port": "phase_left"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "phase_left_connector",
+            "component-ref": {
+              "component": "zlac8015d"
+            }
+          }
+        }
+      },
+      {
+        "name": "zlac8015d_phase_right_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "zlac8015d",
+            "port": "phase_right"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "phase_right_connector",
+            "component-ref": {
+              "component": "zlac8015d"
+            }
+          }
+        }
+      },
+      {
+        "name": "wheel-left_sig0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "wheel-left",
+            "port": "sig0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "sig0_connector",
+            "component-ref": {
+              "component": "wheel-left"
+            }
+          }
+        }
+      },
+      {
+        "name": "wheel-left_phase0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "wheel-left",
+            "port": "phase0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "phase0_connector",
+            "component-ref": {
+              "component": "wheel-left"
+            }
+          }
+        }
+      },
+      {
+        "name": "wheel-right_sig0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "wheel-right",
+            "port": "sig0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "sig0_connector",
+            "component-ref": {
+              "component": "wheel-right"
+            }
+          }
+        }
+      },
+      {
+        "name": "wheel-right_phase0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "wheel-right",
+            "port": "phase0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "phase0_connector",
+            "component-ref": {
+              "component": "wheel-right"
+            }
+          }
+        }
+      },
+      {
+        "name": "s32j100_can0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "s32j100",
+            "port": "can0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can0_connector",
+            "component-ref": {
+              "component": "s32j100"
+            }
+          }
+        }
+      },
+      {
+        "name": "bms_can0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "bms",
+            "port": "can0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "can0_connector",
+            "component-ref": {
+              "component": "bms"
+            }
+          }
+        }
+      }
+    ],
+    "link": [
+      {
+        "name": "s32n79_to_thor_p0",
+        "description": "Primary 25 Gb/s optical backbone link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "guided-optical",
+          "rate": {
+            "nominal": {
+              "value": 25000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "gptp-domain": {
+            "name": "default",
+            "number": 0,
+            "clock": [
+              {
+                "name": "primary",
+                "kind": "ordinary",
+                "gm-capable": true,
+                "priority1": 128,
+                "priority2": 128,
+                "participant-ref": {
+                  "network": "s32n79_to_thor_p0",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "name": "secondary",
+                "kind": "ordinary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "s32n79_to_thor_p0",
+                  "participant": "agx-thor"
+                }
+              }
+            ],
+            "port-defaults": {
+              "log-sync-interval": -3,
+              "log-announce-interval": 0,
+              "log-pdelay-req-interval": 0,
+              "neighbor-prop-delay-threshold-ns": 800
+            }
+          },
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-256",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "tpm0"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "s32n79_to_thor_p0",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "e810_p0"
+              }
+            }
+          },
+          {
+            "name": "agx-thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "agx-thor",
+                "port": "mgbe0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "s32n79_to_thor_p1",
+        "description": "Redundant 25 Gb/s optical backbone link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "guided-optical",
+          "rate": {
+            "nominal": {
+              "value": 25000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-256",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "tpm0"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "s32n79_to_thor_p1",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "e810_p1"
+              }
+            }
+          },
+          {
+            "name": "agx-thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "agx-thor",
+                "port": "mgbe1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "left-wrist-camera",
+        "description": "Left wrist camera spur from MCN3-L.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "mcn3-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth2"
+              }
+            }
+          },
+          {
+            "name": "cam-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "cam-l",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "right-wrist-camera",
+        "description": "Right wrist camera spur from MCN3-R.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "mcn3-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth2"
+              }
+            }
+          },
+          {
+            "name": "cam-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "cam-r",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "n79_to_j100_p0",
+        "description": "S32N79 QXGMII lane 0 to the S32J100 base-zone switch.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 2500000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "gptp-domain": {
+            "name": "default",
+            "number": 3,
+            "clock": [
+              {
+                "name": "primary",
+                "kind": "ordinary",
+                "gm-capable": true,
+                "priority1": 128,
+                "priority2": 128,
+                "participant-ref": {
+                  "network": "n79_to_j100_p0",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "name": "secondary",
+                "kind": "ordinary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "n79_to_j100_p0",
+                  "participant": "s32j100"
+                }
+              }
+            ],
+            "port-defaults": {
+              "log-sync-interval": -3,
+              "log-announce-interval": 0,
+              "log-pdelay-req-interval": 0,
+              "neighbor-prop-delay-threshold-ns": 2000
+            }
+          },
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "n79_to_j100_p0",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p0"
+              }
+            }
+          },
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "n79_to_j100_p1",
+        "description": "S32N79 QXGMII lane 1 to the S32J100 base-zone switch.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 2500000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "n79_to_j100_p1",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p1"
+              }
+            }
+          },
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "n79_to_j100_p2",
+        "description": "S32N79 QXGMII lane 2 to the S32J100 base-zone switch.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 2500000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "n79_to_j100_p2",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p2"
+              }
+            }
+          },
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "n79_to_j100_p3",
+        "description": "S32N79 QXGMII lane 3 to the S32J100 base-zone switch.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 2500000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "configuration": {
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "n79_to_j100_p3",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "qxgmii_p3"
+              }
+            }
+          },
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_up3"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "j100_to_head",
+        "description": "Head controller link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 1000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_head"
+              }
+            }
+          },
+          {
+            "name": "head",
+            "endpoint": {
+              "port-ref": {
+                "component": "head",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "j100_to_lidar_f",
+        "description": "Front lidar link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 1000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_lidar_front"
+              }
+            }
+          },
+          {
+            "name": "lidar-front",
+            "endpoint": {
+              "port-ref": {
+                "component": "lidar-front",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "j100_to_lidar_r",
+        "description": "Rear lidar link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 1000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_lidar_rear"
+              }
+            }
+          },
+          {
+            "name": "lidar-rear",
+            "endpoint": {
+              "port-ref": {
+                "component": "lidar-rear",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "j100_to_radar",
+        "description": "4D radar link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 1000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "eth_radar"
+              }
+            }
+          },
+          {
+            "name": "radar-4d",
+            "endpoint": {
+              "port-ref": {
+                "component": "radar-4d",
+                "port": "eth0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "zlac_to_wheel_left_sig",
+        "description": "Left wheel encoder, Hall, and temperature signals.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "sig_left"
+              }
+            }
+          },
+          {
+            "name": "wheel-left",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-left",
+                "port": "sig0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "zlac_to_wheel_left_phase",
+        "description": "Left wheel three-phase motor power.",
+        "selected": {
+          "purpose": "power-delivery",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "phase_left"
+              }
+            }
+          },
+          {
+            "name": "wheel-left",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-left",
+                "port": "phase0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "zlac_to_wheel_right_sig",
+        "description": "Right wheel encoder, Hall, and temperature signals.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "sig_right"
+              }
+            }
+          },
+          {
+            "name": "wheel-right",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-right",
+                "port": "sig0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "zlac_to_wheel_right_phase",
+        "description": "Right wheel three-phase motor power.",
+        "selected": {
+          "purpose": "power-delivery",
+          "carrier": "electrical"
+        },
+        "participant": [
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "phase_right"
+              }
+            }
+          },
+          {
+            "name": "wheel-right",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-right",
+                "port": "phase0"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "bus": [
+      {
+        "name": "base_can",
+        "description": "CAN-FD bus joining the base-zone controller, dual motor controller, and BMS.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": {
+            "id": "hcdf:can"
+          },
+          "rate": {
+            "nominal": {
+              "value": 1000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "can0"
+              }
+            }
+          },
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "can0"
+              }
+            }
+          },
+          {
+            "name": "bms",
+            "endpoint": {
+              "port-ref": {
+                "component": "bms",
+                "port": "can0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "power_bus",
+        "description": "24 V DC distribution from the BMS to every powered module.",
+        "selected": {
+          "purpose": "power-delivery",
+          "carrier": "electrical",
+          "voltage": {
+            "nominal": {
+              "value": 24,
+              "unit": "V"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "bms",
+            "endpoint": {
+              "port-ref": {
+                "component": "bms",
+                "port": "bat_out"
+              }
+            }
+          },
+          {
+            "name": "agx-thor",
+            "endpoint": {
+              "port-ref": {
+                "component": "agx-thor",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "s32j100",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32j100",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "head",
+            "endpoint": {
+              "port-ref": {
+                "component": "head",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "lidar-front",
+            "endpoint": {
+              "port-ref": {
+                "component": "lidar-front",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "lidar-rear",
+            "endpoint": {
+              "port-ref": {
+                "component": "lidar-rear",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "radar-4d",
+            "endpoint": {
+              "port-ref": {
+                "component": "radar-4d",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "zlac8015d",
+            "endpoint": {
+              "port-ref": {
+                "component": "zlac8015d",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "wheel-left",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-left",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "wheel-right",
+            "endpoint": {
+              "port-ref": {
+                "component": "wheel-right",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn1-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn2-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn3-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn4-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "cam-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "cam-l",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn1-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn2-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn3-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "mcn4-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "pwr_in"
+              }
+            }
+          },
+          {
+            "name": "cam-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "cam-r",
+                "port": "pwr_in"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "chain": [
+      {
+        "name": "left-arm-chain",
+        "description": "Switched left arm path from the S32N79 through four motor-control nodes.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "configuration": {
+          "gptp-domain": {
+            "name": "default",
+            "number": 1,
+            "clock": [
+              {
+                "name": "clock-0",
+                "kind": "ordinary",
+                "gm-capable": true,
+                "priority1": 128,
+                "priority2": 128,
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "name": "clock-1",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn1-l-in"
+                }
+              },
+              {
+                "name": "clock-2",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn2-l-in"
+                }
+              },
+              {
+                "name": "clock-3",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn3-l-in"
+                }
+              },
+              {
+                "name": "clock-4",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn4-l"
+                }
+              }
+            ],
+            "port-defaults": {
+              "log-sync-interval": -3,
+              "log-announce-interval": 0,
+              "log-pdelay-req-interval": 0,
+              "neighbor-prop-delay-threshold-ns": 2000
+            }
+          },
+          "traffic-class": [
+            {
+              "name": "ptp",
+              "number": 7,
+              "preemption": "express",
+              "pcp": {
+                "value": 7
+              }
+            },
+            {
+              "name": "safety",
+              "number": 6,
+              "preemption": "express",
+              "pcp": {
+                "value": 6
+              }
+            },
+            {
+              "name": "motion",
+              "number": 5,
+              "preemption": "express",
+              "pcp": {
+                "value": 5
+              }
+            },
+            {
+              "name": "sensor",
+              "number": 4,
+              "preemption": "express",
+              "pcp": {
+                "value": 4
+              }
+            },
+            {
+              "name": "camera",
+              "number": 3,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 3
+              }
+            },
+            {
+              "name": "lidar",
+              "number": 2,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 2
+              }
+            },
+            {
+              "name": "config",
+              "number": 1,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 1
+              }
+            },
+            {
+              "name": "bulk",
+              "number": 0,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 0
+              }
+            }
+          ],
+          "gate-schedule": {
+            "name": "arm-chain-1ms",
+            "cycle-time-ns": 1000000,
+            "gate": [
+              {
+                "duration-ns": 20000,
+                "open": {
+                  "traffic-class-ref": {
+                    "network": "left-arm-chain",
+                    "traffic-class": "ptp"
+                  }
+                }
+              },
+              {
+                "duration-ns": 80000,
+                "open": {
+                  "traffic-class-ref": [
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "safety"
+                    },
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "motion"
+                    }
+                  ]
+                }
+              },
+              {
+                "duration-ns": 50000,
+                "open": {
+                  "traffic-class-ref": {
+                    "network": "left-arm-chain",
+                    "traffic-class": "sensor"
+                  }
+                }
+              },
+              {
+                "duration-ns": 850000,
+                "open": {
+                  "traffic-class-ref": [
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "camera"
+                    },
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "lidar"
+                    },
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "config"
+                    },
+                    {
+                      "network": "left-arm-chain",
+                      "traffic-class": "bulk"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "schedule-assignment": {
+            "name": "arm-chain",
+            "schedule-ref": {
+              "network": "left-arm-chain",
+              "schedule": "arm-chain-1ms"
+            },
+            "target": [
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn1-l-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn1-l-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn2-l-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn2-l-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn3-l-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn3-l-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "left-arm-chain",
+                  "participant": "mcn4-l"
+                }
+              }
+            ]
+          },
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "left-arm-chain",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "xfi_left"
+              }
+            }
+          },
+          {
+            "name": "mcn1-l-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn1-l-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-l",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn2-l-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn2-l-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-l",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn3-l-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn3-l-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-l",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn4-l",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn4-l",
+                "port": "eth0"
+              }
+            }
+          }
+        ],
+        "hop": [
+          {
+            "name": "s32n79",
+            "owner": {
+              "function-ref": {
+                "component": "s32n79",
+                "function": "s32n79-integrated"
+              }
+            }
+          },
+          {
+            "name": "mcn1-l",
+            "owner": {
+              "function-ref": {
+                "component": "mcn1-l",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn2-l",
+            "owner": {
+              "function-ref": {
+                "component": "mcn2-l",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn3-l",
+            "owner": {
+              "function-ref": {
+                "component": "mcn3-l",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn4-l",
+            "owner": {
+              "function-ref": {
+                "component": "mcn4-l",
+                "function": "integrated_switch"
+              }
+            }
+          }
+        ],
+        "leg": [
+          {
+            "name": "s32n79-to-mcn1-l",
+            "from": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "s32n79"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "s32n79"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn1-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn1-l-in"
+              }
+            }
+          },
+          {
+            "name": "mcn1-l-to-mcn2-l",
+            "from": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn1-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn1-l-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn2-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn2-l-in"
+              }
+            }
+          },
+          {
+            "name": "mcn2-l-to-mcn3-l",
+            "from": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn2-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn2-l-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn3-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn3-l-in"
+              }
+            }
+          },
+          {
+            "name": "mcn3-l-to-mcn4-l",
+            "from": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn3-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn3-l-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "left-arm-chain",
+                "hop": "mcn4-l"
+              },
+              "participant-ref": {
+                "network": "left-arm-chain",
+                "participant": "mcn4-l"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "right-arm-chain",
+        "description": "Switched right arm path from the S32N79 through four motor-control nodes.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical"
+        },
+        "configuration": {
+          "gptp-domain": {
+            "name": "default",
+            "number": 2,
+            "clock": [
+              {
+                "name": "clock-0",
+                "kind": "ordinary",
+                "gm-capable": true,
+                "priority1": 128,
+                "priority2": 128,
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "name": "clock-1",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn1-r-in"
+                }
+              },
+              {
+                "name": "clock-2",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn2-r-in"
+                }
+              },
+              {
+                "name": "clock-3",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn3-r-in"
+                }
+              },
+              {
+                "name": "clock-4",
+                "kind": "boundary",
+                "gm-capable": false,
+                "priority1": 255,
+                "priority2": 255,
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn4-r"
+                }
+              }
+            ],
+            "port-defaults": {
+              "log-sync-interval": -3,
+              "log-announce-interval": 0,
+              "log-pdelay-req-interval": 0,
+              "neighbor-prop-delay-threshold-ns": 2000
+            }
+          },
+          "traffic-class": [
+            {
+              "name": "ptp",
+              "number": 7,
+              "preemption": "express",
+              "pcp": {
+                "value": 7
+              }
+            },
+            {
+              "name": "safety",
+              "number": 6,
+              "preemption": "express",
+              "pcp": {
+                "value": 6
+              }
+            },
+            {
+              "name": "motion",
+              "number": 5,
+              "preemption": "express",
+              "pcp": {
+                "value": 5
+              }
+            },
+            {
+              "name": "sensor",
+              "number": 4,
+              "preemption": "express",
+              "pcp": {
+                "value": 4
+              }
+            },
+            {
+              "name": "camera",
+              "number": 3,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 3
+              }
+            },
+            {
+              "name": "lidar",
+              "number": 2,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 2
+              }
+            },
+            {
+              "name": "config",
+              "number": 1,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 1
+              }
+            },
+            {
+              "name": "bulk",
+              "number": 0,
+              "preemption": "preemptable",
+              "pcp": {
+                "value": 0
+              }
+            }
+          ],
+          "gate-schedule": {
+            "name": "arm-chain-1ms",
+            "cycle-time-ns": 1000000,
+            "gate": [
+              {
+                "duration-ns": 20000,
+                "open": {
+                  "traffic-class-ref": {
+                    "network": "right-arm-chain",
+                    "traffic-class": "ptp"
+                  }
+                }
+              },
+              {
+                "duration-ns": 80000,
+                "open": {
+                  "traffic-class-ref": [
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "safety"
+                    },
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "motion"
+                    }
+                  ]
+                }
+              },
+              {
+                "duration-ns": 50000,
+                "open": {
+                  "traffic-class-ref": {
+                    "network": "right-arm-chain",
+                    "traffic-class": "sensor"
+                  }
+                }
+              },
+              {
+                "duration-ns": 850000,
+                "open": {
+                  "traffic-class-ref": [
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "camera"
+                    },
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "lidar"
+                    },
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "config"
+                    },
+                    {
+                      "network": "right-arm-chain",
+                      "traffic-class": "bulk"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "schedule-assignment": {
+            "name": "arm-chain",
+            "schedule-ref": {
+              "network": "right-arm-chain",
+              "schedule": "arm-chain-1ms"
+            },
+            "target": [
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "s32n79"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn1-r-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn1-r-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn2-r-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn2-r-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn3-r-in"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn3-r-out"
+                }
+              },
+              {
+                "participant-ref": {
+                  "network": "right-arm-chain",
+                  "participant": "mcn4-r"
+                }
+              }
+            ]
+          },
+          "macsec": {
+            "policy": {
+              "name": "must-secure",
+              "enforcement": "must-secure",
+              "cipher": "ieee8021ae:gcm-aes-128",
+              "key-agreement": "local:psk",
+              "rekey-interval-ns": 3600000000000,
+              "credential-store-ref": "se051"
+            },
+            "default-policy": {
+              "macsec-policy-ref": {
+                "network": "right-arm-chain",
+                "policy": "must-secure"
+              }
+            }
+          },
+          "eee": {
+            "default-mode": "disabled"
+          }
+        },
+        "participant": [
+          {
+            "name": "s32n79",
+            "endpoint": {
+              "port-ref": {
+                "component": "s32n79",
+                "port": "xfi_right"
+              }
+            }
+          },
+          {
+            "name": "mcn1-r-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn1-r-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn1-r",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn2-r-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn2-r-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn2-r",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn3-r-in",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth0"
+              }
+            }
+          },
+          {
+            "name": "mcn3-r-out",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn3-r",
+                "port": "eth1"
+              }
+            }
+          },
+          {
+            "name": "mcn4-r",
+            "endpoint": {
+              "port-ref": {
+                "component": "mcn4-r",
+                "port": "eth0"
+              }
+            }
+          }
+        ],
+        "hop": [
+          {
+            "name": "s32n79",
+            "owner": {
+              "function-ref": {
+                "component": "s32n79",
+                "function": "s32n79-integrated"
+              }
+            }
+          },
+          {
+            "name": "mcn1-r",
+            "owner": {
+              "function-ref": {
+                "component": "mcn1-r",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn2-r",
+            "owner": {
+              "function-ref": {
+                "component": "mcn2-r",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn3-r",
+            "owner": {
+              "function-ref": {
+                "component": "mcn3-r",
+                "function": "integrated_switch"
+              }
+            }
+          },
+          {
+            "name": "mcn4-r",
+            "owner": {
+              "function-ref": {
+                "component": "mcn4-r",
+                "function": "integrated_switch"
+              }
+            }
+          }
+        ],
+        "leg": [
+          {
+            "name": "s32n79-to-mcn1-r",
+            "from": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "s32n79"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "s32n79"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn1-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn1-r-in"
+              }
+            }
+          },
+          {
+            "name": "mcn1-r-to-mcn2-r",
+            "from": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn1-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn1-r-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn2-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn2-r-in"
+              }
+            }
+          },
+          {
+            "name": "mcn2-r-to-mcn3-r",
+            "from": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn2-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn2-r-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn3-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn3-r-in"
+              }
+            }
+          },
+          {
+            "name": "mcn3-r-to-mcn4-r",
+            "from": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn3-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn3-r-out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "right-arm-chain",
+                "hop": "mcn4-r"
+              },
+              "participant-ref": {
+                "network": "right-arm-chain",
+                "participant": "mcn4-r"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "stream-profile": {
+      "uri": "profiles/operational.streams.xml",
+      "selection-role": "default"
+    },
+    "transmission": [
+      {
+        "name": "l_shoulder_yaw_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "shoulder_yaw_motor"
+        },
+        "joint": {
+          "ref": "l_shoulder_yaw"
+        },
+        "reduction": 50,
+        "efficiency": 0.85
+      },
+      {
+        "name": "l_shoulder_pitch_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "shoulder_pitch_motor"
+        },
+        "joint": {
+          "ref": "l_shoulder_yaw"
+        },
+        "reduction": 80,
+        "efficiency": 0.82
+      },
+      {
+        "name": "l_elbow_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "elbow_l_motor"
+        },
+        "joint": {
+          "ref": "l_elbow"
+        },
+        "reduction": 50,
+        "efficiency": 0.85
+      },
+      {
+        "name": "l_wrist_pitch_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "wrist_pitch_l_motor"
+        },
+        "joint": {
+          "ref": "l_wrist_pitch"
+        },
+        "reduction": 30,
+        "efficiency": 0.88
+      },
+      {
+        "name": "r_shoulder_yaw_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "shoulder_yaw_r_motor"
+        },
+        "joint": {
+          "ref": "r_shoulder_yaw"
+        },
+        "reduction": 50,
+        "efficiency": 0.85
+      },
+      {
+        "name": "r_shoulder_pitch_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "shoulder_pitch_r_motor"
+        },
+        "joint": {
+          "ref": "r_shoulder_yaw"
+        },
+        "reduction": 80,
+        "efficiency": 0.82
+      },
+      {
+        "name": "r_elbow_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "elbow_r_motor"
+        },
+        "joint": {
+          "ref": "r_elbow"
+        },
+        "reduction": 50,
+        "efficiency": 0.85
+      },
+      {
+        "name": "r_wrist_pitch_tx",
+        "type": "planetary",
+        "motor": {
+          "ref": "wrist_pitch_r_motor"
+        },
+        "joint": {
+          "ref": "r_wrist_pitch"
+        },
+        "reduction": 30,
+        "efficiency": 0.88
+      },
+      {
+        "name": "wheel_left_tx",
+        "type": "simple",
+        "motor": {
+          "ref": "left_wheel_motor"
+        },
+        "joint": {
+          "ref": "chassis_to_wheel_left"
+        },
+        "reduction": 1,
+        "efficiency": 0.95
+      },
+      {
+        "name": "wheel_right_tx",
+        "type": "simple",
+        "motor": {
+          "ref": "right_wheel_motor"
+        },
+        "joint": {
+          "ref": "chassis_to_wheel_right"
+        },
+        "reduction": 1,
+        "efficiency": 0.95
+      }
+    ],
+    "color": [
+      {
+        "name": "aluminum-anodized",
+        "rgba": "0.7 0.7 0.7 1.0",
+        "description": "Anodized aluminum chassis and structural components"
+      },
+      {
+        "name": "rubber-tire",
+        "rgba": "0.15 0.15 0.15 1.0",
+        "description": "Rubber tire compound for driven wheels"
+      },
+      {
+        "name": "abs-black",
+        "rgba": "0.1 0.1 0.1 1.0",
+        "description": "ABS plastic enclosure material"
+      }
+    ]
+  }
+}

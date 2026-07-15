@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -55,7 +55,7 @@
   <p>
     HCDF has a built-in extension mechanism that allows vendor-specific or domain-specific data
     to live alongside the core schema without modifying it. Extensions use reverse-DNS domain
-    identifiers and explicit versioning to prevent conflicts and allow evolution.
+    identifiers by convention and may declare a version to prevent conflicts and allow evolution.
   </p>
 
   <hr class="section-divider"/>
@@ -64,15 +64,16 @@
   <h2>How Extensions Work</h2>
 
   <p>
-    An <code>&lt;extension&gt;</code> element can appear as a child of any <code>&lt;comp&gt;</code>.
-    It carries a <code>domain</code> attribute (reverse-DNS identifier) and a <code>version</code>
-    attribute. Inside, any well-formed XML is accepted. The HCDF schema declares
+    An <code>&lt;extension&gt;</code> element can appear at document level, at component level, or on a
+    joint. It carries a required <code>domain</code> attribute (a reverse-DNS identifier by
+    convention) and an optional <code>version</code> attribute. Inside, it accepts arbitrary
+    well-formed child elements. The HCDF schema declares
     <code>xs:any processContents="lax"</code> for the extension body, so the core validator will
     not reject unknown elements.
   </p>
 
 <pre class="language-xml"><code>&lt;extension domain="org.example.my-domain" version="1.0"&gt;
-  &lt;!-- Any well-formed XML here --&gt;
+  &lt;!-- Arbitrary well-formed child elements can appear here --&gt;
   &lt;custom-element attribute="value"&gt;
     &lt;nested&gt;data&lt;/nested&gt;
   &lt;/custom-element&gt;
@@ -91,30 +92,37 @@
     backward-compatible additions, the major version for breaking changes.</li>
     <li><strong>Document it:</strong> Write a guide page (like the
     <a href="/extensions/imu-stability.html">IMU Stability</a> example) explaining what data
-    your extension carries, why it is an extension rather than core, and how agents should use it.</li>
+    your extension carries, why it is an extension rather than core, and how consumers should use it.</li>
     <li><strong>Optionally provide an XSD:</strong> You can write an XSD for your extension's inner
-    elements. Validators can then check extension content with <code>processContents="strict"</code>
-    if the extension schema is available.</li>
-    <li><strong>Register it:</strong> Submit a pull request to the HCDF repository adding your
-    extension to the registry (see below).</li>
+    elements. Extension-aware tooling can validate that content in a separate pass. The core HCDF
+    extension container remains lax and does not switch itself to strict processing.</li>
+    <li><strong>List it:</strong> Submit a pull request to add your extension to the curated
+    documentation listing described below.</li>
   </ol>
 
   <hr class="section-divider"/>
 
-  <!-- Registered Extensions -->
-  <h2>Registered Extensions</h2>
+  <!-- Documented Extensions -->
+  <h2>Documented Extensions</h2>
 
   <div class="cards">
     <div class="card">
       <h3>org.ros2 <span class="badge">v1.0</span></h3>
       <p>Maps HCDF sensors and motors to ROS 2 topics with message types and QoS profiles.
-      Enables zero-config topic advertisement from the hardware description.</p>
+      Records a declarative topic mapping that ROS-aware tooling can consume.</p>
       <p><a href="/spec/extensions/ros2.html">Schema reference</a></p>
     </div>
     <div class="card">
+      <h3>org.ros2.control <span class="badge">v1.0</span></h3>
+      <p>Types the ros2_control hardware-interface surface: the hardware plugin and parameters, and the
+      per-joint command- and state-interface wiring the controller_manager consumes. Distinct from
+      org.ros2 (topic mapping).</p>
+      <p><a href="/spec/extensions/ros2-control.html">Schema reference</a></p>
+    </div>
+    <div class="card">
       <h3>org.gazebosim <span class="badge">v1.0</span></h3>
-      <p>Simulation parameters for Gazebo: physics engine settings, plugin bindings,
-      aerodynamics, motor models, and contact surface overrides.</p>
+      <p>Gazebo physics engine settings, model and link simulation flags, velocity decay, and
+      plugin declarations.</p>
       <p><a href="/spec/extensions/gazebo.html">Schema reference</a></p>
     </div>
     <div class="card">
@@ -125,9 +133,10 @@
       <p><a href="/spec/extensions/1722.html">Schema reference</a></p>
     </div>
     <div class="card">
-      <h3>org.cognipilot.imu-stability <span class="badge">v1.0</span></h3>
+      <h3>org.cognipilot.imu-stability <span class="badge">illustrative</span></h3>
       <p>Allan variance parameters for tactical/navigation-grade IMUs: bias stability,
-      scale factor error, g-sensitivity, ARW/VRW, temperature sensitivity.</p>
+      scale factor error, g-sensitivity, ARW/VRW, and temperature sensitivity. This guide does
+      not currently have a shipped extension XSD.</p>
       <p><a href="/extensions/imu-stability.html">Extension guide</a></p>
     </div>
   </div>
@@ -139,8 +148,8 @@
 
   <p>
     The <code>org.ros2</code> extension maps each sensor and motor to a ROS 2 topic name, message
-    type, and QoS profile. This allows a ROS 2 launch system to auto-configure publishers and
-    subscribers from the HCDF file without manual topic remapping.
+    type, and QoS profile. ROS-aware tooling can consume these declarations when configuring
+    publishers and subscribers or checking topic mappings.
   </p>
 
 <pre class="language-xml"><code>&lt;extension domain="org.ros2" version="1.0"&gt;
@@ -174,6 +183,7 @@
   </p>
 
 <pre class="language-xml"><code>&lt;extension domain="org.gazebosim" version="1.0"&gt;
+  &lt;gazebo-sim&gt;
   &lt;physics&gt;
     &lt;engine&gt;ode&lt;/engine&gt;
     &lt;max-step-size&gt;0.001&lt;/max-step-size&gt;
@@ -193,28 +203,30 @@
     &lt;rotor-drag-coefficient&gt;0.00025&lt;/rotor-drag-coefficient&gt;
     &lt;rolling-moment-coefficient&gt;1e-6&lt;/rolling-moment-coefficient&gt;
   &lt;/plugin&gt;
+  &lt;/gazebo-sim&gt;
 &lt;/extension&gt;</code></pre>
 
   <hr class="section-divider"/>
 
-  <!-- How to Register -->
-  <h2>How to Register a New Extension</h2>
+  <!-- How to Add an Extension -->
+  <h2>How to Add an Extension to the Listing</h2>
 
   <ol>
     <li>Fork the <a href="https://github.com/CogniPilot/hcdformat">HCDF repository</a>.</li>
-    <li>Add your extension documentation to <code>docs/extensions/</code> (a markdown file
-    following the <a href="/extensions/imu-stability.html">IMU Stability</a> pattern).</li>
-    <li>Optionally add an XSD to <code>schema/extensions/</code>.</li>
-    <li>Add an entry to the extension registry in <code>docs/extensions/registry.md</code> with
-    your domain, version, description, and maintainer contact.</li>
+    <li>Add a project-facing guide under <code>website/extensions/</code>, following the
+    <a href="/extensions/imu-stability.html">IMU Stability</a> page pattern.</li>
+    <li>Optionally add an XSD named <code>hcdf-ext-&lt;name&gt;.xsd</code> under <code>extensions/</code>.</li>
+    <li>Add the extension to the curated list in <code>website/extensions/index.html</code>. For an
+    XSD-backed extension, also add its generated reference page under
+    <code>website/spec/extensions/</code> and its regeneration command to the Pages workflow.</li>
     <li>Submit a pull request. The HCDF maintainers will review for naming conflicts and
     documentation completeness.</li>
   </ol>
 
   <div class="note">
-    <strong>Note:</strong> Registration is optional. Any reverse-DNS domain that you control can be
-    used as an extension domain without registration. Registration provides discoverability and
-    signals to tooling that the extension is documented and maintained.
+    <strong>Note:</strong> Registration is currently a curated documentation listing, not a
+    machine-readable registry or trust assertion. Any reverse-DNS domain that you control can be
+    used without registration; listing it provides discoverability.
   </div>
 
 </div>

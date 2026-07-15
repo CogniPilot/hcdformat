@@ -1,0 +1,8 @@
+# Local development override: build against a sibling xacro-pure checkout instead of crates.io.
+#
+#   cp .cargo/config.toml.example .cargo/config.toml
+#
+# Adjust the path if your xacro-pure checkout is elsewhere. With this file present, cargo builds
+# the local xacro-pure; remove it to build purely from the crates.io release.
+[patch.crates-io]
+xacro-pure = { path = "../../../cognipilot/xacro-pure" }

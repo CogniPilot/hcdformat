@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- pr2-style fixture: a prefixed top-level child of <robot> that references a namespace
+     declared on the root, plus an UNUSED root xmlns. Exercises the inherited-namespace
+     injection on quarantined top-level children (capture_toplevel_raw / with_inherited_ns).
+     The differential URDF parity harness and the Python importer both consume this. -->
+<robot name="prefixed_ns" xmlns:controller="http://ros.org/controller" xmlns:unused="http://example.com/unused">
+  <link name="base"/>
+  <link name="arm"/>
+  <joint name="j" type="revolute">
+    <parent link="base"/>
+    <child link="arm"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5" upper="1.5" effort="10" velocity="2"/>
+  </joint>
+  <controller:gazebo_ros_controller_manager name="cm">
+    <controller:rate>100</controller:rate>
+  </controller:gazebo_ros_controller_manager>
+</robot>

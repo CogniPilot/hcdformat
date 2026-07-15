@@ -1,0 +1,23 @@
+[package]
+name = "hcdformat-pyderive"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Proc-macro that exposes the Rust hcdformat DOM to Python as typed mutable handles with tagged-choice authoring."
+repository = "https://github.com/CogniPilot/hcdformat"
+publish = false
+
+# This is a host-side compiler extension. It never links into a target, so pyo3 does not enter
+# hcdformat-rs's dependency graph through it. The emitted PyO3 code lives in the binding crate,
+# keeping the canonical hcdformat-rs core WASM-clean.
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+
+[dev-dependencies]
+hcdformat = { path = "../hcdformat-rs", default-features = false }
+pyo3 = { version = "0.23", features = ["auto-initialize"] }

@@ -1,0 +1,76 @@
+<hcdf name="synth-arm" body-frame="FLU" world-frame="ENU">
+  <comp name="base"/>
+  <comp name="arm">
+    <inertial>
+      <mass>1.2</mass>
+      <inertia_origin xyz="0 0 0.1" rpy="0 0 0"/>
+      <inertia>0.01 0 0 0.01 0 0.005</inertia>
+    </inertial>
+    <visual name="arm_visual_0" name-origin="synthesized">
+      <geometry>
+        <cylinder>
+          <radius>0.03</radius>
+          <length>0.2</length>
+        </cylinder>
+      </geometry>
+      <color name="grey"/>
+    </visual>
+    <collision name="arm_collision_0" name-origin="synthesized">
+      <geometry>
+        <box>
+          <size>0.05 0.05 0.2</size>
+        </box>
+      </geometry>
+      <surface>
+        <friction static="0.8">
+          <friction-direction mu2="0.8"/>
+        </friction>
+      </surface>
+    </collision>
+  </comp>
+  <comp name="tool">
+    <visual name="tool_visual_0" name-origin="synthesized">
+      <pose xyz="0 0 0.2"/>
+      <model uri="package://x/tool.dae"/>
+    </visual>
+    <collision name="tool_collision_0" name-origin="synthesized">
+      <geometry>
+        <mesh uri="package://x/tool_collision.stl"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="finger_l"/>
+  <comp name="finger_r"/>
+  <joint name="j1" type="revolute">
+    <parent comp="base"/>
+    <child comp="arm"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5" upper="1.5" effort="10" velocity="2"/>
+    <dynamics damping="0.1" friction="0.05"/>
+    <calibration rising="0.0"/>
+    <urdf-compat>
+      <safety_controller soft_lower_limit="-1.4" soft_upper_limit="1.4" k_position="10" k_velocity="1"/>
+    </urdf-compat>
+  </joint>
+  <joint name="j2" type="continuous">
+    <parent comp="arm"/>
+    <child comp="tool"/>
+    <origin xyz="0 0 0.2"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+  <joint name="j3" type="prismatic">
+    <parent comp="tool"/>
+    <child comp="finger_l"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="40" velocity="0.1"/>
+  </joint>
+  <joint name="j4" type="prismatic">
+    <parent comp="tool"/>
+    <child comp="finger_r"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="40" velocity="0.1"/>
+    <mimic joint="j3" multiplier="-1" offset="0"/>
+  </joint>
+  <color name="grey" rgba="0.6 0.6 0.6 1"/>
+  <extension domain="org.ros2.control"><ros2-control name="ctl" type="system"><joint name="j1"/></ros2-control></extension>
+</hcdf>

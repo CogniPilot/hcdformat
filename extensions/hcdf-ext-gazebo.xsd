@@ -35,27 +35,27 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="ode">
         <xs:annotation>
-          <xs:documentation>Open Dynamics Engine — the default physics engine in Gazebo classic and gz-sim.</xs:documentation>
+          <xs:documentation>Open Dynamics Engine, the default physics engine in Gazebo classic and gz-sim.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="bullet">
         <xs:annotation>
-          <xs:documentation>Bullet Physics — real-time collision detection and multi-physics simulation.</xs:documentation>
+          <xs:documentation>Bullet Physics, real-time collision detection and multi-physics simulation.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="dart">
         <xs:annotation>
-          <xs:documentation>Dynamic Animation and Robotics Toolkit — multi-body dynamics for robotics and animation.</xs:documentation>
+          <xs:documentation>Dynamic Animation and Robotics Toolkit, multi-body dynamics for robotics and animation.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="simbody">
         <xs:annotation>
-          <xs:documentation>Simbody — multibody physics engine optimized for biomechanics and robotics.</xs:documentation>
+          <xs:documentation>Simbody, multibody physics engine optimized for biomechanics and robotics.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="tpe">
         <xs:annotation>
-          <xs:documentation>Trivial Physics Engine — lightweight engine for basic kinematic simulation without dynamics.</xs:documentation>
+          <xs:documentation>Trivial Physics Engine, lightweight engine for basic kinematic simulation without dynamics.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
     </xs:restriction>
@@ -100,7 +100,7 @@ Set to 0 for maximum speed (no throttling).</xs:documentation>
   <xs:complexType name="plugin">
     <xs:annotation>
       <xs:documentation>A Gazebo simulation plugin declaration. Plugins extend simulation
-behavior — physics models, sensor simulation, controllers, etc.
+behavior: physics models, sensor simulation, controllers, etc.
 Child elements are plugin-specific parameters passed through with
 lax validation (any well-formed XML is accepted).</xs:documentation>
     </xs:annotation>
@@ -129,6 +129,114 @@ Gazebo searches its plugin path for this library at load time.</xs:documentation
   </xs:complexType>
 
   <!-- ================================================================== -->
+  <!-- Velocity decay (per-link damping)                                  -->
+  <!-- ================================================================== -->
+  <xs:complexType name="velocity-decay">
+    <xs:annotation>
+      <xs:documentation>Per-link velocity damping applied every step (SDF link/velocity_decay).
+Linear and angular decay factors reduce a link's velocity to model drag or
+numerical stabilization.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="linear" type="xs:double" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Linear velocity decay factor (SDF velocity_decay/linear).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="angular" type="xs:double" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Angular velocity decay factor (SDF velocity_decay/angular).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Model-scope simulation scalars                                     -->
+  <!-- ================================================================== -->
+  <xs:complexType name="model-physics">
+    <xs:annotation>
+      <xs:documentation>Model-scope Gazebo simulation flags that have no home in the clean
+cyber-physical core but must round-trip through the gazebo extension
+(SDF model/static, self_collide, allow_auto_disable, enable_wind,
+canonical_link). All optional.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="static" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Model is immovable (SDF model/static).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="self-collide" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Links within the model collide with each other (SDF model/self_collide).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="allow-auto-disable" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Allow the physics engine to auto-disable the model when at rest
+(SDF model/allow_auto_disable).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="enable-wind" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Model is affected by wind (SDF model/enable_wind).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="canonical-link" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Name of the model's canonical link: the implicit model-frame anchor
+(SDF model/@canonical_link).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
+  <!-- Link-scope simulation scalars                                      -->
+  <!-- ================================================================== -->
+  <xs:complexType name="link-physics">
+    <xs:annotation>
+      <xs:documentation>Per-link Gazebo simulation flags with no cyber-physical-core home,
+round-tripped through the gazebo extension (SDF link/gravity,
+self_collide, kinematic, must_be_base_link, velocity_decay). Keyed by
+link (comp) name. All optional.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="gravity" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Link is affected by gravity (SDF link/gravity).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="self-collide" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Link collides with other links of the same model (SDF link/self_collide).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="kinematic" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Link is kinematic: pose-driven, not force-driven (SDF link/kinematic).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="must-be-base-link" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Link must be the model's base link (SDF link/must_be_base_link).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="velocity-decay" type="velocity-decay" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Per-link linear/angular velocity damping (SDF link/velocity_decay).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the link (HCDF comp) these flags apply to.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <!-- ================================================================== -->
   <!-- Root element: gazebo-sim                                           -->
   <!-- ================================================================== -->
   <xs:element name="gazebo-sim">
@@ -148,6 +256,18 @@ Placed inside &lt;extension domain="org.gazebosim"&gt;.</xs:documentation>
           <xs:annotation>
             <xs:documentation>Simulation plugin declaration. Zero or more plugins can be defined,
 each with its own name, library filename, and plugin-specific parameters.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="model-physics" type="model-physics" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>Model-scope simulation flags (static, self_collide, allow_auto_disable,
+enable_wind, canonical_link) round-tripped through the gazebo extension. At most one.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="link-physics" type="link-physics" minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>Per-link simulation flags (gravity, self_collide, kinematic,
+must_be_base_link, velocity_decay), one entry per link, round-tripped through the extension.</xs:documentation>
           </xs:annotation>
         </xs:element>
       </xs:sequence>

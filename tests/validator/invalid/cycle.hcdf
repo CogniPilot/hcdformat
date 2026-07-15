@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: kinematic cycle a -> b -> a (E_CYCLE) -->
+<hcdf version="1.0" name="cycle">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j1" type="fixed"><parent comp="a"/><child comp="b"/></joint>
+  <joint name="j2" type="fixed"><parent comp="b"/><child comp="a"/></joint>
+</hcdf>

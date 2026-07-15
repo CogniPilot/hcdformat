@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- validator-loop: a well-formed loop closure where predecessor/successor name existing
+     comps that ARE the joint's own parent/child, and <constraint-axes> is exactly six
+     0/1 tokens. validate_loops is silent (empty oracle). Geometric closure is not the
+     loop validator's concern (that is the solver's); the four-bar EXAMPLE carries the
+     closed geometry. -->
+<hcdf version="1.0" name="loop-ok-fourbar">
+  <comp name="ground"/>
+  <comp name="coupler"/>
+  <comp name="rocker"/>
+  <joint name="j_close" type="revolute">
+    <parent comp="coupler"/>
+    <child comp="rocker"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>coupler</predecessor>
+      <successor>rocker</successor>
+      <constraint-axes>1 1 1 1 1 0</constraint-axes>
+    </loop>
+  </joint>
+</hcdf>

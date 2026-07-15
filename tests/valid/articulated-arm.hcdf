@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!-- Valid: an articulated 2-DOF arm + continuous wrist + mimic-coupled parallel gripper.
+     The first non-fixed-joint fixture (build-order step 0): exercises revolute/prismatic/
+     continuous joints with axes & limits, a mimic, frame/@relative-to against all three
+     anchor kinds (frame, comp, joint), groups with tip-comp/tip-frame, a default state,
+     and a visual <color> reference. A single connected acyclic tree rooted at "base". -->
+<hcdf version="1.0" name="articulated-arm" body-frame="FLU">
+
+  <comp name="base" role="parent">
+    <description>Fixed mounting base (kinematic root).</description>
+  </comp>
+
+  <comp name="shoulder" role="actuator"/>
+
+  <comp name="forearm" role="actuator">
+    <visual name="forearm_vis">
+      <geometry>
+        <cylinder><radius>0.03</radius><length>0.30</length></cylinder>
+      </geometry>
+      <color name="anodized"/>
+    </visual>
+  </comp>
+
+  <comp name="wrist" role="actuator">
+    <frame name="mount" type="attachment"/>
+    <frame name="tcp" type="tcp" relative-to="mount"/>
+    <frame name="wrt_forearm" relative-to="forearm"/>
+    <frame name="wrt_j2" relative-to="j2"/>
+  </comp>
+
+  <comp name="finger_left" role="actuator"/>
+  <comp name="finger_right" role="actuator"/>
+
+  <joint name="j1" type="revolute">
+    <description>Shoulder pitch.</description>
+    <parent comp="base"/>
+    <child comp="shoulder"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.57" upper="1.57" effort="40" velocity="2.0"/>
+  </joint>
+
+  <joint name="j2" type="revolute">
+    <parent comp="shoulder"/>
+    <child comp="forearm"/>
+    <origin xyz="0 0 0.05"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.6" upper="2.6" effort="30" velocity="2.5"/>
+  </joint>
+
+  <joint name="j_wrist" type="continuous">
+    <parent comp="forearm"/>
+    <child comp="wrist"/>
+    <origin xyz="0 0 0.30"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <joint name="j_finger_l" type="prismatic">
+    <parent comp="wrist"/>
+    <child comp="finger_left"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="60" velocity="0.1"/>
+  </joint>
+
+  <joint name="j_finger_r" type="prismatic">
+    <parent comp="wrist"/>
+    <child comp="finger_right"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="0.04" effort="60" velocity="0.1"/>
+    <mimic joint="j_finger_l" multiplier="-1"/>
+  </joint>
+
+  <group name="arm" type="kinematic-chain" tip-comp="wrist" tip-frame="tcp">
+    <joint ref="j1"/>
+    <joint ref="j2"/>
+    <joint ref="j_wrist"/>
+  </group>
+
+  <group name="hand" type="end-effector" tip-comp="finger_left">
+    <joint ref="j_finger_l"/>
+    <joint ref="j_finger_r"/>
+  </group>
+
+  <group name="whole">
+    <group ref="arm"/>
+    <group ref="hand"/>
+  </group>
+
+  <state name="home" default="true">
+    <joint-position joint="j1" value="0"/>
+    <joint-position joint="j2" value="0"/>
+    <joint-position joint="j_finger_l" value="0.02"/>
+  </state>
+
+  <color name="anodized" rgba="0.6 0.6 0.65 1.0" description="anodized aluminum"/>
+
+</hcdf>

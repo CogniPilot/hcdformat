@@ -34,6 +34,9 @@ versions/
   1.0/
     hcdf.xsd                    # Archived schema
     hcdf-stream-profile.xsd     # Archived stream profile schema
+    registries/
+      connectivity-profiles.json
+      connectivity-profile-registry.schema.json
 hcdf.xsd                        # Always the latest version (symlink or copy)
 ```
 
@@ -45,12 +48,32 @@ When a new version is released:
 5. Update the spec browser version dropdown
 6. Update CHANGELOG.md
 
+## Hash Pinning
+
+Tooling should bind to a versioned artifact by its content hash, not by filename or the
+version string. `versions/HASHES` records the sha256 of each released canonical artifact:
+
+```
+# version  file                     sha256
+1.0        hcdf.xsd                 <sha256>
+1.0        hcdf-stream-profile.xsd  <sha256>
+1.0        registries/connectivity-profiles.json  <sha256>
+```
+
+Two files that claim the same version but hash differently is a contradiction,
+and CI fails when it sees one. Each `versions/<MAJOR.MINOR>/` directory is a
+write once frozen archive of the canonical artifacts for that version. Derived
+artifacts such as `hcdf.schema.json` and `spec.html` are not archived. CI regenerates
+them from the schema and diffs the result to keep them in sync. The connectivity
+registry and its authored JSON Schema are canonical source artifacts, so they are
+archived and hash-pinned.
+
 ## JSON Schema Versioning
 
-The JSON Schema (`hcdf.schema.json`) is generated from the XSD and carries the same version number in its `$id` field. When the XSD version changes, regenerate the JSON Schema:
+The JSON Schema (`hcdf.schema.json`) is generated from the XSD and carries the same version number in its `$id` field. When the XSD version changes, regenerate the JSON Schema with the Rust CLI:
 
 ```bash
-python3 generate_json_schema.py hcdf.xsd hcdf.schema.json
+hcdf regen schema hcdf.xsd hcdf.schema.json
 ```
 
 ## Stream Profile Versioning

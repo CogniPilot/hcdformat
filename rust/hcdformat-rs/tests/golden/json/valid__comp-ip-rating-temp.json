@@ -1,0 +1,43 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "ip-rating-temp-test",
+    "comp": [
+      {
+        "name": "auto-soc",
+        "role": "compute",
+        "ip-rating": "IP67",
+        "board": "nxp-s32n79-evb",
+        "operating-temp": {
+          "min": -40,
+          "max": 105,
+          "unit": "degC"
+        }
+      },
+      {
+        "name": "compute",
+        "role": "compute",
+        "operating-temp": {
+          "min": 0,
+          "max": 70,
+          "unit": "degC"
+        }
+      },
+      {
+        "name": "actuator",
+        "role": "actuator",
+        "ip-rating": "IP69K",
+        "operating-temp": {
+          "min": -55,
+          "max": 125,
+          "unit": "degC"
+        }
+      },
+      {
+        "name": "pressure-housing",
+        "role": "parent",
+        "ip-rating": "NEMA-6P"
+      }
+    ]
+  }
+}

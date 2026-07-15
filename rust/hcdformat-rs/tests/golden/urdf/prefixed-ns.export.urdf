@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="prefixed_ns"><link name="base"></link><link name="arm"></link><joint name="j" type="revolute"><parent link="base"/><child link="arm"/><axis xyz="0 0 1"/><limit lower="-1.5" upper="1.5" effort="10" velocity="2"/></joint><controller:gazebo_ros_controller_manager name="cm" xmlns:controller="http://ros.org/controller">
+    <controller:rate>100</controller:rate>
+  </controller:gazebo_ros_controller_manager></robot>

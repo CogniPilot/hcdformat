@@ -1,0 +1,18 @@
+<hcdf name="m" body-frame="FLU" world-frame="ENU">
+  <comp name="l">
+    <visual name="scaled">
+      <model uri="meshes/arm.stl"/>
+    </visual>
+    <visual name="l_visual" name-origin="synthesized">
+      <model uri="meshes/plain.stl"/>
+    </visual>
+    <visual name="prim">
+      <geometry>
+        <box>
+          <size>1 1 1</size>
+        </box>
+      </geometry>
+      <color rgba="0 0 1 1"/>
+    </visual>
+  </comp>
+</hcdf>

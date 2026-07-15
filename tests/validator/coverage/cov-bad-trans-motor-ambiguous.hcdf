@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a BARE transmission motor endpoint that matches motors on more
+     than one comp is uninterpretable, tripping E_TRANS_MOTOR_AMBIGUOUS. Both drive1 and drive2 carry a motor
+     named "m" (the include-composition shape: N instances of one motorized module), so the bare ref
+     "m" cannot pick one; it must be qualified as "drive1/m". The joint endpoint resolves to the doc
+     joint j, so only the motor endpoint is ambiguous. -->
+<hcdf version="1.0" name="cov-bad-trans-motor-ambiguous">
+  <comp name="drive1"><motor name="m" type="bldc"/></comp>
+  <comp name="drive2"><motor name="m" type="bldc"/></comp>
+  <joint name="j" type="revolute">
+    <parent comp="drive1"/>
+    <child comp="drive2"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+  <transmission name="tx" type="simple">
+    <motor ref="m"/>
+    <joint ref="j"/>
+  </transmission>
+</hcdf>

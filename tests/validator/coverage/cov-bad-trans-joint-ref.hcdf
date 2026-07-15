@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a <transmission>'s <joint> endpoint @ref names no joint
+     ("ghost_joint", matched against the doc-level joint names), tripping E_TRANS_JOINT_REF. The <motor>
+     endpoint resolves to the comp-scoped motor m1, so only the joint endpoint dangles. -->
+<hcdf version="1.0" name="cov-bad-trans-joint-ref">
+  <comp name="case"><motor name="m1" type="bldc"/></comp>
+  <comp name="flange"/>
+  <joint name="j_out" type="revolute">
+    <parent comp="case"/>
+    <child comp="flange"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+  <transmission name="tx" type="simple">
+    <motor ref="m1"/>
+    <joint ref="ghost_joint"/>
+  </transmission>
+</hcdf>

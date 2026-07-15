@@ -1,0 +1,17 @@
+[package]
+name = "hcdformat-xsdgen"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+description = "Deterministic HCDF connectivity XSD artifact generator"
+
+[[bin]]
+name = "hcdformat-xsdgen"
+path = "src/main.rs"
+
+[dependencies]
+sha2 = "0.10"
+
+[dev-dependencies]
+uppsala = "=0.4.0"

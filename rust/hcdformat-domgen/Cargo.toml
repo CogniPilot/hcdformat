@@ -1,0 +1,24 @@
+# SPEC-SOURCE-as-CODEGEN: parses the canonical Rust model AST (`hcdformat-rs/src/model/*.rs`)
+# with `syn` and emits one owner root plus the reachable struct and tagged-choice declarations into
+# `hcdformat-py/src/dom_generated.rs`. Struct-valued choice arms receive deterministic Rust draft
+# constructors. Unsupported shapes fail generation instead of producing incomplete bindings.
+# A drift check (`scripts/generate_dom_mirrors.sh` plus regenerate-and-diff) keeps the output aligned
+# with the model.
+#
+# Standalone build root (there is no workspace at rust/); it links nothing into hcdformat-rs and never
+# runs at library build time, so pyo3 stays out of the wasm-clean core. Pure host tool.
+[package]
+name = "hcdformat-domgen"
+version = "0.0.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[[bin]]
+name = "hcdformat-domgen"
+path = "src/main.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"

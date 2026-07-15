@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!-- Self-contained xacro fixture for the CLI tests. Uses a property, a macro, and an arg, but no
+     $(find ...) so it expands with just the xacro tool, no ROS package resolution. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xacro_arm">
+
+  <xacro:arg name="upper_radius" default="0.03"/>
+  <xacro:property name="seg_len" value="0.4"/>
+
+  <xacro:macro name="cyl_link" params="name radius">
+    <link name="${name}">
+      <inertial>
+        <mass value="0.5"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.002"/>
+      </inertial>
+      <visual>
+        <geometry><cylinder radius="${radius}" length="${seg_len}"/></geometry>
+      </visual>
+    </link>
+  </xacro:macro>
+
+  <link name="base">
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.03"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.2 0.2 0.1"/></geometry>
+    </visual>
+  </link>
+
+  <xacro:cyl_link name="upper_arm" radius="$(arg upper_radius)"/>
+
+  <joint name="shoulder" type="revolute">
+    <parent link="base"/>
+    <child link="upper_arm"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="40" velocity="2.0"/>
+  </joint>
+</robot>

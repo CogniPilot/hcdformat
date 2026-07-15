@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- @center placement: recentering is legal only on a LONE include <submesh> (a single named
+     subtree drawn on its own, SDF parity). Here the model draws the UNION of two subtrees and puts
+     @center="true" on one, but a union has no single subtree to recenter, so the flag is meaningless:
+     E_MODEL_SUBMESH_CENTER. No <exclude-submesh> is present, so this isolates the center fault (not a
+     mix). XSD-shape-valid. -->
+<hcdf version="1.0" name="cov-bad-submesh-center">
+  <comp name="drive" role="parent">
+    <visual name="body"><model uri="drive.glb" sha="abc">
+      <submesh name="case" center="true"/>
+      <submesh name="xt30"/>
+    </model></visual>
+  </comp>
+</hcdf>

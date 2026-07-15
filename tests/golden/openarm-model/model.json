@@ -1,0 +1,403 @@
+{
+  "hcdf": {
+    "body-frame": "FLU",
+    "comp": [
+      {
+        "collision": [
+          {
+            "geometry": {
+              "box": {
+                "size": "0.44 0.3 0.16"
+              }
+            },
+            "name": "Base_Collision",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          },
+          {
+            "geometry": {
+              "box": {
+                "size": "0.46 0.42 0.022"
+              }
+            },
+            "name": "Base_Top_Collision",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 .069"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "0.6 0 0 0.6 0 0.6",
+          "mass": 10.71
+        },
+        "name": "base_link",
+        "visual": {
+          "model": {
+            "sha": "sha256:0c8b8e5326a7d7d0998a7123010bc06146268d5966446f23c6cefcd8796838f2",
+            "uri": "assets/MELM_0c8b8e5326a7.glb"
+          },
+          "name": "BaseMetal",
+          "pose": {
+            "rpy": "0 0 0",
+            "xyz": "0 0 -.082"
+          }
+        }
+      },
+      {
+        "name": "base_footprint"
+      },
+      {
+        "inertial": {
+          "inertia": "0.0001926666667 0 0 0.0001224141667 0 0.0002130808333",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "0 0 0"
+          },
+          "mass": 0.17
+        },
+        "name": "lidar_link",
+        "visual": [
+          {
+            "color": {
+              "rgba": "0.01 0.01 0.01"
+            },
+            "geometry": {
+              "box": {
+                "size": "0.039 0.039 0.022"
+              }
+            },
+            "name": "visual_box",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 -.017"
+            }
+          },
+          {
+            "color": {
+              "rgba": "0.01 0.01 0.01"
+            },
+            "geometry": {
+              "cylinder": {
+                "length": 0.014,
+                "radius": 0.018
+              }
+            },
+            "name": "visual_cylinder",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          }
+        ]
+      },
+      {
+        "inertial": {
+          "inertia": "0.000000000001 0 0 0.000000000001 0 0.000000000001",
+          "mass": 1e-07
+        },
+        "name": "sensors"
+      },
+      {
+        "collision": {
+          "geometry": {
+            "cylinder": {
+              "length": ".06",
+              "radius": ".108"
+            }
+          },
+          "name": "FrontLeftHubMotorWheel_Collision",
+          "pose": {
+            "rpy": "1.57079632679 0 0",
+            "xyz": "0 0 0"
+          },
+          "surface": {
+            "friction": {
+              "dynamic": 1.0,
+              "static": 1.0
+            }
+          }
+        },
+        "inertial": {
+          "inertia": "0.009002 0.0006021 0 0.01313 0 0.009003",
+          "mass": 3.854
+        },
+        "name": "FrontLeftHubMotorWheel",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:c3e0d9e22e0f238fcb97b3f9c595b1f84d4ddc0697d959bfdecca4b59c858717",
+              "uri": "assets/HubMotor_c3e0d9e22e0f.glb"
+            },
+            "name": "FrontLeftHubMotorWheelMetal_Visual",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:31bab5d11b09ca052d5a41b7692a240d97dd636e3a95fe3260cd1a9e87043922",
+              "uri": "assets/RubberWheel_31bab5d11b09.glb"
+            },
+            "name": "FrontLeftHubMotorWheelRubber_Visual",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          }
+        ]
+      },
+      {
+        "collision": {
+          "geometry": {
+            "sphere": {
+              "radius": ".0898"
+            }
+          },
+          "name": "BackRightOmniWheel_Collision",
+          "pose": {
+            "rpy": "1.57079632679 0 0",
+            "xyz": "0 0 0"
+          },
+          "surface": {
+            "friction": {
+              "dynamic": 0.1,
+              "static": 1.0
+            }
+          }
+        },
+        "inertial": {
+          "inertia": "0.009002 0.0006021 0 0.01313 0 0.009003",
+          "mass": 3.854
+        },
+        "name": "BackRightOmniWheel",
+        "visual": {
+          "model": {
+            "sha": "sha256:24fdcd8f3035b8cea054e0724e99f57d3c241a3285a2c3690d7b9d8135ad9005",
+            "uri": "assets/OmniWheel_24fdcd8f3035.glb"
+          },
+          "name": "BackRightOmniWheel_Visual",
+          "pose": {
+            "rpy": "0 0 1.57079632679",
+            "xyz": "0 0 0"
+          }
+        }
+      },
+      {
+        "collision": {
+          "geometry": {
+            "cylinder": {
+              "length": ".06",
+              "radius": ".108"
+            }
+          },
+          "name": "FrontRightHubMotorWheel_Collision",
+          "pose": {
+            "rpy": "1.57079632679 0 0",
+            "xyz": "0 0 0"
+          },
+          "surface": {
+            "friction": {
+              "dynamic": 1.0,
+              "static": 1.0
+            }
+          }
+        },
+        "inertial": {
+          "inertia": "0.009002 0.0006021 0 0.01313 0 0.009003",
+          "mass": 3.854
+        },
+        "name": "FrontRightHubMotorWheel",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:c3e0d9e22e0f238fcb97b3f9c595b1f84d4ddc0697d959bfdecca4b59c858717",
+              "uri": "assets/HubMotor_c3e0d9e22e0f.glb"
+            },
+            "name": "FrontRightHubMotorWheelMetal_Visual",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:31bab5d11b09ca052d5a41b7692a240d97dd636e3a95fe3260cd1a9e87043922",
+              "uri": "assets/RubberWheel_31bab5d11b09.glb"
+            },
+            "name": "FrontRightHubMotorWheelRubber_Visual",
+            "pose": {
+              "rpy": "0 0 0",
+              "xyz": "0 0 0"
+            }
+          }
+        ]
+      },
+      {
+        "collision": {
+          "geometry": {
+            "sphere": {
+              "radius": ".0898"
+            }
+          },
+          "name": "BackLeftOmniWheel_Collision",
+          "pose": {
+            "rpy": "1.57079632679 0 0",
+            "xyz": "0 0 0"
+          },
+          "surface": {
+            "friction": {
+              "dynamic": 0.1,
+              "static": 1.0
+            }
+          }
+        },
+        "inertial": {
+          "inertia": "0.009002 0.0006021 0 0.01313 0 0.009003",
+          "mass": 3.854
+        },
+        "name": "BackLeftOmniWheel",
+        "visual": {
+          "model": {
+            "sha": "sha256:24fdcd8f3035b8cea054e0724e99f57d3c241a3285a2c3690d7b9d8135ad9005",
+            "uri": "assets/OmniWheel_24fdcd8f3035.glb"
+          },
+          "name": "BackLeftOmniWheel_Visual",
+          "pose": {
+            "rpy": "0 0 1.57079632679",
+            "xyz": "0 0 0"
+          }
+        }
+      }
+    ],
+    "joint": [
+      {
+        "child": {
+          "comp": "lidar_link"
+        },
+        "name": "lidar_joint",
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "fixed"
+      },
+      {
+        "axis": {
+          "xyz": "0 -1 0"
+        },
+        "child": {
+          "comp": "FrontLeftHubMotorWheel"
+        },
+        "limit": {
+          "lower": "-1e+16",
+          "upper": "1e+16"
+        },
+        "name": "FrontLeftHubMotorWheelJoint",
+        "origin": {
+          "rpy": "0 0 3.14159265359",
+          "xyz": ".14 .204 -0.04275"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "child": {
+          "comp": "BackRightOmniWheel"
+        },
+        "limit": {
+          "lower": "-1e+16",
+          "upper": "1e+16"
+        },
+        "name": "BackRightOmniWheelJoint",
+        "origin": {
+          "rpy": "0 0 0",
+          "xyz": "-.14 -.183 -0.061"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "child": {
+          "comp": "FrontRightHubMotorWheel"
+        },
+        "limit": {
+          "lower": "-1e+16",
+          "upper": "1e+16"
+        },
+        "name": "FrontRightHubMotorWheelJoint",
+        "origin": {
+          "rpy": "0 0 0",
+          "xyz": ".14 -.204 -0.04275"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "child": {
+          "comp": "BackLeftOmniWheel"
+        },
+        "limit": {
+          "lower": "-1e+16",
+          "upper": "1e+16"
+        },
+        "name": "BackLeftOmniWheelJoint",
+        "origin": {
+          "rpy": "0 0 3.14159265359",
+          "xyz": "-.14 .183 -.061"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "child": {
+          "comp": "base_link"
+        },
+        "name": "base_joint",
+        "origin": {
+          "rpy": "0 0 0",
+          "xyz": "0.0 0.0 -.17"
+        },
+        "parent": {
+          "comp": "base_footprint"
+        },
+        "type": "fixed"
+      },
+      {
+        "child": {
+          "comp": "sensors"
+        },
+        "name": "SensorsJoint",
+        "origin": {
+          "rpy": "0 0 0",
+          "xyz": "0.0 0.0 0.0"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "fixed"
+      }
+    ],
+    "name": "melm",
+    "world-frame": "ENU"
+  }
+}

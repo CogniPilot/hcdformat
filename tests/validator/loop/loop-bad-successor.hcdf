@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- validator-loop: the loop closure's <successor> names a non-existent comp
+     (E_LOOP_SUCCESSOR_REF). The <predecessor> restates the joint's parent, so only
+     the successor endpoint dangles. -->
+<hcdf version="1.0" name="loop-bad-successor">
+  <comp name="ground"/>
+  <comp name="coupler"/>
+  <comp name="rocker"/>
+  <joint name="j_close" type="revolute">
+    <parent comp="coupler"/>
+    <child comp="rocker"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>coupler</predecessor>
+      <successor>phantom</successor>
+    </loop>
+  </joint>
+</hcdf>

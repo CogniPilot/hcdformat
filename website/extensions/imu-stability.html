@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -58,31 +58,35 @@
   <h2>Why This Is an Extension (Not Core)</h2>
 
   <p>
-    Most HCDF users describe consumer/automotive MEMS IMUs (ICM45686, BMI088, BMI270) for mobile
-    robots. For these sensors, the core HCDF sensor model is sufficient:
+    The core HCDF sensor model already represents the quantities commonly needed for sensor
+    simulation and basic integration:
   </p>
   <ul>
-    <li>Noise density (stddev in noise model) &mdash; what the filter actually uses</li>
-    <li>ODR, bandwidth, FIFO &mdash; control loop timing</li>
-    <li>Range, resolution &mdash; dynamic range</li>
-    <li>Driver + axis-align &mdash; Zephyr integration</li>
+    <li>Measurement-noise standard deviation and static or dynamic bias terms</li>
+    <li>ODR, bandwidth, FIFO: control loop timing</li>
+    <li>Range, resolution: dynamic range</li>
+    <li>Driver + axis-align: Zephyr integration</li>
   </ul>
 
   <p>
-    <strong>Allan variance parameters</strong> (bias stability, scale factor error, g-sensitivity)
-    matter primarily for:
+    Additional stability and calibration quantities can matter when an application must model
+    inertial error growth in detail. Bias instability and random-walk coefficients may be estimated
+    from Allan-deviation analysis. Scale-factor error, cross-axis sensitivity, g-sensitivity, and
+    temperature sensitivity are separate calibration or environmental characteristics. They are
+    useful in applications such as:
   </p>
   <ul>
-    <li>Tactical/navigation-grade IMUs ($1000+: ADIS16465, KVH1750, HG1700)</li>
+    <li>Tactical and navigation-grade inertial systems</li>
     <li>Aerospace and defense applications</li>
-    <li>Underwater navigation (GPS-denied for long periods)</li>
+    <li>Underwater navigation and other long-duration GNSS-denied operation</li>
     <li>INS/GNSS integration where dead reckoning matters over minutes/hours</li>
   </ul>
 
   <p>
-    For a mobile robot that re-observes landmarks every few seconds, the navigation filter
-    re-estimates bias faster than Allan variance specs become relevant. The core HCDF should not
-    carry fields that 99% of users do not need.
+    Systems with frequent external aiding may estimate or constrain bias often enough that these
+    detailed parameters are less important. Other systems use them directly to tune stochastic
+    error models. Keeping the optional vocabulary in an extension lets each application choose the
+    fidelity it needs without changing the core sensor model.
   </p>
 
   <hr class="section-divider"/>
@@ -97,6 +101,14 @@
 
 <pre class="language-xml"><code>&lt;comp name="ins-nav-unit" role="sensor"&gt;
   &lt;description&gt;Tactical-grade INS for GPS-denied navigation&lt;/description&gt;
+
+  &lt;port name="spi0"&gt;
+    &lt;capabilities&gt;
+      &lt;purpose value="communication"/&gt;
+      &lt;carrier value="electrical"/&gt;
+      &lt;rate min="15000000" max="15000000" nominal="15000000" unit="bit/s"/&gt;
+    &lt;/capabilities&gt;
+  &lt;/port&gt;
 
   &lt;sensor name="tactical_imu" update-rate="400"&gt;
     &lt;inertial type="accel_gyro"&gt;
@@ -165,18 +177,13 @@
     &lt;/imu-stability&gt;
   &lt;/extension&gt;
 
-  &lt;port name="spi0" iface="spi0" type="SPI"&gt;
-    &lt;capabilities&gt;
-      &lt;speed unit="MHz"&gt;15&lt;/speed&gt;
-    &lt;/capabilities&gt;
-  &lt;/port&gt;
 &lt;/comp&gt;</code></pre>
 
   <hr class="section-divider"/>
 
-  <h2>How an Agent Uses This</h2>
+  <h2>How Tooling Uses This</h2>
 
-  <p>A navigation engineer's agent would:</p>
+  <p>A navigation or validation tool can:</p>
 
   <ol>
     <li>
@@ -186,8 +193,8 @@
     <li>
       <strong>Extract stability parameters for filter tuning:</strong>
       <ul>
-        <li><code>gyro-bias-stability</code> &rarr; sets the process noise floor for gyro bias state in EKF</li>
-        <li><code>gyro-arw</code> &rarr; validates the core noise model's stddev is consistent</li>
+        <li><code>gyro-bias-stability</code> can inform a bias-state error model when the estimator uses that interpretation</li>
+        <li><code>gyro-arw</code> can be compared with the core measurement-noise model after accounting for sample rate and units</li>
         <li><code>gyro-g-sensitivity</code> &rarr; determines if vibration isolation is needed
         (if g-sensitivity x expected vibration g &gt; acceptable drift rate)</li>
       </ul>
@@ -195,10 +202,12 @@
     <li>
       <strong>Predict dead-reckoning performance:</strong>
       <ul>
-        <li>With <code>accel-bias-stability=3.6ug</code> and <code>gyro-bias-stability=2.0 deg/hr</code>:
-        position drift ~ 0.5 x accel_bias x t^2 after GPS loss</li>
-        <li>At 3.6ug: ~0.17m drift after 10 minutes &mdash; acceptable for GPS-denied transit</li>
-        <li>A consumer IMU at 1000ug: ~47m drift after 10 minutes &mdash; not acceptable</li>
+        <li>Under a deliberately simplified constant acceleration-bias-only model,
+        position error is approximately 0.5 &times; acceleration bias &times; time squared.</li>
+        <li>At 3.6 ug, that isolated term is about 6.4 m after 10 minutes. At 1000 ug,
+        it is about 1.8 km.</li>
+        <li>Those figures are not navigation-performance guarantees. Attitude error, gravity
+        coupling, calibration, estimator design, motion, and external aiding all affect the result.</li>
       </ul>
     </li>
     <li>
@@ -220,24 +229,24 @@
     </thead>
     <tbody>
       <tr>
-        <td><strong>99% don't need it</strong></td>
-        <td>Mobile robots with GNSS re-acquire position within seconds</td>
+        <td><strong>Specialized scope</strong></td>
+        <td>Systems with frequent external aiding may need less detailed inertial error characterization</td>
       </tr>
       <tr>
         <td><strong>Requires lab testing</strong></td>
-        <td>Allan variance parameters come from 4+ hour static tests, not datasheets alone</td>
+        <td>Measured stability parameters depend on test duration, sampling, temperature, vibration, and analysis method</td>
       </tr>
       <tr>
         <td><strong>Domain-specific</strong></td>
-        <td>Aerospace, defense, underwater &mdash; not general robotics</td>
+        <td>Most relevant to high-integrity or long-duration inertial navigation, but available to any application that needs it</td>
       </tr>
       <tr>
-        <td><strong>Filter handles it</strong></td>
-        <td>Modern EKFs estimate bias online &mdash; they don't need Allan specs as inputs</td>
+        <td><strong>Estimator-dependent</strong></td>
+        <td>Some estimators identify bias online; others also use characterized parameters to set process and measurement models</td>
       </tr>
       <tr>
         <td><strong>Datasheet values vary</strong></td>
-        <td>Allan variance is temperature and environment dependent &mdash; a single number is misleading</td>
+        <td>Allan variance is temperature and environment dependent, so a single number is misleading</td>
       </tr>
     </tbody>
   </table>
@@ -250,7 +259,7 @@
     <li><strong>Domain:</strong> <code>org.cognipilot.imu-stability</code> (reverse-DNS, avoids conflicts)</li>
     <li><strong>Version:</strong> <code>1.0</code> (allows evolution without breaking existing files)</li>
     <li><strong>sensor attribute:</strong> References the sensor name this stability data applies to</li>
-    <li><strong>Units:</strong> Always explicit via <code>unit</code> attribute (no defaults &mdash;
+    <li><strong>Units:</strong> Always explicit via <code>unit</code> attribute (no defaults, because
     these parameters have unusual units like <code>deg/sqrt(hr)</code> that should not be assumed)</li>
   </ul>
 

@@ -1,0 +1,1508 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "so-arm101-buses",
+    "comp": [
+      {
+        "name": "base",
+        "role": "parent",
+        "description": "SO-101 follower base",
+        "inertial": {
+          "mass": 0.4,
+          "inertia_origin": {
+            "xyz": "0 0 0.02"
+          },
+          "inertia": "3.0e-4 0 0 3.0e-4 0 5.0e-4"
+        },
+        "collision": {
+          "name": "base_col",
+          "geometry": {
+            "box": {
+              "size": "0.09 0.09 0.04"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_1",
+        "role": "actuator",
+        "description": "STS3215 #1: shoulder pan",
+        "inertial": {
+          "mass": 0.06,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "1.0e-5 0 0 1.0e-5 0 1.0e-5"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              },
+              "current": {
+                "min": 0,
+                "max": 2.7,
+                "nominal": 0.5,
+                "unit": "A"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "servo_2",
+        "role": "actuator",
+        "description": "STS3215 #2: shoulder lift",
+        "inertial": {
+          "mass": 0.06,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "1.0e-5 0 0 1.0e-5 0 1.0e-5"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "servo_3",
+        "role": "actuator",
+        "description": "STS3215 #3: elbow",
+        "inertial": {
+          "mass": 0.06,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "1.0e-5 0 0 1.0e-5 0 1.0e-5"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "servo_4",
+        "role": "actuator",
+        "description": "STS3215 #4: wrist flex",
+        "inertial": {
+          "mass": 0.05,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "8.0e-6 0 0 8.0e-6 0 8.0e-6"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "servo_5",
+        "role": "actuator",
+        "description": "STS3215 #5: wrist roll",
+        "inertial": {
+          "mass": 0.05,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "8.0e-6 0 0 8.0e-6 0 8.0e-6"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "servo_6",
+        "role": "actuator",
+        "description": "STS3215 #6: gripper",
+        "inertial": {
+          "mass": 0.05,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "8.0e-6 0 0 8.0e-6 0 8.0e-6"
+        },
+        "port": [
+          {
+            "name": "sts",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vin",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "upstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "downstream",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "waveshare",
+        "role": "compute",
+        "description": "Waveshare Serial Bus Servo Driver (USB <-> half-duplex TTL)",
+        "inertial": {
+          "mass": 0.02,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          },
+          "inertia": "2.0e-6 0 0 2.0e-6 0 2.0e-6"
+        },
+        "port": [
+          {
+            "name": "usb",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 480000000,
+                "max": 480000000,
+                "nominal": 480000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "ttl",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": [
+                {
+                  "id": "hcdf:uart"
+                },
+                {
+                  "id": "feetech:sts"
+                }
+              ],
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "vpwr",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 6,
+                "max": 12.6,
+                "nominal": 7.4,
+                "unit": "V"
+              },
+              "current": {
+                "min": 0,
+                "max": 10,
+                "nominal": 6,
+                "unit": "A"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "usb_connector",
+            "family": "usb:type-c"
+          },
+          {
+            "name": "servo_connector",
+            "family": "molex:5264-3p",
+            "pin": [
+              {
+                "name": "GND"
+              },
+              {
+                "name": "V+"
+              },
+              {
+                "name": "Signal"
+              }
+            ]
+          },
+          {
+            "name": "power_connector",
+            "family": "hcdf:dc-barrel-5.5x2.1"
+          }
+        ]
+      }
+    ],
+    "joint": [
+      {
+        "name": "shoulder_pan",
+        "type": "revolute",
+        "parent": {
+          "comp": "base"
+        },
+        "child": {
+          "comp": "servo_1"
+        },
+        "origin": {
+          "xyz": "0 0 0.04",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -1.92,
+          "upper": 1.92,
+          "effort": 3.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "shoulder_lift",
+        "type": "revolute",
+        "parent": {
+          "comp": "servo_1"
+        },
+        "child": {
+          "comp": "servo_2"
+        },
+        "origin": {
+          "xyz": "0 0 0.03",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -1.75,
+          "upper": 1.75,
+          "effort": 3.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "elbow",
+        "type": "revolute",
+        "parent": {
+          "comp": "servo_2"
+        },
+        "child": {
+          "comp": "servo_3"
+        },
+        "origin": {
+          "xyz": "0 0 0.11",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -1.69,
+          "upper": 1.69,
+          "effort": 3.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "wrist_flex",
+        "type": "revolute",
+        "parent": {
+          "comp": "servo_3"
+        },
+        "child": {
+          "comp": "servo_4"
+        },
+        "origin": {
+          "xyz": "0 0 0.10",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -1.66,
+          "upper": 1.66,
+          "effort": 2.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "wrist_roll",
+        "type": "revolute",
+        "parent": {
+          "comp": "servo_4"
+        },
+        "child": {
+          "comp": "servo_5"
+        },
+        "origin": {
+          "xyz": "0 0 0.03",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "1 0 0"
+        },
+        "limit": {
+          "lower": -2.79,
+          "upper": 2.79,
+          "effort": 2.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "gripper",
+        "type": "revolute",
+        "parent": {
+          "comp": "servo_5"
+        },
+        "child": {
+          "comp": "servo_6"
+        },
+        "origin": {
+          "xyz": "0 0 0.04",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -0.17,
+          "upper": 1.75,
+          "effort": 2.0,
+          "velocity": 6.0
+        }
+      },
+      {
+        "name": "adapter_mount",
+        "type": "fixed",
+        "parent": {
+          "comp": "base"
+        },
+        "child": {
+          "comp": "waveshare"
+        },
+        "origin": {
+          "xyz": "-0.05 0 0.01",
+          "rpy": "0 0 0"
+        }
+      }
+    ],
+    "binding": [
+      {
+        "name": "waveshare_usb_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "waveshare",
+            "port": "usb"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "usb_connector",
+            "component-ref": {
+              "component": "waveshare"
+            }
+          }
+        }
+      },
+      {
+        "name": "waveshare_ttl_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "waveshare",
+            "port": "ttl"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "servo_connector",
+            "component-ref": {
+              "component": "waveshare"
+            }
+          }
+        }
+      },
+      {
+        "name": "waveshare_vpwr_barrel_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "waveshare",
+            "port": "vpwr"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "power_connector",
+            "component-ref": {
+              "component": "waveshare"
+            }
+          }
+        }
+      },
+      {
+        "name": "waveshare_vpwr_servo_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "waveshare",
+            "port": "vpwr"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "servo_connector",
+            "component-ref": {
+              "component": "waveshare"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_1_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_1",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_1_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_1",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_1_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_1",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_1_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_1",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_1"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_2_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_2",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_2_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_2",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_2_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_2",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_2_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_2",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_2"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_3_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_3",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_3_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_3",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_3_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_3",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_3_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_3",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_3"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_4_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_4",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_4_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_4",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_4_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_4",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_4_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_4",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_4"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_5_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_5",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_5_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_5",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_5_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_5",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_5_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_5",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_5"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_6_sts_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_6",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_6"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_6_sts_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_6",
+            "port": "sts"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_6"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_6_vin_upstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_6",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "upstream",
+            "component-ref": {
+              "component": "servo_6"
+            }
+          }
+        }
+      },
+      {
+        "name": "servo_6_vin_downstream_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "servo_6",
+            "port": "vin"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "downstream",
+            "component-ref": {
+              "component": "servo_6"
+            }
+          }
+        }
+      }
+    ],
+    "bus": [
+      {
+        "name": "sts_bus",
+        "description": "Feetech STS3215 half-duplex single-wire TTL bus using STS framing at 1 Mbaud, with servo IDs 1 through 6.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": [
+            {
+              "id": "hcdf:uart"
+            },
+            {
+              "id": "feetech:sts"
+            }
+          ],
+          "rate": {
+            "nominal": {
+              "value": 1000000,
+              "unit": "Bd"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "waveshare",
+            "role": "hcdf:controller",
+            "endpoint": {
+              "port-ref": {
+                "component": "waveshare",
+                "port": "ttl"
+              }
+            }
+          },
+          {
+            "name": "servo_1",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_1",
+                "port": "sts"
+              }
+            }
+          },
+          {
+            "name": "servo_2",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_2",
+                "port": "sts"
+              }
+            }
+          },
+          {
+            "name": "servo_3",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_3",
+                "port": "sts"
+              }
+            }
+          },
+          {
+            "name": "servo_4",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_4",
+                "port": "sts"
+              }
+            }
+          },
+          {
+            "name": "servo_5",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_5",
+                "port": "sts"
+              }
+            }
+          },
+          {
+            "name": "servo_6",
+            "role": "hcdf:target",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_6",
+                "port": "sts"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "servo_power",
+        "description": "7.4 V rail carried on the 5264 connectors, separate from the 5 V TTL signaling on sts_bus.",
+        "selected": {
+          "purpose": "power-delivery",
+          "carrier": "electrical",
+          "voltage": {
+            "nominal": {
+              "value": 7.4,
+              "unit": "V"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "waveshare",
+            "role": "hcdf:source",
+            "endpoint": {
+              "port-ref": {
+                "component": "waveshare",
+                "port": "vpwr"
+              }
+            }
+          },
+          {
+            "name": "servo_1",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_1",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "servo_2",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_2",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "servo_3",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_3",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "servo_4",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_4",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "servo_5",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_5",
+                "port": "vin"
+              }
+            }
+          },
+          {
+            "name": "servo_6",
+            "role": "hcdf:sink",
+            "endpoint": {
+              "port-ref": {
+                "component": "servo_6",
+                "port": "vin"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

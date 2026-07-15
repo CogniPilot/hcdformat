@@ -48,56 +48,56 @@ distinct framing format defined in IEEE 1722-2016 and its amendments
     <xs:restriction base="xs:string">
       <xs:enumeration value="aaf">
         <xs:annotation>
-          <xs:documentation>AVTP Audio Format — uncompressed PCM audio transport.
+          <xs:documentation>AVTP Audio Format: uncompressed PCM audio transport.
 Used for microphone arrays, speaker feeds, and inter-device audio.
 Supports multi-channel PCM-int, PCM-float, and AES3 encapsulation.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="cvf">
         <xs:annotation>
-          <xs:documentation>Compressed Video Format — H.264, MJPEG, and JPEG2000 video transport.
+          <xs:documentation>Compressed Video Format: H.264, MJPEG, and JPEG2000 video transport.
 Used for camera feeds over Ethernet with AVTP presentation timestamps
 for lip-sync and multi-camera synchronization.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="rvf">
         <xs:annotation>
-          <xs:documentation>Raw Video Format — uncompressed video transport (Camera over Ethernet / 1722b).
+          <xs:documentation>Raw Video Format: uncompressed video transport (Camera over Ethernet / 1722b).
 Used for machine vision cameras requiring zero-latency pixel access:
 Bayer, YUV, RGB, and monochrome formats.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="crf">
         <xs:annotation>
-          <xs:documentation>Clock Reference Format — media clock distribution over AVTP.
+          <xs:documentation>Clock Reference Format: media clock distribution over AVTP.
 Distributes a media clock (audio word clock, video frame clock) across
 the network so that multiple talkers/listeners stay sample-locked.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="tscf">
         <xs:annotation>
-          <xs:documentation>Time-Synchronous Control Format — gPTP-timestamped control messages.
+          <xs:documentation>Time-Synchronous Control Format: gPTP-timestamped control messages.
 Encapsulates ACF messages (CAN, LIN, GPIO, SPI, I2C, sensor) with
 AVTP presentation timestamps for deterministic delivery.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="ntscf">
         <xs:annotation>
-          <xs:documentation>Non-Time-Synchronous Control Format — best-effort control messages.
+          <xs:documentation>Non-Time-Synchronous Control Format: best-effort control messages.
 Same ACF message types as TSCF but without presentation timestamps.
 Used for configuration, diagnostics, and non-real-time control.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="aef">
         <xs:annotation>
-          <xs:documentation>AVTP Encrypted Format — encrypted audio/video/control transport.
+          <xs:documentation>AVTP Encrypted Format: encrypted audio/video/control transport.
 Wraps other AVTP subtypes with encryption for secure media transport
 over untrusted network segments.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="sdi">
         <xs:annotation>
-          <xs:documentation>Serial Digital Interface — professional video transport over AVTP.
+          <xs:documentation>Serial Digital Interface: professional video transport over AVTP.
 Encapsulates SDI video (SD-SDI, HD-SDI, 3G-SDI) for broadcast and
 professional AV applications.</xs:documentation>
         </xs:annotation>
@@ -117,70 +117,70 @@ legacy bus protocols or sensor data over Ethernet.</xs:documentation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="can">
         <xs:annotation>
-          <xs:documentation>CAN/CAN-FD frame tunneling — encapsulates full CAN frames
+          <xs:documentation>CAN/CAN-FD frame tunneling: encapsulates full CAN frames
 (arbitration ID, DLC, data, FD flag) inside AVTP for bridging
 CAN segments over Ethernet.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="can-brief">
         <xs:annotation>
-          <xs:documentation>Condensed CAN frames with reduced header — packs multiple
+          <xs:documentation>Condensed CAN frames with reduced header: packs multiple
 short CAN messages into a single AVTP frame for bandwidth
 efficiency on high-message-rate buses.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="lin">
         <xs:annotation>
-          <xs:documentation>LIN bus frame tunneling — encapsulates LIN frames (PID,
+          <xs:documentation>LIN bus frame tunneling: encapsulates LIN frames (PID,
 data, checksum) for bridging LIN segments over Ethernet.
 Common in automotive body electronics.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="mdio">
         <xs:annotation>
-          <xs:documentation>PHY management MDIO tunneling — remote read/write of
+          <xs:documentation>PHY management MDIO tunneling: remote read/write of
 Ethernet PHY registers (clause 22 and clause 45) over AVTP
 for centralized PHY management.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="gpio">
         <xs:annotation>
-          <xs:documentation>Remote GPIO state transfer — tunnels digital I/O pin
+          <xs:documentation>Remote GPIO state transfer: tunnels digital I/O pin
 states over Ethernet for remote limit switches, emergency
 stops, indicator LEDs, and discrete signals.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="spi">
         <xs:annotation>
-          <xs:documentation>SPI transaction tunneling — encapsulates SPI bus
+          <xs:documentation>SPI transaction tunneling: encapsulates SPI bus
 transactions (MOSI/MISO data, chip select, clock config)
 over Ethernet for remote sensor access.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="i2c">
         <xs:annotation>
-          <xs:documentation>I2C transaction tunneling — encapsulates I2C bus
+          <xs:documentation>I2C transaction tunneling: encapsulates I2C bus
 transactions (address, read/write, data bytes) over
 Ethernet for remote sensor and EEPROM access.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="sensor">
         <xs:annotation>
-          <xs:documentation>Generic sensor data — carries arbitrary sensor payloads
+          <xs:documentation>Generic sensor data: carries arbitrary sensor payloads
 (IMU samples, temperature, pressure) with a common header
 for sensor type and timestamp.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="aecp">
         <xs:annotation>
-          <xs:documentation>AES67 discovery and control — AVDECC Entity Control Protocol
+          <xs:documentation>AES67 discovery and control: AVDECC Entity Control Protocol
 messages for discovering and configuring AES67/1722
 endpoints on the network.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="ancillary">
         <xs:annotation>
-          <xs:documentation>Ancillary data — carries metadata, subtitles, timecode,
+          <xs:documentation>Ancillary data: carries metadata, subtitles, timecode,
 and other auxiliary information alongside media streams.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>

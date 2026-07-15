@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: revolute carries a stray @pitch_convention (only screw qualifies thread_pitch) (E_JOINT_PITCH_ATTR_FORBIDDEN) -->
+<hcdf version="1.0" name="revolute-stray-pitch-convention">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute" pitch_convention="rad_per_m">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+</hcdf>

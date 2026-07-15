@@ -1,0 +1,441 @@
+<hcdf name="so_arm101" body-frame="FLU" world-frame="ENU">
+  <comp name="world"/>
+  <comp name="base_link">
+    <inertial>
+      <mass>0.147</mass>
+      <inertia_origin xyz="0.0137179 -5.19711e-05 0.0334843" rpy="0 0 0"/>
+      <inertia>0.000114686 -4.59787e-07 4.97151e-06 0.000136117 9.75275e-08 0.000130364</inertia>
+    </inertial>
+    <visual name="base_link_visual_0" name-origin="synthesized">
+      <pose xyz="-0.00636471 -9.94414e-05 -0.0024" rpy="1.5708 -1.67685e-15 1.5708"/>
+      <model uri="assets/base_motor_holder_so101_v1_28d803f896e8.glb" sha="sha256:28d803f896e8ce084af412950ef76b952bfbcefde14e7e82d744b34af129d494"/>
+    </visual>
+    <visual name="base_link_visual_1" name-origin="synthesized">
+      <pose xyz="-0.00636471 -8.97657e-09 -0.0024" rpy="1.5708 -2.78073e-29 1.5708"/>
+      <model uri="assets/base_so101_v2_001ea2ce1735.glb" sha="sha256:001ea2ce1735f5c8b1abcca803ef52e8371fc63060fc0e84b1d259f7eb0237d0"/>
+    </visual>
+    <visual name="base_link_visual_2" name-origin="synthesized">
+      <pose xyz="0.0263353 -8.97657e-09 0.0437" rpy="-8.21148e-16 7.84513e-18 1.249e-15"/>
+      <model uri="assets/sts3215_03a_v1_d60a1ee2879a.glb" sha="sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227"/>
+    </visual>
+    <visual name="base_link_visual_3" name-origin="synthesized">
+      <pose xyz="-0.0309827 -0.000199441 0.0474" rpy="1.5708 -1.35493e-14 1.5708"/>
+      <model uri="assets/waveshare_mounting_plate_so101_v2_138bebfe5f77.glb" sha="sha256:138bebfe5f77b6cbd24cd619ef26e413c697dc46c9016a97c9f988bc8d425dcb"/>
+    </visual>
+    <collision name="base_link_collision_0" name-origin="synthesized">
+      <pose xyz="-0.00636471 -9.94414e-05 -0.0024" rpy="1.5708 -1.67685e-15 1.5708"/>
+      <geometry>
+        <mesh uri="assets/base_motor_holder_so101_v1_8cd2f241037e.stl" sha="sha256:8cd2f241037ea377af1191fffe0dd9d9006beea6dcc48543660ed41647072424"/>
+      </geometry>
+    </collision>
+    <collision name="base_link_collision_1" name-origin="synthesized">
+      <pose xyz="-0.00636471 -8.97657e-09 -0.0024" rpy="1.5708 -2.78073e-29 1.5708"/>
+      <geometry>
+        <mesh uri="assets/base_so101_v2_bb12b7026575.stl" sha="sha256:bb12b7026575e1f70ccc7240051f9d943553bf34e5128537de6cd86fae33924d"/>
+      </geometry>
+    </collision>
+    <collision name="base_link_collision_2" name-origin="synthesized">
+      <pose xyz="0.0263353 -8.97657e-09 0.0437" rpy="-8.21148e-16 7.84513e-18 1.249e-15"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_v1_a37c871fb502.stl" sha="sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0"/>
+      </geometry>
+    </collision>
+    <collision name="base_link_collision_3" name-origin="synthesized">
+      <pose xyz="-0.0309827 -0.000199441 0.0474" rpy="1.5708 -1.35493e-14 1.5708"/>
+      <geometry>
+        <mesh uri="assets/waveshare_mounting_plate_so101_v2_e197e24005a0.stl" sha="sha256:e197e24005a07d01bbc06a8c42311664eaeda415bf859f68fa247884d0f1a6e9"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="shoulder_link">
+    <inertial>
+      <mass>0.100006</mass>
+      <inertia_origin xyz="-0.0307604 -1.66727e-05 -0.0252713" rpy="0 0 0"/>
+      <inertia>8.3759e-05 7.55525e-08 -1.16342e-06 8.10403e-05 1.54663e-07 2.39783e-05</inertia>
+    </inertial>
+    <visual name="shoulder_link_visual_0" name-origin="synthesized">
+      <pose xyz="-0.0303992 0.000422241 -0.0417" rpy="1.5708 1.5708 0"/>
+      <model uri="assets/sts3215_03a_v1_d60a1ee2879a.glb" sha="sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227"/>
+    </visual>
+    <visual name="shoulder_link_visual_1" name-origin="synthesized">
+      <pose xyz="-0.0675992 -0.000177759 0.0158499" rpy="1.5708 -1.5708 0"/>
+      <model uri="assets/motor_holder_so101_base_v1_1f0e90b3bc21.glb" sha="sha256:1f0e90b3bc21ee1584e7f40cea5e9ee8d42cc3c6784a848350fece348a3b3be2"/>
+    </visual>
+    <visual name="shoulder_link_visual_2" name-origin="synthesized">
+      <pose xyz="0.0122008 2.22413e-05 0.0464" rpy="-1.5708 2.35221e-33 0"/>
+      <model uri="assets/rotation_pitch_so101_v1_b2037f0efab5.glb" sha="sha256:b2037f0efab5580345cde63447ed21f9df440b4f5a673322eb1212ef0079a5f7"/>
+    </visual>
+    <collision name="shoulder_link_collision_0" name-origin="synthesized">
+      <pose xyz="-0.0303992 0.000422241 -0.0417" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_v1_a37c871fb502.stl" sha="sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0"/>
+      </geometry>
+    </collision>
+    <collision name="shoulder_link_collision_1" name-origin="synthesized">
+      <pose xyz="-0.0675992 -0.000177759 0.0158499" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh uri="assets/motor_holder_so101_base_v1_31242ae6fb59.stl" sha="sha256:31242ae6fb59d8b15c66617b88ad8e9bded62d57c35d11c0c43a70d2f4caa95b"/>
+      </geometry>
+    </collision>
+    <collision name="shoulder_link_collision_2" name-origin="synthesized">
+      <pose xyz="0.0122008 2.22413e-05 0.0464" rpy="-1.5708 2.35221e-33 0"/>
+      <geometry>
+        <mesh uri="assets/rotation_pitch_so101_v1_9be900cc2a2b.stl" sha="sha256:9be900cc2a2bf718102841ef82ef8d2873842427648092c8ed2ca1e2ef4ffa34"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="upper_arm_link">
+    <inertial>
+      <mass>0.103</mass>
+      <inertia_origin xyz="-0.0898471 -0.00838224 0.0184089" rpy="0 0 0"/>
+      <inertia>4.08002e-05 -1.97819e-05 -4.03016e-08 0.000147318 8.97326e-09 0.000142487</inertia>
+    </inertial>
+    <visual name="upper_arm_link_visual_0" name-origin="synthesized">
+      <pose xyz="-0.11257 -0.0155 0.0187" rpy="-3.14159 -5.27356e-16 -1.5708"/>
+      <model uri="assets/sts3215_03a_v1_d60a1ee2879a.glb" sha="sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227"/>
+    </visual>
+    <visual name="upper_arm_link_visual_1" name-origin="synthesized">
+      <pose xyz="-0.065085 0.012 0.0182" rpy="3.14159 -0 -1.30911e-30"/>
+      <model uri="assets/upper_arm_so101_v1_541b9ae99efc.glb" sha="sha256:541b9ae99efc39c01588b2f92cf29ca7d530ea7804518d08538b18ce3e2e0836"/>
+    </visual>
+    <collision name="upper_arm_link_collision_0" name-origin="synthesized">
+      <pose xyz="-0.11257 -0.0155 0.0187" rpy="-3.14159 -5.27356e-16 -1.5708"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_v1_a37c871fb502.stl" sha="sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0"/>
+      </geometry>
+    </collision>
+    <collision name="upper_arm_link_collision_1" name-origin="synthesized">
+      <pose xyz="-0.065085 0.012 0.0182" rpy="3.14159 -0 -1.30911e-30"/>
+      <geometry>
+        <mesh uri="assets/upper_arm_so101_v1_475056e03a17.stl" sha="sha256:475056e03a17e71919b82fd88ab9a0b898ab50164f2a7943652a6b2941bb2d4f"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="lower_arm_link">
+    <inertial>
+      <mass>0.104</mass>
+      <inertia_origin xyz="-0.0980701 0.00324376 0.0182831" rpy="0 0 0"/>
+      <inertia>2.87438e-05 7.41152e-06 1.26409e-06 0.000159844 -4.90188e-08 0.00014529</inertia>
+    </inertial>
+    <visual name="lower_arm_link_visual_0" name-origin="synthesized">
+      <pose xyz="-0.0648499 -0.032 0.0182" rpy="3.14159 -0 6.67202e-31"/>
+      <model uri="assets/under_arm_so101_v1_c7b6d37313a5.glb" sha="sha256:c7b6d37313a507080eb944eeb3c888b76011782f48304861cc8e640aabd8d8ce"/>
+    </visual>
+    <visual name="lower_arm_link_visual_1" name-origin="synthesized">
+      <pose xyz="-0.0648499 -0.032 0.018" rpy="-3.14159 -2.55351e-15 -1.83387e-30"/>
+      <model uri="assets/motor_holder_so101_wrist_v1_b350a062d4f5.glb" sha="sha256:b350a062d4f5925a2f53146063087db760beb17d61e343ca07ff349c36c737c9"/>
+    </visual>
+    <visual name="lower_arm_link_visual_2" name-origin="synthesized">
+      <pose xyz="-0.1224 0.0052 0.0187" rpy="-3.14159 -7.88861e-31 -3.14159"/>
+      <model uri="assets/sts3215_03a_v1_d60a1ee2879a.glb" sha="sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227"/>
+    </visual>
+    <collision name="lower_arm_link_collision_0" name-origin="synthesized">
+      <pose xyz="-0.0648499 -0.032 0.0182" rpy="3.14159 -0 6.67202e-31"/>
+      <geometry>
+        <mesh uri="assets/under_arm_so101_v1_d01d1f2de365.stl" sha="sha256:d01d1f2de365651dcad9d6669e94ff87ff7652b5bb2d10752a66a456a86dbc71"/>
+      </geometry>
+    </collision>
+    <collision name="lower_arm_link_collision_1" name-origin="synthesized">
+      <pose xyz="-0.0648499 -0.032 0.018" rpy="-3.14159 -2.55351e-15 -1.83387e-30"/>
+      <geometry>
+        <mesh uri="assets/motor_holder_so101_wrist_v1_887f92e6013c.stl" sha="sha256:887f92e6013cb64ea3a1ab8675e92da1e0beacfd5e001f972523540545e08011"/>
+      </geometry>
+    </collision>
+    <collision name="lower_arm_link_collision_2" name-origin="synthesized">
+      <pose xyz="-0.1224 0.0052 0.0187" rpy="-3.14159 -7.88861e-31 -3.14159"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_v1_a37c871fb502.stl" sha="sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="wrist_link">
+    <inertial>
+      <mass>0.079</mass>
+      <inertia_origin xyz="-0.000103312 -0.0386143 0.0281156" rpy="0 0 0"/>
+      <inertia>3.68263e-05 1.7893e-08 -5.28128e-08 2.5391e-05 3.6412e-06 2.1e-05</inertia>
+    </inertial>
+    <visual name="wrist_link_visual_0" name-origin="synthesized">
+      <pose xyz="8.32667e-17 -0.0424 0.0306" rpy="1.5708 1.5708 0"/>
+      <model uri="assets/sts3215_03a_no_horn_v1_682e2444d544.glb" sha="sha256:682e2444d5443a6d3e8d7bdb18dde0885b71ff1e07a6bae1538b57a55749883e"/>
+    </visual>
+    <visual name="wrist_link_visual_1" name-origin="synthesized">
+      <pose xyz="0 -0.028 0.0181" rpy="-1.5708 -1.5708 0"/>
+      <model uri="assets/wrist_roll_pitch_so101_v2_a2081a52b54e.glb" sha="sha256:a2081a52b54e2d1ae78a5e0208b4507e582ec5adfa1c5e557f0e9f3c05349f0a"/>
+    </visual>
+    <collision name="wrist_link_collision_0" name-origin="synthesized">
+      <pose xyz="8.32667e-17 -0.0424 0.0306" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_no_horn_v1_75ef3781b752.stl" sha="sha256:75ef3781b752e4065891aea855e34dc161a38a549549cd0970cedd07eae6f887"/>
+      </geometry>
+    </collision>
+    <collision name="wrist_link_collision_1" name-origin="synthesized">
+      <pose xyz="0 -0.028 0.0181" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh uri="assets/wrist_roll_pitch_so101_v2_6c7ec5525b4d.stl" sha="sha256:6c7ec5525b4d8b9e397a30ab4bb0037156a5d5f38a4adf2c7d943d6c56eda5ae"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="gripper_link">
+    <inertial>
+      <mass>0.087</mass>
+      <inertia_origin xyz="0.000213627 0.000245138 -0.025187" rpy="0 0 0"/>
+      <inertia>2.75087e-05 -3.35241e-07 -5.7352e-06 4.33657e-05 -5.17847e-08 3.45059e-05</inertia>
+    </inertial>
+    <visual name="gripper_link_visual_0" name-origin="synthesized">
+      <pose xyz="0.0077 0.0001 -0.0234" rpy="-1.5708 -5.19179e-17 -1.66533e-16"/>
+      <model uri="assets/sts3215_03a_v1_d60a1ee2879a.glb" sha="sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227"/>
+    </visual>
+    <visual name="gripper_link_visual_1" name-origin="synthesized">
+      <pose xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <model uri="assets/wrist_roll_follower_so101_v1_c75e3043d037.glb" sha="sha256:c75e3043d0371dd262b8eaa61aa3ab5ebee5536b759de2979ebbc3a6d8d5792f"/>
+    </visual>
+    <collision name="gripper_link_collision_0" name-origin="synthesized">
+      <pose xyz="0.0077 0.0001 -0.0234" rpy="-1.5708 -5.19179e-17 -1.66533e-16"/>
+      <geometry>
+        <mesh uri="assets/sts3215_03a_v1_a37c871fb502.stl" sha="sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0"/>
+      </geometry>
+    </collision>
+    <collision name="gripper_link_collision_1" name-origin="synthesized">
+      <pose xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <geometry>
+        <mesh uri="assets/wrist_roll_follower_so101_v1_4b17b410a12d.stl" sha="sha256:4b17b410a12d64ec39554abc3e8054d8a97384b2dc4a8d95a5ecb2a93670f5f4"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="gripper_frame_link">
+    <inertial>
+      <mass>1e-9</mass>
+      <inertia_origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia>0 0 0 0 0 0</inertia>
+    </inertial>
+  </comp>
+  <comp name="jaw_link">
+    <inertial>
+      <mass>0.012</mass>
+      <inertia_origin xyz="-0.00157495 -0.0300244 0.0192755" rpy="0 0 0"/>
+      <inertia>6.61427e-06 -3.19807e-07 -5.90717e-09 1.89032e-06 -1.09945e-07 5.28738e-06</inertia>
+    </inertial>
+    <visual name="jaw_link_visual_0" name-origin="synthesized">
+      <pose xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
+      <model uri="assets/moving_jaw_so101_v1_2483f6fb8fdd.glb" sha="sha256:2483f6fb8fdd949b8714a96791b462dc2557da8c6e349ce5e9c7c2680bf6c74f"/>
+    </visual>
+    <collision name="jaw_link_collision_0" name-origin="synthesized">
+      <pose xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
+      <geometry>
+        <mesh uri="assets/moving_jaw_so101_v1_785a9dded2f4.stl" sha="sha256:785a9dded2f474bc1d869e0d3dae398a3dcd9c0c345640040472210d2861fa9d"/>
+      </geometry>
+    </collision>
+  </comp>
+  <joint name="world_to_base_joint" type="fixed">
+    <parent comp="world"/>
+    <child comp="base_link"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </joint>
+  <joint name="shoulder_pan_joint" type="revolute">
+    <parent comp="base_link"/>
+    <child comp="shoulder_link"/>
+    <origin xyz="0.0388353 -8.97657e-09 0.0624" rpy="3.14159 4.18253e-17 -3.14159"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.91986" upper="1.91986" effort="10" velocity="10"/>
+  </joint>
+  <joint name="shoulder_lift_joint" type="revolute">
+    <parent comp="shoulder_link"/>
+    <child comp="upper_arm_link"/>
+    <origin xyz="-0.0303992 -0.0182778 -0.0542" rpy="-1.5708 -1.5708 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.74533" upper="1.74533" effort="10" velocity="10"/>
+  </joint>
+  <joint name="elbow_flex_joint" type="revolute">
+    <parent comp="upper_arm_link"/>
+    <child comp="lower_arm_link"/>
+    <origin xyz="-0.11257 -0.028 1.73763e-16" rpy="-3.63608e-16 8.74301e-16 1.5708"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.69" upper="1.54" effort="10" velocity="10"/>
+  </joint>
+  <joint name="wrist_flex_joint" type="revolute">
+    <parent comp="lower_arm_link"/>
+    <child comp="wrist_link"/>
+    <origin xyz="-0.1349 0.0052 3.62355e-17" rpy="-1.41553e-15 4.91611e-15 -1.57"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.6" upper="1.6" effort="10" velocity="10"/>
+  </joint>
+  <joint name="wrist_roll_joint" type="revolute">
+    <parent comp="wrist_link"/>
+    <child comp="gripper_link"/>
+    <origin xyz="0.0 -0.0611  0.0181" rpy="-1.57 3.14 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.3" upper="2.3" effort="10" velocity="10"/>
+  </joint>
+  <joint name="gripper_frame_joint" type="fixed">
+    <parent comp="gripper_link"/>
+    <child comp="gripper_frame_link"/>
+    <origin xyz="-0.0079 -0.000218121 -0.0981274" rpy="0 3.14159 0"/>
+  </joint>
+  <joint name="gripper_joint" type="revolute">
+    <parent comp="gripper_link"/>
+    <child comp="jaw_link"/>
+    <origin xyz="0.0202 0.0188 -0.0234" rpy="1.5708 0.18 -1.41553e-15"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="1.70" effort="10" velocity="10"/>
+  </joint>
+  <color name="3d_printed" rgba="0.2 0.7 0.85 1.0"/>
+  <color name="sts3215" rgba="0.1 0.1 0.1 1.0"/>
+  <extension domain="org.gazebosim">
+    <gazebo reference="world"/>
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters/>
+        <ros>
+          <namespace/>
+        </ros>
+      </plugin>
+    </gazebo>
+  </extension>
+  <extension domain="org.ros.control">
+    <transmission name="shoulder_pan_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="shoulder_pan_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor1">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="shoulder_lift_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="shoulder_lift_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor2">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="elbow_flex_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="elbow_flex_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor3">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="wrist_flex_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="wrist_flex_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor4">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="wrist_roll_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="wrist_roll_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor5">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="gripper_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="gripper_joint">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+      </joint>
+      <actuator name="motor6">
+        <hardwareInterface>
+          hardware_interface/PositionJointInterface
+        </hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </extension>
+  <extension domain="org.ros2.control">
+    <ros2_control name="SO_ARM101" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+      </hardware>
+      <joint name="shoulder_pan_joint">
+        <param name="initial_position">0.0</param>
+        <param name="id">1</param>
+        <param name="p_cofficient">8</param>
+        <param name="offset">2048</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="shoulder_lift_joint">
+        <param name="id">2</param>
+        <param name="p_cofficient">16</param>
+        <param name="offset">2125</param>
+        <param name="initial_position">0.0</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="elbow_flex_joint">
+        <param name="id">3</param>
+        <param name="offset">2080</param>
+        <param name="p_cofficient">16</param>
+        <param name="initial_position">0.0</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="wrist_flex_joint">
+        <param name="id">4</param>
+        <param name="offset">3110</param>
+        <param name="p_cofficient">16</param>
+        <param name="initial_position">0.0</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="wrist_roll_joint">
+        <param name="id">5</param>
+        <param name="offset">1024</param>
+        <param name="p_cofficient">16</param>
+        <param name="initial_position">0.0</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="gripper_joint">
+        <param name="id">6</param>
+        <param name="offset">2070</param>
+        <param name="p_cofficient">16</param>
+        <param name="initial_position">0.0</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+    </ros2_control>
+  </extension>
+</hcdf>

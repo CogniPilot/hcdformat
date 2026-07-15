@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a self-collision-disable <pair> names the SAME comp on both sides
+     (comp1=comp2="base"), a no-op exclusion (a comp cannot self-collide), tripping W_PAIR_SELF. Only a
+     warning: the comp resolves and the schema permits it, but authoring it is almost certainly a
+     slip (the author meant a neighbor). -->
+<hcdf version="1.0" name="cov-warn-pair-self">
+  <comp name="base"/>
+  <comp name="link1"/>
+  <self-collision-disable>
+    <pair comp1="base" comp2="base" reason="mounted"/>
+  </self-collision-disable>
+</hcdf>

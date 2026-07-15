@@ -59,6 +59,7 @@ h1 small { font-size:14px; color:#8b949e; }
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -68,7 +69,6 @@ h1 small { font-size:14px; color:#8b949e; }
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -106,17 +106,20 @@ h1 small { font-size:14px; color:#8b949e; }
 </ul></div></div>
 <div class="tab-pane " id="tab-topic">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>sensor <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Reference to an HCDF sensor name (e.g., &quot;imu0&quot;, &quot;camera0&quot;).
-Mutually exclusive with the 'motor' attribute — specify one or the other.</div></span></li>
-<li><span class="tree-attribute"><h5>motor <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Reference to an HCDF motor name (e.g., &quot;prop_fl&quot;, &quot;joint_motor_1&quot;).
-Mutually exclusive with the 'sensor' attribute — specify one or the other.</div></span></li>
-<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; ROS 2 topic name (e.g., &quot;/imu/data&quot;, &quot;/camera/image_raw&quot;).
+<li><span class="tree-attribute"><h5>sensor <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Reference to an HCDF sensor name (e.g., &quot;imu0&quot;, &quot;camera0&quot;).
+Mutually exclusive with the 'motor' attribute: specify one or the other.</div></span></li>
+<li><span class="tree-attribute"><h5>motor <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Reference to an HCDF motor name (e.g., &quot;prop_fl&quot;, &quot;joint_motor_1&quot;).
+Mutually exclusive with the 'sensor' attribute: specify one or the other.</div></span></li>
+<li><span class="tree-attribute"><h5>name <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required): ROS 2 topic name (e.g., &quot;/imu/data&quot;, &quot;/camera/image_raw&quot;).
 Should follow ROS 2 naming conventions: lowercase, forward-slash separated,
 no special characters except underscores.</div></span></li>
-<li><span class="tree-attribute"><h5>type <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; ROS 2 message type in package/msg/Type format
+<li><span class="tree-attribute"><h5>type <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: ROS 2 message type in package/msg/Type format
 (e.g., &quot;sensor_msgs/msg/Imu&quot;, &quot;actuator_msgs/msg/MotorCommand&quot;).
-Must be a valid, installed ROS 2 message type.</div></span></li>
-<li><span class="tree-attribute"><h5>qos <small>Attribute</small></h5><div class="type-info"><b>Type:</b> sensor_data | reliable | system_default | services_default | parameters | parameter_events | action_status, default="system_default" &mdash; QoS profile preset for this topic. Defaults to &quot;system_default&quot;.
+Should be a valid, installed ROS 2 message type. OPTIONAL: a topic mapping may name
+only the device and a topic name with no message type; this carries a raw/native
+runtime topic (e.g. an imported SDF contact-sensor &lt;topic&gt;) whose message type is
+not yet resolved. When a full ROS 2 binding is authored, set the message type.</div></span></li>
+<li><span class="tree-attribute"><h5>qos <small>Attribute</small></h5><div class="type-info"><b>Type:</b> sensor_data | reliable | system_default | services_default | parameters | parameter_events | action_status, default="system_default": QoS profile preset for this topic. Defaults to &quot;system_default&quot;.
 Use &quot;sensor_data&quot; for high-frequency best-effort streams,
 &quot;reliable&quot; for commands that must not be dropped.</div></span></li>
 </ul></div></div>

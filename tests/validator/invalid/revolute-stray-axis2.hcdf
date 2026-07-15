@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: revolute carries a stray <axis2> (only universal has a second axis) (E_JOINT_AXIS2_FORBIDDEN) -->
+<hcdf version="1.0" name="revolute-stray-axis2">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <axis2 xyz="0 1 0"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+</hcdf>

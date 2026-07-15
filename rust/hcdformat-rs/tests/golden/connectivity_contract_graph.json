@@ -1,0 +1,558 @@
+{
+  "document": "memory://contract/root.hcdf",
+  "nodes": [
+    {
+      "id": "hcdf-object-v1:15e7f62dbbb7cf10b7e9a1886379abe678dd3cd5ed181165544cf89864842411",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 0
+          }
+        ],
+        "kind": "channel",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "port",
+            "value": "bus"
+          },
+          {
+            "field": "channel",
+            "value": "signal"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "channel",
+        "capabilities": {
+          "purposes": [
+            "communication"
+          ],
+          "carriers": [
+            "electrical"
+          ],
+          "profiles": [
+            "hcdf:test-link"
+          ],
+          "limits": {}
+        },
+        "role": null,
+        "local_group": null
+      }
+    },
+    {
+      "id": "hcdf-object-v1:33282e423c966b4db7053752d842895fd7856454f8e70cc6747e8d71ff76a679",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [],
+        "kind": "network",
+        "local": [
+          {
+            "field": "network",
+            "value": "drive-bus"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "network",
+        "topology": "bus",
+        "description": "two included wheel drives",
+        "participant_order": [
+          "left-drive",
+          "right-drive"
+        ],
+        "hop_order": [],
+        "leg_order": [],
+        "coordinator": null,
+        "root": null,
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profiles": [
+            "hcdf:test-link"
+          ]
+        }
+      }
+    },
+    {
+      "id": "hcdf-object-v1:3af2a57e27606801b2025532e45281084a9d42fbc7f4e25e2e1aa349483cd0b0",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 0
+          }
+        ],
+        "kind": "component",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "component"
+      }
+    },
+    {
+      "id": "hcdf-object-v1:613cf7cf03b35d6efc3932b423472b0f5f25bd94b42257401d824a8fa1ab90d6",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 0
+          }
+        ],
+        "kind": "port",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "port",
+            "value": "bus"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "port",
+        "capabilities": {
+          "purposes": [
+            "communication"
+          ],
+          "carriers": [
+            "electrical"
+          ],
+          "profiles": [
+            "hcdf:test-link"
+          ],
+          "limits": {}
+        }
+      }
+    },
+    {
+      "id": "hcdf-object-v1:b955b57a7c58949b23a017b1b4161ae4b00c728b6fb9e584348ce05bffe3ce48",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [],
+        "kind": "participant",
+        "local": [
+          {
+            "field": "network",
+            "value": "drive-bus"
+          },
+          {
+            "field": "participant",
+            "value": "right-drive"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "participant",
+        "role": "hcdf:node"
+      }
+    },
+    {
+      "id": "hcdf-object-v1:b9b4341eeb1b3655652b6c9169b6140cfd76f4525920a446f857cbccc9907a55",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 1
+          }
+        ],
+        "kind": "position",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "connector",
+            "value": "J1"
+          },
+          {
+            "field": "position",
+            "value": "1"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "position",
+        "kind": "contact",
+        "role": null,
+        "local_group": null
+      }
+    },
+    {
+      "id": "hcdf-object-v1:c77de33b22516ead1289ce30f9c5105f3107110b0d6cf83760f31c02e955a3e7",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [],
+        "kind": "participant",
+        "local": [
+          {
+            "field": "network",
+            "value": "drive-bus"
+          },
+          {
+            "field": "participant",
+            "value": "left-drive"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "participant",
+        "role": "hcdf:node"
+      }
+    },
+    {
+      "id": "hcdf-object-v1:cd12ab7bfd22b64c1ecf7bbaa624740c02879629711e13996de57b0f4273a2bc",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 0
+          }
+        ],
+        "kind": "position",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "connector",
+            "value": "J1"
+          },
+          {
+            "field": "position",
+            "value": "1"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "position",
+        "kind": "contact",
+        "role": null,
+        "local_group": null
+      }
+    },
+    {
+      "id": "hcdf-object-v1:dbdb9fccf1c77b60e0e0acb0b3d4770ba9f64fc4912ab7523b099e675d13401a",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 1
+          }
+        ],
+        "kind": "component",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "component"
+      }
+    },
+    {
+      "id": "hcdf-object-v1:dd2fb129374c3f0348301446930b9a316d019721d929b0a6b2895ee4c849f242",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 1
+          }
+        ],
+        "kind": "connector",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "connector",
+            "value": "J1"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "connector",
+        "family": "hcdf:test-connector"
+      }
+    },
+    {
+      "id": "hcdf-object-v1:e0f9dcbb5f43e13d37230333727eda1d6f22789426216726e60f51c46dff0f20",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 1
+          }
+        ],
+        "kind": "channel",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "port",
+            "value": "bus"
+          },
+          {
+            "field": "channel",
+            "value": "signal"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "channel",
+        "capabilities": {
+          "purposes": [
+            "communication"
+          ],
+          "carriers": [
+            "electrical"
+          ],
+          "profiles": [
+            "hcdf:test-link"
+          ],
+          "limits": {}
+        },
+        "role": null,
+        "local_group": null
+      }
+    },
+    {
+      "id": "hcdf-object-v1:e3bcc0a2ccbafb4c66988d58a79435feaeac91121ddb1390513c6207a43df395",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 1
+          }
+        ],
+        "kind": "port",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "port",
+            "value": "bus"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "port",
+        "capabilities": {
+          "purposes": [
+            "communication"
+          ],
+          "carriers": [
+            "electrical"
+          ],
+          "profiles": [
+            "hcdf:test-link"
+          ],
+          "limits": {}
+        }
+      }
+    },
+    {
+      "id": "hcdf-object-v1:f86c7892893d76ee83cad8cce8fb2151efbc14eb9618ea0edd8e62418c21a5c2",
+      "identity": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [
+          {
+            "name": {
+              "kind": "named",
+              "value": "wheel"
+            },
+            "occurrence": 0
+          }
+        ],
+        "kind": "connector",
+        "local": [
+          {
+            "field": "component",
+            "value": "drive"
+          },
+          {
+            "field": "connector",
+            "value": "J1"
+          }
+        ]
+      },
+      "data": {
+        "data-kind": "connector",
+        "family": "hcdf:test-connector"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "hcdf-edge-v1:3a34253d062a531c4bf7c8467324a3c74dac3381549e51677cfde367532bf818",
+      "kind": "owns",
+      "from": "hcdf-object-v1:dbdb9fccf1c77b60e0e0acb0b3d4770ba9f64fc4912ab7523b099e675d13401a",
+      "to": "hcdf-object-v1:e3bcc0a2ccbafb4c66988d58a79435feaeac91121ddb1390513c6207a43df395",
+      "subject": "hcdf-object-v1:dbdb9fccf1c77b60e0e0acb0b3d4770ba9f64fc4912ab7523b099e675d13401a",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:4aa629f9a0b19781f777c2748914ef87783556f7e6eca9aae14d0768d3261a69",
+      "kind": "contains",
+      "from": "hcdf-object-v1:613cf7cf03b35d6efc3932b423472b0f5f25bd94b42257401d824a8fa1ab90d6",
+      "to": "hcdf-object-v1:15e7f62dbbb7cf10b7e9a1886379abe678dd3cd5ed181165544cf89864842411",
+      "subject": "hcdf-object-v1:613cf7cf03b35d6efc3932b423472b0f5f25bd94b42257401d824a8fa1ab90d6",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:624800b209f2b9cfdce1b0e9cdc1a053c831a9b6b363c9d8892b3d46b4a15bc0",
+      "kind": "owns",
+      "from": "hcdf-object-v1:dbdb9fccf1c77b60e0e0acb0b3d4770ba9f64fc4912ab7523b099e675d13401a",
+      "to": "hcdf-object-v1:dd2fb129374c3f0348301446930b9a316d019721d929b0a6b2895ee4c849f242",
+      "subject": "hcdf-object-v1:dbdb9fccf1c77b60e0e0acb0b3d4770ba9f64fc4912ab7523b099e675d13401a",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:698312e2dba11e1f89e39ed29ac88926c7b01b36c02fc6b1d69a942c2c597e33",
+      "kind": "network-membership",
+      "from": "hcdf-object-v1:c77de33b22516ead1289ce30f9c5105f3107110b0d6cf83760f31c02e955a3e7",
+      "to": "hcdf-object-v1:33282e423c966b4db7053752d842895fd7856454f8e70cc6747e8d71ff76a679",
+      "subject": "hcdf-object-v1:c77de33b22516ead1289ce30f9c5105f3107110b0d6cf83760f31c02e955a3e7",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:6bfbc02ee180fa91333081f140530840862ac8f5768ef06471ff78f49b269ac1",
+      "kind": "contains",
+      "from": "hcdf-object-v1:e3bcc0a2ccbafb4c66988d58a79435feaeac91121ddb1390513c6207a43df395",
+      "to": "hcdf-object-v1:e0f9dcbb5f43e13d37230333727eda1d6f22789426216726e60f51c46dff0f20",
+      "subject": "hcdf-object-v1:e3bcc0a2ccbafb4c66988d58a79435feaeac91121ddb1390513c6207a43df395",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:6cb7f1ae760f5c02cf7f693cc18b18fc1dc3ab0570073c3aff44c50336f53a13",
+      "kind": "network-membership",
+      "from": "hcdf-object-v1:b955b57a7c58949b23a017b1b4161ae4b00c728b6fb9e584348ce05bffe3ce48",
+      "to": "hcdf-object-v1:33282e423c966b4db7053752d842895fd7856454f8e70cc6747e8d71ff76a679",
+      "subject": "hcdf-object-v1:b955b57a7c58949b23a017b1b4161ae4b00c728b6fb9e584348ce05bffe3ce48",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:762e1763a0db9d1f7f07ba44fe21cda5380ab1f7630b61325047c047921018e0",
+      "kind": "contains",
+      "from": "hcdf-object-v1:dd2fb129374c3f0348301446930b9a316d019721d929b0a6b2895ee4c849f242",
+      "to": "hcdf-object-v1:b9b4341eeb1b3655652b6c9169b6140cfd76f4525920a446f857cbccc9907a55",
+      "subject": "hcdf-object-v1:dd2fb129374c3f0348301446930b9a316d019721d929b0a6b2895ee4c849f242",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:a123f43992c6bcad810ebca8916f2fa5e7f65938e0cc21edb9c5929d388caee7",
+      "kind": "participant-endpoint",
+      "from": "hcdf-object-v1:e0f9dcbb5f43e13d37230333727eda1d6f22789426216726e60f51c46dff0f20",
+      "to": "hcdf-object-v1:b955b57a7c58949b23a017b1b4161ae4b00c728b6fb9e584348ce05bffe3ce48",
+      "subject": "hcdf-object-v1:b955b57a7c58949b23a017b1b4161ae4b00c728b6fb9e584348ce05bffe3ce48",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:bcf79d5924e86772888cf5056716c7451541abeb2410bbd270bcb503df16a2b1",
+      "kind": "participant-endpoint",
+      "from": "hcdf-object-v1:15e7f62dbbb7cf10b7e9a1886379abe678dd3cd5ed181165544cf89864842411",
+      "to": "hcdf-object-v1:c77de33b22516ead1289ce30f9c5105f3107110b0d6cf83760f31c02e955a3e7",
+      "subject": "hcdf-object-v1:c77de33b22516ead1289ce30f9c5105f3107110b0d6cf83760f31c02e955a3e7",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:cfe360bf5dc47a87dc9607b6847830c32e0a01a2505bb5a32cb2f9398cb5fa62",
+      "kind": "owns",
+      "from": "hcdf-object-v1:3af2a57e27606801b2025532e45281084a9d42fbc7f4e25e2e1aa349483cd0b0",
+      "to": "hcdf-object-v1:f86c7892893d76ee83cad8cce8fb2151efbc14eb9618ea0edd8e62418c21a5c2",
+      "subject": "hcdf-object-v1:3af2a57e27606801b2025532e45281084a9d42fbc7f4e25e2e1aa349483cd0b0",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:d5ebfcb57338a30c6882b480bdd08aa2f04bc3143af317da97fa49d49cbdda29",
+      "kind": "contains",
+      "from": "hcdf-object-v1:f86c7892893d76ee83cad8cce8fb2151efbc14eb9618ea0edd8e62418c21a5c2",
+      "to": "hcdf-object-v1:cd12ab7bfd22b64c1ecf7bbaa624740c02879629711e13996de57b0f4273a2bc",
+      "subject": "hcdf-object-v1:f86c7892893d76ee83cad8cce8fb2151efbc14eb9618ea0edd8e62418c21a5c2",
+      "exactness": "exact"
+    },
+    {
+      "id": "hcdf-edge-v1:e96fdcc455323eda7293e2b42b6fbb1ac3ebb4970749ee42863e90b842e7a139",
+      "kind": "owns",
+      "from": "hcdf-object-v1:3af2a57e27606801b2025532e45281084a9d42fbc7f4e25e2e1aa349483cd0b0",
+      "to": "hcdf-object-v1:613cf7cf03b35d6efc3932b423472b0f5f25bd94b42257401d824a8fa1ab90d6",
+      "subject": "hcdf-object-v1:3af2a57e27606801b2025532e45281084a9d42fbc7f4e25e2e1aa349483cd0b0",
+      "exactness": "exact"
+    }
+  ],
+  "warnings": [
+    {
+      "level": "warning",
+      "code": "W_CONN_PROFILE_INCOMPLETE",
+      "message": "selected profile hcdf:test-link has no ruleset in the trusted built-in registry; only generic connectivity validation was applied",
+      "subject": {
+        "document": "memory://contract/root.hcdf",
+        "instance": [],
+        "kind": "network",
+        "local": [
+          {
+            "field": "network",
+            "value": "drive-bus"
+          }
+        ]
+      },
+      "related": []
+    }
+  ]
+}

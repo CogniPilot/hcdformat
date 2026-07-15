@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a dotted transmission motor ref is NOT a tolerated spelling. "case.m1" has
+     no slash, so the whole token is read as a bare motor name; no motor is literally named "case.m1",
+     so it dangles, tripping E_TRANS_MOTOR_REF, whose message carries the "use '/'" hint (asserted by the
+     dotted_transmission_ref_carries_separator_hint test). The slash form "case/m1" would resolve. The
+     joint endpoint resolves to the doc joint j_out, so only the motor endpoint dangles. -->
+<hcdf version="1.0" name="cov-bad-trans-motor-dotted">
+  <comp name="case"><motor name="m1" type="bldc"/></comp>
+  <comp name="flange"/>
+  <joint name="j_out" type="revolute">
+    <parent comp="case"/>
+    <child comp="flange"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+  <transmission name="tx" type="simple">
+    <motor ref="case.m1"/>
+    <joint ref="j_out"/>
+  </transmission>
+</hcdf>

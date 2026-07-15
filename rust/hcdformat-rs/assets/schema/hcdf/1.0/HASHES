@@ -1,0 +1,13 @@
+# HCDF released artifact content hashes (sha256).
+# Bind tooling to a versioned artifact BY HASH, never by filename or the
+# "version" string. Two files claiming the same version with different hashes is a detectable
+# contradiction (enforced by CI). versions/<v>/ is a write-once frozen archive.
+# Derived artifacts (hcdf.schema.json, spec.html) are NOT archived here; their consistency is
+# enforced by CI regenerate-and-diff. The connectivity registry and its authored JSON Schema are
+# canonical source artifacts, so both are archived and pinned.
+#
+# version  file                     sha256
+1.0        hcdf.xsd                 57207f49eea9a94275b35108626a42c3971095e651a4f2ddbd23fb32448e6ef2
+1.0        hcdf-stream-profile.xsd  ae5fe11e88816e9e994f6ee6398e12146ab370d23b80d8267f5f81d66298a980
+1.0        registries/connectivity-profiles.json  d89cc11de4a9edac1ef915768af8422d96ab19dad2adcf3c2c4bf48ed707cc37
+1.0        registries/connectivity-profile-registry.schema.json  06197c3a8ba523430b2f01738782309ca29f8c2409efa086506024969f2eed1e

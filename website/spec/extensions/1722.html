@@ -59,6 +59,7 @@ h1 small { font-size:14px; color:#8b949e; }
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -68,7 +69,6 @@ h1 small { font-size:14px; color:#8b949e; }
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -124,37 +124,37 @@ List all ACF types the device can originate or process.</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-acf_config">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>type <small>Attribute</small></h5><div class="type-info"><b>Type:</b> can | can-brief | lin | mdio | gpio | spi | i2c | sensor | aecp | ancillary (required) &mdash; The ACF message type carried by this stream (e.g., &quot;can&quot;, &quot;gpio&quot;,
+<li><span class="tree-attribute"><h5>type <small>Attribute</small></h5><div class="type-info"><b>Type:</b> can | can-brief | lin | mdio | gpio | spi | i2c | sensor | aecp | ancillary (required): The ACF message type carried by this stream (e.g., &quot;can&quot;, &quot;gpio&quot;,
 &quot;sensor&quot;). Must match one of the device's declared acf-type capabilities.</div></span></li>
-<li><span class="tree-attribute"><h5>bus <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Optional reference to an HCDF bus name being tunneled over this
+<li><span class="tree-attribute"><h5>bus <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Optional reference to an HCDF bus name being tunneled over this
 stream. For example, if this stream tunnels CAN frames from the
 &quot;drive-bus&quot; CAN-FD bus, set bus=&quot;drive-bus&quot;. Enables agents to
 trace the bus-to-stream mapping.</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-aaf_config">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>channels <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Number of audio channels in the stream (e.g., 2 for stereo,
+<li><span class="tree-attribute"><h5>channels <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt: Number of audio channels in the stream (e.g., 2 for stereo,
 8 for a microphone array, 32 for a mixing bus).</div></span></li>
-<li><span class="tree-attribute"><h5>sample-rate <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Audio sample rate in Hz (e.g., 48000 for professional audio,
+<li><span class="tree-attribute"><h5>sample-rate <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt: Audio sample rate in Hz (e.g., 48000 for professional audio,
 96000 for high-resolution recording, 16000 for voice).</div></span></li>
-<li><span class="tree-attribute"><h5>bit-depth <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt &mdash; Bits per sample per channel (e.g., 16, 24, or 32).
+<li><span class="tree-attribute"><h5>bit-depth <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:unsignedInt: Bits per sample per channel (e.g., 16, 24, or 32).
 Higher bit depth increases dynamic range at the cost of bandwidth.</div></span></li>
-<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Audio encoding format: &quot;pcm-int&quot; (integer PCM, most common),
+<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Audio encoding format: &quot;pcm-int&quot; (integer PCM, most common),
 &quot;pcm-float&quot; (IEEE 754 floating-point PCM), or &quot;aes3&quot; (AES3/SPDIF
 encapsulation for professional audio interconnect).</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-cvf_config">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Video compression format: &quot;h264&quot; (H.264/AVC NAL unit transport),
+<li><span class="tree-attribute"><h5>format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Video compression format: &quot;h264&quot; (H.264/AVC NAL unit transport),
 &quot;mjpeg&quot; (Motion JPEG frame-by-frame), or &quot;jpeg2000&quot; (JPEG 2000
 wavelet compression for high-quality video).</div></span></li>
-<li><span class="tree-attribute"><h5>profile <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Optional codec profile. For H.264: &quot;baseline&quot; (low complexity,
+<li><span class="tree-attribute"><h5>profile <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Optional codec profile. For H.264: &quot;baseline&quot; (low complexity,
 no B-frames), &quot;main&quot; (B-frames, CABAC), &quot;high&quot; (8x8 transforms,
 high bitrate). Ignored for MJPEG and JPEG2000.</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-rvf_config">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>pixel-format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string &mdash; Pixel format of the raw video stream: &quot;rgb24&quot; (8-bit RGB),
+<li><span class="tree-attribute"><h5>pixel-format <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string: Pixel format of the raw video stream: &quot;rgb24&quot; (8-bit RGB),
 &quot;yuv422&quot; (4:2:2 chroma subsampling), &quot;yuv420&quot; (4:2:0 chroma
 subsampling), &quot;bayer-rggb&quot; (Bayer mosaic for machine vision),
 &quot;mono8&quot; (8-bit grayscale), &quot;mono16&quot; (16-bit grayscale for
@@ -162,13 +162,13 @@ depth or thermal imaging).</div></span></li>
 </ul></div></div>
 <div class="tab-pane " id="tab-avtp_stream">
 <div class="tree"><ul>
-<li><span class="tree-attribute"><h5>stream <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required) &mdash; Reference to a stream name defined in the HCDF stream profile
+<li><span class="tree-attribute"><h5>stream <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:string (required): Reference to a stream name defined in the HCDF stream profile
 (.streams.xml). This links the 1722 framing configuration to the
 stream's bandwidth, latency, and endpoint declarations.</div></span></li>
-<li><span class="tree-attribute"><h5>subtype <small>Attribute</small></h5><div class="type-info"><b>Type:</b> aaf | cvf | rvf | crf | tscf | ntscf | aef | sdi (required) &mdash; The AVTP subtype used for this stream's framing. Determines
+<li><span class="tree-attribute"><h5>subtype <small>Attribute</small></h5><div class="type-info"><b>Type:</b> aaf | cvf | rvf | crf | tscf | ntscf | aef | sdi (required): The AVTP subtype used for this stream's framing. Determines
 the wire format and which child configuration element is expected
 (aaf for AAF, cvf for CVF, rvf for RVF, acf for TSCF/NTSCF).</div></span></li>
-<li><span class="tree-attribute"><h5>timestamp <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:boolean, default="true" &mdash; Whether this stream uses AVTP presentation timestamps (default: true).
+<li><span class="tree-attribute"><h5>timestamp <small>Attribute</small></h5><div class="type-info"><b>Type:</b> xs:boolean, default="true": Whether this stream uses AVTP presentation timestamps (default: true).
 Presentation timestamps enable synchronized playback across multiple
 listeners. Set to false for best-effort streams where precise timing
 is not required.</div></span></li>

@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -55,39 +55,17 @@
   <p>
     The HCDF schema defines the complete vocabulary for describing cyber-physical robotic systems.
     It covers physical structure (components, joints, geometry, kinematics), sensors and actuators
-    (noise models, motor curves, control modes, encoders), networking and connectivity (topology,
-    scheduling, security, power distribution), energy systems (batteries, fuel cells, charging),
-    embodiment intelligence (joint groups, named states, self-collision), human-machine interfaces,
-    dynamic surfaces, firmware identity, device discovery, and a structured extension mechanism
-    for vendor and domain-specific data.
+    (noise models, motor curves, control modes, encoders), functional and physical connectivity,
+    communication topology and configuration, electrical power delivery, liquid and gas transfer,
+    energy systems, joint groups, named states, self-collision, human-machine interfaces, dynamic
+    surfaces, software identity, discovery metadata, and structured domain extensions.
   </p>
 
   <div class="note">
-    <strong>Validation:</strong> Use <code>python3 validate.py hcdf.xsd your-file.hcdf</code>
-    for XSD structural validation. The Rust CLI (<code>hcdf validate</code>) provides additional
-    cross-reference checking for port paths, joint references, and motor-encoder bindings.
-  </div>
-
-  <hr class="section-divider"/>
-
-  <!-- Stats -->
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-value">147</div>
-      <div class="stat-label">Complex Types</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">42</div>
-      <div class="stat-label">Enumerations</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">5</div>
-      <div class="stat-label">Schemas</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">43</div>
-      <div class="stat-label">Validation Tests</div>
-    </div>
+    <strong>Validation:</strong> <code>hcdf validate --xsd your-file.hcdf</code> checks XML structure,
+    ordering, attributes, values, and cardinality against the pinned XSD. Then run
+    <code>hcdf validate your-file.hcdf</code> for the semantic and cross-reference checks. Both paths
+    are implemented in Rust and are intentionally separate.
   </div>
 
   <hr class="section-divider"/>
@@ -99,19 +77,17 @@
     <a class="card-link" href="/spec/core.html">
       <div class="card">
         <h3>Core Schema</h3>
-        <p>The main HCDF schema: components, joints (10 types including cylindrical and free), sensors (11 categories with noise models),
-        motors (with load curves, control modes, and solenoids), compliant actuators (SEA/PEA/CPEA/AE-PEA/VSA via spring elements),
-        networking (topology, scheduling, security), power systems (battery, tank, fuel cell, solar, supercapacitor),
-        dynamic surfaces (including gripper), HMI, and embodiment features (groups, states, self-collision).
-        147 complex types, 42 enumerations.</p>
+        <p>The main schema covers components, joints, geometry, sensors, actuators, transmissions,
+        energy systems, HMI, dynamic surfaces, software and discovery metadata, physical connection
+        assemblies, functional-to-physical bindings, connector mates, and seven network topology forms.</p>
       </div>
     </a>
     <a class="card-link" href="/spec/stream-profile.html">
       <div class="card">
         <h3>Stream Profile</h3>
-        <p>Separate <code>.streams.xml</code> schema for declaring application-level data flows with
-        bandwidth, latency, and priority requirements. The same hardware can have multiple profiles
-        for different operational modes (operational, calibration, safe-mode).</p>
+        <p>A separate <code>.streams.xml</code> schema declares application-level streams, groups,
+        talkers, listeners, QoS requirements, forwarding paths, and optional FRER behavior. An HCDF
+        document can reference multiple profile resources for different operating configurations.</p>
       </div>
     </a>
   </div>
@@ -126,11 +102,18 @@
         Enables declarative topic configuration from the hardware description.</p>
       </div>
     </a>
+    <a class="card-link" href="/spec/extensions/ros2-control.html">
+      <div class="card">
+        <h3>ros2_control Extension <span class="badge">org.ros2.control</span></h3>
+        <p>Types the ros2_control hardware-interface surface: the hardware plugin and parameters, and
+        the per-joint command- and state-interface wiring the controller_manager consumes.</p>
+      </div>
+    </a>
     <a class="card-link" href="/spec/extensions/gazebo.html">
       <div class="card">
         <h3>Gazebo Extension <span class="badge">org.gazebosim</span></h3>
-        <p>Simulation parameters: physics engine settings, plugin bindings, aerodynamics, and
-        contact properties for Gazebo-based simulation.</p>
+        <p>Gazebo physics engine settings, model and link simulation flags, velocity decay, and
+        plugin declarations.</p>
       </div>
     </a>
     <a class="card-link" href="/spec/extensions/1722.html">
@@ -149,7 +132,9 @@
   <p>HCDF uses a single-root XML document with <code>&lt;hcdf&gt;</code> as the document element.
   Every HCDF file is a self-describing module: standalone robot descriptions and reusable sub-assemblies
   share the same root element with the same metadata. When composed via <code>&lt;include&gt;</code>,
-  each file retains its own name, author, and license for provenance tracking.</p>
+  each file retains its own name, author, and license for provenance tracking. The core XSD is ordered
+  and closed: unknown core children and children in the wrong sequence fail XSD validation.
+  Domain-specific or otherwise unknown content belongs inside <code>&lt;extension&gt;</code>.</p>
 
   <h3>Root attributes</h3>
   <ul>
@@ -165,15 +150,20 @@
     <li><code>&lt;author&gt;</code> Creator or organization (tracked per sub-assembly in composed systems)</li>
     <li><code>&lt;license&gt;</code> SPDX license identifier (e.g., "Apache-2.0", "CERN-OHL-S-2.0")</li>
     <li><code>&lt;url&gt;</code> Canonical project or documentation URL</li>
-    <li><code>&lt;comp&gt;</code> Components: rigid bodies with ports, sensors, motors, switches, HMI, surfaces, power sources</li>
-    <li><code>&lt;joint&gt;</code> Kinematic connections between components (10 joint types, loop closure support)</li>
+    <li><code>&lt;comp&gt;</code> Rigid bodies and hardware assemblies with geometry, ports, connectors, antennas, sensors, actuators, software, discovery metadata, and other component features</li>
+    <li><code>&lt;joint&gt;</code> Kinematic connections between components, including loop-closure metadata</li>
     <li><code>&lt;group&gt;</code> Named joint collections for planning and control (hierarchical, composable)</li>
     <li><code>&lt;state&gt;</code> Named kinematic configurations (home, transport, calibration)</li>
     <li><code>&lt;self-collision-disable&gt;</code> Component pairs to skip for collision checking</li>
-    <li><code>&lt;network&gt;</code> Connectivity topology and configuration (links, buses, chains, meshes, scheduling, security)</li>
+    <li><code>&lt;harness&gt;</code>, <code>&lt;cable&gt;</code>, <code>&lt;plumbing&gt;</code>, and <code>&lt;umbilical&gt;</code> Physical connection assemblies with paths, junctions, connectors, terminations, and optional visible representations</li>
+    <li><code>&lt;binding&gt;</code> Declared mapping between a functional endpoint and a physical endpoint, with functional, presented, exact, or quantified fidelity</li>
+    <li><code>&lt;mate&gt;</code> A physical connector-to-connector relationship with optional position mappings</li>
+    <li><code>&lt;link&gt;</code>, <code>&lt;bus&gt;</code>, <code>&lt;chain&gt;</code>, <code>&lt;star&gt;</code>, <code>&lt;ring&gt;</code>, <code>&lt;mesh&gt;</code>, and <code>&lt;tree&gt;</code> Root topology objects. Each selects a purpose and carrier and may contain network configuration</li>
+    <li><code>&lt;stream-profile&gt;</code> Reference to a separate stream-profile resource, with optional SHA pinning</li>
     <li><code>&lt;transmission&gt;</code> Motor-to-joint mechanical power transfer (gear ratio, efficiency, backlash, compliant springs)</li>
-    <li><code>&lt;material&gt;</code> Shared material definitions (color, friction, restitution)</li>
-    <li><code>&lt;include&gt;</code> Verified file composition with SHA content addressing</li>
+    <li><code>&lt;color&gt;</code> Named RGBA palette shared across component visuals</li>
+    <li><code>&lt;include&gt;</code> Module composition with optional SHA content pinning</li>
+    <li><code>&lt;extension&gt;</code> Domain-specific XML content. The core uses lax processing; a corresponding extension XSD can validate its typed payload separately</li>
   </ul>
 
 </div>

@@ -1,0 +1,559 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "dm-j8009p-openarm-j1",
+    "description": "DM-J8009P-2EC integrated geared actuator installed as OpenArm v2 joint 1. The example combines the\n    motor datasheet interfaces and ratings, the unreflected OpenArm J1 kinematic configuration, and the\n    exact named geometry in base_j1.glb. The fixed mount, external hard-stop sector, motor casing,\n    driver, and connectors form one rigid stator component. The output rotor is the moving component.\n    The included base_j1.glb is a modified derivative of Enactic's OpenArm description and is\n    redistributed under Apache-2.0.",
+    "license": "Apache-2.0",
+    "url": "https://github.com/enactic/openarm_description",
+    "comp": [
+      {
+        "name": "base_j1_stator",
+        "role": "actuator",
+        "description": "Fixed OpenArm J1 assembly containing the base mount, physical stop ring, DM-J8009P-2EC casing,\n      integrated driver, crossed-roller-bearing output, and all external connectors. The motor manual\n      specifies a 98 mm outside diameter, 61.7 mm height, approximately 930 g motor mass, 20 Nm rated\n      torque, 40 Nm peak torque, 100 rpm rated speed, and maximum no-load speeds of 160 rpm at 24 V and\n      320 rpm at 48 V. It also specifies 20 A rated and 50 A peak phase current, 0.145 ohm phase\n      resistance, 80 uH phase inductance, and 21 pole pairs. Mount and stop-ring geometry comes from\n      base_j1.glb, not the motor manual.",
+        "visual": [
+          {
+            "name": "base_mount",
+            "model": {
+              "uri": "models/base_j1.glb",
+              "sha": "sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476",
+              "submesh": {
+                "name": "base_mount"
+              }
+            }
+          },
+          {
+            "name": "physical_stop_ring",
+            "model": {
+              "uri": "models/base_j1.glb",
+              "sha": "sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476",
+              "submesh": {
+                "name": "j1_stop"
+              }
+            }
+          },
+          {
+            "name": "motor_case_connectors",
+            "model": {
+              "uri": "models/base_j1.glb",
+              "sha": "sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476",
+              "submesh": [
+                {
+                  "name": "dm8009p_casing"
+                },
+                {
+                  "name": "xt30"
+                },
+                {
+                  "name": "jst_gh_2"
+                },
+                {
+                  "name": "jst_gh_3"
+                }
+              ]
+            }
+          }
+        ],
+        "port": [
+          {
+            "name": "power_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 24,
+                "max": 48,
+                "nominal": 24,
+                "unit": "V"
+              }
+            },
+            "channel": [
+              {
+                "name": "ground",
+                "role": "hcdf:supply-return"
+              },
+              {
+                "name": "positive",
+                "role": "hcdf:supply-positive"
+              }
+            ]
+          },
+          {
+            "name": "can",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 1000000,
+                "max": 1000000,
+                "nominal": 1000000,
+                "unit": "bit/s"
+              }
+            },
+            "channel": [
+              {
+                "name": "can_h",
+                "role": "hcdf:can-high"
+              },
+              {
+                "name": "can_l",
+                "role": "hcdf:can-low"
+              }
+            ]
+          },
+          {
+            "name": "debug_uart",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:uart"
+              },
+              "rate": {
+                "min": 921600,
+                "max": 921600,
+                "nominal": 921600,
+                "unit": "bit/s"
+              }
+            },
+            "channel": [
+              {
+                "name": "gnd",
+                "role": "hcdf:signal-ground"
+              },
+              {
+                "name": "rx",
+                "role": "hcdf:receive"
+              },
+              {
+                "name": "tx",
+                "role": "hcdf:transmit"
+              }
+            ]
+          }
+        ],
+        "connector": [
+          {
+            "name": "power_connector",
+            "family": "hcdf:xt30",
+            "pin": [
+              {
+                "name": "-",
+                "role": "hcdf:supply-return",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/xt30/xt30_gnd",
+                    "submesh-fallback": "xt30_gnd",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "name": "+",
+                "role": "hcdf:supply-positive",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/xt30/xt30_vcc",
+                    "submesh-fallback": "xt30_vcc",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "representation": {
+              "model-part": {
+                "node-path": "dm8009p/xt30/xt30_shell",
+                "submesh-fallback": "xt30_shell",
+                "model-root": {
+                  "component-visual": {
+                    "component": "base_j1_stator",
+                    "visual": "motor_case_connectors"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "can_connector",
+            "family": "hcdf:jst-gh-2",
+            "pin": [
+              {
+                "name": 1,
+                "role": "hcdf:can-high",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/jst_gh_2/jst_gh_2_p1",
+                    "submesh-fallback": "jst_gh_2_p1",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "name": 2,
+                "role": "hcdf:can-low",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/jst_gh_2/jst_gh_2_p2",
+                    "submesh-fallback": "jst_gh_2_p2",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "representation": {
+              "model-part": {
+                "node-path": "dm8009p/jst_gh_2/jst_gh_2_shell",
+                "submesh-fallback": "jst_gh_2_shell",
+                "model-root": {
+                  "component-visual": {
+                    "component": "base_j1_stator",
+                    "visual": "motor_case_connectors"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "name": "debug_uart_connector",
+            "family": "hcdf:jst-gh-3",
+            "pin": [
+              {
+                "name": 1,
+                "role": "hcdf:signal-ground",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/jst_gh_3/jst_gh_3_p1",
+                    "submesh-fallback": "jst_gh_3_p1",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "name": 2,
+                "role": "hcdf:receive",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/jst_gh_3/jst_gh_3_p2",
+                    "submesh-fallback": "jst_gh_3_p2",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "name": 3,
+                "role": "hcdf:transmit",
+                "representation": {
+                  "model-part": {
+                    "node-path": "dm8009p/jst_gh_3/jst_gh_3_p3",
+                    "submesh-fallback": "jst_gh_3_p3",
+                    "model-root": {
+                      "component-visual": {
+                        "component": "base_j1_stator",
+                        "visual": "motor_case_connectors"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "representation": {
+              "model-part": {
+                "node-path": "dm8009p/jst_gh_3/jst_gh_3_shell",
+                "submesh-fallback": "jst_gh_3_shell",
+                "model-root": {
+                  "component-visual": {
+                    "component": "base_j1_stator",
+                    "visual": "motor_case_connectors"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "sensor": {
+          "name": "dual_absolute_encoders",
+          "encoder": [
+            {
+              "type": "absolute",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 16384
+              }
+            },
+            {
+              "type": "absolute",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 16384
+              }
+            }
+          ]
+        },
+        "motor": {
+          "name": "dm_j8009p_drive",
+          "voltage": {
+            "unit": "V",
+            "nominal": 24
+          },
+          "current": {
+            "unit": "A",
+            "nominal": 20,
+            "peak": 50
+          },
+          "inductance": {
+            "unit": "uH",
+            "$text": 80
+          },
+          "pole-pairs": 21,
+          "control-modes": {
+            "mode": [
+              "mit",
+              "position-velocity",
+              "velocity"
+            ]
+          }
+        }
+      },
+      {
+        "name": "base_j1_output",
+        "description": "Moving DM-J8009P-2EC output rotor. In a complete OpenArm assembly this component is the J1 output\n      frame to which the first moving arm link is attached.",
+        "visual": {
+          "name": "output_rotor",
+          "pose": {
+            "xyz": "0 0.0625 0",
+            "rpy": "0 0 0"
+          },
+          "model": {
+            "uri": "models/base_j1.glb",
+            "sha": "sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476",
+            "submesh": {
+              "name": "dm8009p_rotor"
+            }
+          }
+        }
+      }
+    ],
+    "joint": {
+      "name": "joint1",
+      "type": "revolute",
+      "description": "Unreflected OpenArm v2 J1 configuration, used directly by the right arm and mirrored by the left\n      arm. The parent visual named physical_stop_ring is the fixed external hard-stop sector. The\n      supplied GLB does not separately identify the moving arm-side feature that contacts it. The\n      limits below are OpenArm configured limits, not motor-datasheet or measured stop-contact limits.",
+      "parent": {
+        "comp": "base_j1_stator"
+      },
+      "child": {
+        "comp": "base_j1_output"
+      },
+      "origin": {
+        "xyz": "0 -0.0625 0",
+        "rpy": "0 0 0"
+      },
+      "axis": {
+        "xyz": "0 -1 0"
+      },
+      "limit": {
+        "lower": -1.3963,
+        "upper": 3.4907,
+        "effort": 40,
+        "velocity": 16.755
+      }
+    },
+    "binding": [
+      {
+        "name": "power_ground_to_xt30_negative",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "power_in",
+            "channel": "ground"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "power_connector",
+            "position": "-",
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "power_positive_to_xt30_positive",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "power_in",
+            "channel": "positive"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "power_connector",
+            "position": "+",
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "can_h_to_jst_gh_2_pin_1",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "can",
+            "channel": "can_h"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "can_connector",
+            "position": 1,
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "can_l_to_jst_gh_2_pin_2",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "can",
+            "channel": "can_l"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "can_connector",
+            "position": 2,
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "uart_gnd_to_jst_gh_3_pin_1",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "debug_uart",
+            "channel": "gnd"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "debug_uart_connector",
+            "position": 1,
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "uart_rx_to_jst_gh_3_pin_2",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "debug_uart",
+            "channel": "rx"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "debug_uart_connector",
+            "position": 2,
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      },
+      {
+        "name": "uart_tx_to_jst_gh_3_pin_3",
+        "fidelity": "exact",
+        "functional": {
+          "channel-ref": {
+            "component": "base_j1_stator",
+            "port": "debug_uart",
+            "channel": "tx"
+          }
+        },
+        "physical": {
+          "position-ref": {
+            "connector": "debug_uart_connector",
+            "position": 3,
+            "component-ref": {
+              "component": "base_j1_stator"
+            }
+          }
+        }
+      }
+    ],
+    "transmission": {
+      "name": "dm_j8009p_reduction",
+      "motor": {
+        "ref": "dm_j8009p_drive"
+      },
+      "joint": {
+        "ref": "joint1"
+      },
+      "reduction": 9
+    }
+  }
+}

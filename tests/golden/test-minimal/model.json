@@ -1,0 +1,968 @@
+{
+  "hcdf": {
+    "name": "test-minimal",
+    "version": 1.0,
+    "comp": [
+      {
+        "name": "test-board",
+        "role": "actuator",
+        "description": "Test component exercising all major child elements",
+        "inertial": {
+          "mass": 0.5,
+          "inertia_origin": {
+            "xyz": "0 0 0.005"
+          },
+          "inertia": "1.2e-5 0 0 1.1e-5 0 2.0e-5"
+        },
+        "visual": {
+          "name": "board",
+          "pose": {
+            "xyz": "0 0 0",
+            "rpy": "0 0 0"
+          },
+          "model": {
+            "uri": "models/test-board.glb",
+            "sha": "abc123def456"
+          }
+        },
+        "collision": {
+          "name": "board_col",
+          "pose": {
+            "xyz": "0 0 -0.005",
+            "rpy": "0 0 0"
+          },
+          "geometry": {
+            "box": {
+              "size": "0.048 0.044 0.012"
+            }
+          },
+          "surface": {
+            "friction": {
+              "static": 0.6,
+              "dynamic": 0.4
+            },
+            "restitution": 0.2
+          }
+        },
+        "frame": {
+          "name": "sensor_origin",
+          "relative-to": "test-board",
+          "description": "Sensor reference frame",
+          "pose": {
+            "xyz": "0 0 0.01",
+            "rpy": "0 0 0"
+          }
+        },
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 100000000,
+                "max": 10000000000,
+                "nominal": 100000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "eth1",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 1000000000,
+                "max": 1000000000,
+                "nominal": 1000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 5000000,
+                "max": 5000000,
+                "nominal": 5000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "sig_motor",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "phase_motor",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              }
+            }
+          },
+          {
+            "name": "pwr_in",
+            "capabilities": {
+              "purpose": {
+                "value": "power-delivery"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "voltage": {
+                "min": 20,
+                "max": 29.2,
+                "nominal": 24,
+                "unit": "V"
+              },
+              "current": {
+                "min": 0,
+                "max": 6,
+                "nominal": 3,
+                "unit": "A"
+              },
+              "power": {
+                "min": 0,
+                "max": 144,
+                "nominal": 72,
+                "unit": "W"
+              }
+            }
+          },
+          {
+            "name": "gnss0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "radiated-rf"
+              },
+              "frequency": {
+                "min": 1575420000,
+                "max": 1575420000,
+                "nominal": 1575420000,
+                "unit": "Hz"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "eth0_connector",
+            "family": "molex:micro-lock-plus-2.0-4c"
+          },
+          {
+            "name": "sig_motor_connector",
+            "family": "molex:12-pin"
+          },
+          {
+            "name": "phase_motor_connector",
+            "family": "hcdf:three-phase-power"
+          }
+        ],
+        "antenna": {
+          "name": "gnss0",
+          "radiated-port": {
+            "component": "test-board",
+            "port": "gnss0"
+          }
+        },
+        "switch": {
+          "name": "test-switch",
+          "bidirectional": [
+            {
+              "port-ref": {
+                "component": "test-board",
+                "port": "eth0"
+              }
+            },
+            {
+              "port-ref": {
+                "component": "test-board",
+                "port": "eth1"
+              }
+            }
+          ]
+        },
+        "sensor": [
+          {
+            "name": "imu0",
+            "update-rate": 1000,
+            "inertial": {
+              "type": "accel_gyro",
+              "pose": {
+                "xyz": "0.016 -0.001 -0.008",
+                "rpy": "0 0 0"
+              },
+              "driver": {
+                "name": "icm45686",
+                "axis-align": {
+                  "x": "Y",
+                  "y": "-X",
+                  "z": "Z"
+                }
+              },
+              "accel": {
+                "range": {
+                  "unit": "g",
+                  "$text": 16
+                },
+                "resolution": {
+                  "unit": "mg",
+                  "$text": 0.488
+                },
+                "noise": {
+                  "type": "gaussian",
+                  "mean": 0,
+                  "stddev": 0.003,
+                  "bias-mean": 0.01
+                }
+              },
+              "gyro": {
+                "range": {
+                  "unit": "dps",
+                  "$text": 2000
+                },
+                "noise": {
+                  "type": "gaussian",
+                  "stddev": 0.01
+                }
+              }
+            }
+          },
+          {
+            "name": "tof0",
+            "optical": {
+              "type": "tof",
+              "pose": {
+                "xyz": "-0.008 0 0.003",
+                "rpy": "0 0 0"
+              },
+              "driver": {
+                "name": "afbr_s50"
+              },
+              "fov": [
+                {
+                  "name": "collector",
+                  "color": "#4488ff",
+                  "pose": {
+                    "xyz": "0 0 0",
+                    "rpy": "0 0.0471 0"
+                  },
+                  "geometry": {
+                    "frustum": {
+                      "shape": "pyramidal",
+                      "near": 0.05,
+                      "far": 50.0,
+                      "hfov": 0.2164,
+                      "vfov": 0.0942
+                    }
+                  }
+                },
+                {
+                  "name": "emitter",
+                  "color": "#ff4444",
+                  "pose": {
+                    "xyz": "-0.005 0 0",
+                    "rpy": "0 0 0"
+                  },
+                  "geometry": {
+                    "frustum": {
+                      "shape": "conical",
+                      "near": 0.001,
+                      "far": 50.0,
+                      "fov": 0.035
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "motor_encoder",
+            "encoder": {
+              "type": "incremental",
+              "principle": "magnetic",
+              "resolution": {
+                "unit": "counts",
+                "$text": 4096
+              }
+            }
+          },
+          {
+            "name": "motor_hall",
+            "em": {
+              "type": "mag",
+              "range": {
+                "unit": "mT",
+                "$text": 100
+              }
+            }
+          },
+          {
+            "name": "motor_temp",
+            "temperature": {
+              "type": "thermistor",
+              "range": {
+                "unit": "degC",
+                "$text": 150
+              }
+            }
+          }
+        ],
+        "motor": {
+          "name": "foc_motor",
+          "type": "bldc",
+          "encoder": "motor_encoder",
+          "hall": "motor_hall",
+          "thermistor": "motor_temp",
+          "voltage": {
+            "unit": "V",
+            "nominal": 24,
+            "max": 28
+          },
+          "current": {
+            "unit": "A",
+            "continuous": 6.5,
+            "peak": 19
+          },
+          "resistance": {
+            "unit": "ohm",
+            "$text": 0.5
+          },
+          "torque-constant": {
+            "unit": "Nm/A",
+            "$text": 0.29
+          },
+          "velocity-constant": {
+            "unit": "V/RPM",
+            "$text": 0.109
+          },
+          "max-speed": {
+            "unit": "rpm",
+            "$text": 260
+          },
+          "stall-torque": {
+            "unit": "Nm",
+            "$text": 19.76
+          },
+          "no-load-speed": {
+            "unit": "rpm",
+            "$text": 257.9
+          },
+          "no-load-current": {
+            "unit": "A",
+            "$text": 0.974
+          },
+          "max-power-out": {
+            "unit": "W",
+            "$text": 158.8
+          },
+          "max-efficiency": {
+            "unit": "percent",
+            "$text": 68.4
+          },
+          "control-modes": {
+            "mode": [
+              "velocity",
+              "position",
+              "torque"
+            ]
+          }
+        },
+        "dynamic-surface": {
+          "name": "wheel",
+          "wheel": {
+            "type": "driven",
+            "radius": {
+              "unit": "m",
+              "$text": 0.085
+            },
+            "width": {
+              "unit": "m",
+              "$text": 0.041
+            },
+            "friction": {
+              "static": 0.9,
+              "dynamic": 0.7
+            }
+          }
+        },
+        "software": {
+          "name": "firmware",
+          "version": "1.0.0",
+          "hash": "abc123def456"
+        }
+      },
+      {
+        "name": "parent-body",
+        "role": "parent",
+        "inertial": {
+          "mass": 5.0,
+          "inertia_origin": {
+            "xyz": "0 0 0"
+          }
+        },
+        "collision": [
+          {
+            "name": "parent_col",
+            "geometry": {
+              "cylinder": {
+                "radius": 0.05,
+                "length": 0.2
+              }
+            }
+          },
+          {
+            "name": "parent_cap",
+            "geometry": {
+              "capsule": {
+                "radius": 0.03,
+                "length": 0.1
+              }
+            }
+          },
+          {
+            "name": "parent_sphere",
+            "geometry": {
+              "sphere": {
+                "radius": 0.04
+              }
+            }
+          },
+          {
+            "name": "parent_ellipsoid",
+            "geometry": {
+              "ellipsoid": {
+                "radii": "0.05 0.03 0.02"
+              }
+            }
+          },
+          {
+            "name": "parent_cone",
+            "geometry": {
+              "cone": {
+                "radius": 0.03,
+                "length": 0.08
+              }
+            }
+          }
+        ],
+        "port": [
+          {
+            "name": "eth0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 100000000,
+                "max": 10000000000,
+                "nominal": 100000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "can0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:can"
+              },
+              "rate": {
+                "min": 5000000,
+                "max": 5000000,
+                "nominal": 5000000,
+                "unit": "bit/s"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "joint": [
+      {
+        "name": "shoulder_yaw",
+        "type": "revolute",
+        "parent": {
+          "comp": "parent-body"
+        },
+        "child": {
+          "comp": "test-board"
+        },
+        "origin": {
+          "xyz": "0 0.15 0.3",
+          "rpy": "0 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -3.14,
+          "upper": 3.14,
+          "effort": 50,
+          "velocity": 3.14
+        },
+        "dynamics": {
+          "damping": 0.5,
+          "friction": 0.1,
+          "spring_stiffness": 0,
+          "spring_reference": 0
+        }
+      },
+      {
+        "name": "fixed_mount",
+        "type": "fixed",
+        "parent": {
+          "comp": "parent-body"
+        },
+        "child": {
+          "comp": "test-board"
+        }
+      }
+    ],
+    "group": {
+      "name": "test_chain",
+      "type": "kinematic-chain",
+      "description": "Test kinematic chain",
+      "joint": {
+        "ref": "shoulder_yaw"
+      }
+    },
+    "state": {
+      "name": "home",
+      "default": true,
+      "description": "Home position",
+      "joint-position": {
+        "joint": "shoulder_yaw",
+        "value": 0
+      }
+    },
+    "self-collision-disable": {
+      "pair": {
+        "comp1": "parent-body",
+        "comp2": "test-board",
+        "reason": "adjacent"
+      }
+    },
+    "binding": [
+      {
+        "name": "test_board_eth0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "test-board",
+            "port": "eth0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "eth0_connector",
+            "component-ref": {
+              "component": "test-board"
+            }
+          }
+        }
+      },
+      {
+        "name": "test_board_motor_signal_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "test-board",
+            "port": "sig_motor"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "sig_motor_connector",
+            "component-ref": {
+              "component": "test-board"
+            }
+          }
+        }
+      },
+      {
+        "name": "test_board_motor_phase_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "test-board",
+            "port": "phase_motor"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "phase_motor_connector",
+            "component-ref": {
+              "component": "test-board"
+            }
+          }
+        }
+      }
+    ],
+    "link": {
+      "name": "test_link",
+      "description": "Point-to-point electrical communication link between the parent and test board.",
+      "selected": {
+        "purpose": "communication",
+        "carrier": "electrical",
+        "rate": {
+          "nominal": {
+            "value": 100000000,
+            "unit": "bit/s"
+          }
+        }
+      },
+      "participant": [
+        {
+          "name": "parent-body",
+          "endpoint": {
+            "port-ref": {
+              "component": "parent-body",
+              "port": "eth0"
+            }
+          }
+        },
+        {
+          "name": "test-board",
+          "endpoint": {
+            "port-ref": {
+              "component": "test-board",
+              "port": "eth0"
+            }
+          }
+        }
+      ]
+    },
+    "bus": {
+      "name": "test_can",
+      "description": "CAN communication bus between the parent controller and test board target.",
+      "selected": {
+        "purpose": "communication",
+        "carrier": "electrical",
+        "profile": {
+          "id": "hcdf:can"
+        },
+        "rate": {
+          "nominal": {
+            "value": 5000000,
+            "unit": "bit/s"
+          }
+        }
+      },
+      "participant": [
+        {
+          "name": "parent-body",
+          "role": "hcdf:controller",
+          "endpoint": {
+            "port-ref": {
+              "component": "parent-body",
+              "port": "can0"
+            }
+          }
+        },
+        {
+          "name": "test-board",
+          "role": "hcdf:target",
+          "endpoint": {
+            "port-ref": {
+              "component": "test-board",
+              "port": "can0"
+            }
+          }
+        }
+      ]
+    },
+    "chain": {
+      "name": "test-chain",
+      "description": "Two-hop switched communication chain with timing, scheduling, MACsec, and EEE configuration.",
+      "selected": {
+        "purpose": "communication",
+        "carrier": "electrical",
+        "rate": {
+          "nominal": {
+            "value": 100000000,
+            "unit": "bit/s"
+          }
+        }
+      },
+      "configuration": {
+        "gptp-domain": {
+          "name": "time",
+          "number": 0,
+          "clock": [
+            {
+              "name": "parent-clock",
+              "kind": "ordinary",
+              "gm-capable": true,
+              "priority1": 128,
+              "priority2": 128,
+              "participant-ref": {
+                "network": "test-chain",
+                "participant": "parent-body"
+              }
+            },
+            {
+              "name": "board-clock",
+              "kind": "ordinary",
+              "gm-capable": false,
+              "priority1": 255,
+              "priority2": 255,
+              "participant-ref": {
+                "network": "test-chain",
+                "participant": "test-board"
+              }
+            }
+          ],
+          "port-defaults": {
+            "log-sync-interval": -3,
+            "neighbor-prop-delay-threshold-ns": 800
+          }
+        },
+        "traffic-class": [
+          {
+            "name": "ptp",
+            "number": 7,
+            "preemption": "express",
+            "pcp": {
+              "value": 7
+            }
+          },
+          {
+            "name": "safety",
+            "number": 6,
+            "preemption": "express",
+            "pcp": {
+              "value": 6
+            }
+          },
+          {
+            "name": "motion",
+            "number": 5,
+            "preemption": "express",
+            "pcp": {
+              "value": 5
+            }
+          },
+          {
+            "name": "bulk",
+            "number": 0,
+            "preemption": "preemptable",
+            "pcp": {
+              "value": 0
+            }
+          }
+        ],
+        "gate-schedule": {
+          "name": "1ms-control",
+          "cycle-time-ns": 1000000,
+          "gate": [
+            {
+              "duration-ns": 50000,
+              "open": {
+                "traffic-class-ref": {
+                  "network": "test-chain",
+                  "traffic-class": "ptp"
+                }
+              }
+            },
+            {
+              "duration-ns": 200000,
+              "open": {
+                "traffic-class-ref": [
+                  {
+                    "network": "test-chain",
+                    "traffic-class": "safety"
+                  },
+                  {
+                    "network": "test-chain",
+                    "traffic-class": "motion"
+                  }
+                ]
+              }
+            },
+            {
+              "duration-ns": 750000,
+              "open": {
+                "traffic-class-ref": {
+                  "network": "test-chain",
+                  "traffic-class": "bulk"
+                }
+              }
+            }
+          ]
+        },
+        "schedule-assignment": {
+          "name": "chain-participants",
+          "schedule-ref": {
+            "network": "test-chain",
+            "schedule": "1ms-control"
+          },
+          "target": [
+            {
+              "participant-ref": {
+                "network": "test-chain",
+                "participant": "parent-body"
+              }
+            },
+            {
+              "participant-ref": {
+                "network": "test-chain",
+                "participant": "test-board"
+              }
+            }
+          ]
+        },
+        "macsec": {
+          "policy": {
+            "name": "secure",
+            "enforcement": "must-secure",
+            "cipher": "ieee:gcm-aes-128",
+            "key-agreement": "vendor:psk",
+            "credential-store-ref": "se051"
+          },
+          "default-policy": {
+            "macsec-policy-ref": {
+              "network": "test-chain",
+              "policy": "secure"
+            }
+          }
+        },
+        "eee": {
+          "default-mode": "disabled"
+        }
+      },
+      "participant": [
+        {
+          "name": "parent-body",
+          "endpoint": {
+            "port-ref": {
+              "component": "parent-body",
+              "port": "eth0"
+            }
+          }
+        },
+        {
+          "name": "test-board",
+          "endpoint": {
+            "port-ref": {
+              "component": "test-board",
+              "port": "eth0"
+            }
+          }
+        }
+      ],
+      "hop": [
+        {
+          "name": "parent-body",
+          "role": "root",
+          "owner": {
+            "component-ref": {
+              "component": "parent-body"
+            }
+          }
+        },
+        {
+          "name": "test-board",
+          "role": "tail",
+          "owner": {
+            "function-ref": {
+              "component": "test-board",
+              "function": "test-switch"
+            }
+          }
+        }
+      ],
+      "leg": {
+        "name": "parent-to-board",
+        "from": {
+          "hop-ref": {
+            "network": "test-chain",
+            "hop": "parent-body"
+          },
+          "participant-ref": {
+            "network": "test-chain",
+            "participant": "parent-body"
+          }
+        },
+        "to": {
+          "hop-ref": {
+            "network": "test-chain",
+            "hop": "test-board"
+          },
+          "participant-ref": {
+            "network": "test-chain",
+            "participant": "test-board"
+          }
+        }
+      }
+    },
+    "stream-profile": {
+      "uri": "profiles/operational.streams.xml",
+      "selection-role": "default"
+    },
+    "transmission": {
+      "name": "shoulder_transmission",
+      "type": "planetary",
+      "motor": {
+        "ref": "foc_motor"
+      },
+      "joint": {
+        "ref": "shoulder_yaw"
+      },
+      "reduction": 50,
+      "efficiency": 0.85
+    },
+    "color": {
+      "name": "rubber",
+      "rgba": "0.1 0.1 0.1 1.0"
+    },
+    "include": {
+      "uri": "components/sensor-module.hcdf",
+      "sha": "abc123",
+      "name": "sensor-1",
+      "pose": "0 0 0.1 0 0 0"
+    }
+  }
+}

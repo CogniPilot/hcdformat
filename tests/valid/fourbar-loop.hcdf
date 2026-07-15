@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!-- Valid: a planar FOUR-BAR linkage, a CLOSED kinematic loop, which URDF's tree-only
+     structure cannot represent (a key HCDF-over-URDF capability; SDF supports loops too).
+     The loop-closing joint carries <loop>, so the kinematic tree is
+       {ground->crank, crank->coupler, ground->rocker}  (acyclic, single root "ground")
+     and j_close (coupler->rocker) is a CONSTRAINT, not a tree edge; the rocker keeps its
+     single tree parent (j_rocker). Without the <loop> marker the validator would (rightly)
+     reject this as E_MULTI_PARENT / E_CYCLE. Same pattern scales to delta / Stewart platforms. -->
+<hcdf version="1.0" name="fourbar-loop">
+
+  <comp name="ground" role="parent">
+    <description>Fixed link (frame 0), kinematic root.</description>
+  </comp>
+  <comp name="crank" role="actuator"/>
+  <comp name="coupler" role="actuator"/>
+  <comp name="rocker" role="actuator"/>
+
+  <joint name="j_crank" type="revolute">
+    <description>Driven crank pivot on the ground link.</description>
+    <parent comp="ground"/>
+    <child comp="crank"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="20" velocity="3"/>
+  </joint>
+
+  <joint name="j_coupler" type="revolute">
+    <parent comp="crank"/>
+    <child comp="coupler"/>
+    <origin xyz="0.10 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+  </joint>
+
+  <joint name="j_rocker" type="revolute">
+    <parent comp="ground"/>
+    <child comp="rocker"/>
+    <origin xyz="0.30 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+  </joint>
+
+  <joint name="j_close" type="revolute">
+    <description>Loop closure: the coupler's far end pins to the rocker tip.</description>
+    <parent comp="coupler"/>
+    <child comp="rocker"/>
+    <origin xyz="0.25 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>coupler</predecessor>
+      <successor>rocker</successor>
+      <constraint-axes>1 1 1 1 1 0</constraint-axes>
+    </loop>
+  </joint>
+
+</hcdf>

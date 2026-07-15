@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a <transmission>'s <motor> endpoint @ref names no motor (bare
+     "nonexistent", matched against the comp-scoped motor names), tripping E_TRANS_MOTOR_REF. The <joint>
+     endpoint resolves to the doc joint j_out, so only the motor endpoint dangles. The XSD header
+     defers this endpoint resolution to the companion validator. -->
+<hcdf version="1.0" name="cov-bad-trans-motor-ref">
+  <comp name="case"><motor name="m1" type="bldc"/></comp>
+  <comp name="flange"/>
+  <joint name="j_out" type="revolute">
+    <parent comp="case"/>
+    <child comp="flange"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+  <transmission name="tx" type="simple">
+    <motor ref="nonexistent"/>
+    <joint ref="j_out"/>
+  </transmission>
+</hcdf>

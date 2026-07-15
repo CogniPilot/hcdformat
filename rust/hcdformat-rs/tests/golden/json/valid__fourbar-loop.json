@@ -1,0 +1,113 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "fourbar-loop",
+    "comp": [
+      {
+        "name": "ground",
+        "role": "parent",
+        "description": "Fixed link (frame 0), kinematic root."
+      },
+      {
+        "name": "crank",
+        "role": "actuator"
+      },
+      {
+        "name": "coupler",
+        "role": "actuator"
+      },
+      {
+        "name": "rocker",
+        "role": "actuator"
+      }
+    ],
+    "joint": [
+      {
+        "name": "j_crank",
+        "type": "revolute",
+        "description": "Driven crank pivot on the ground link.",
+        "parent": {
+          "comp": "ground"
+        },
+        "child": {
+          "comp": "crank"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -3.14159,
+          "upper": 3.14159,
+          "effort": 20,
+          "velocity": 3
+        }
+      },
+      {
+        "name": "j_coupler",
+        "type": "revolute",
+        "parent": {
+          "comp": "crank"
+        },
+        "child": {
+          "comp": "coupler"
+        },
+        "origin": {
+          "xyz": "0.10 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        }
+      },
+      {
+        "name": "j_rocker",
+        "type": "revolute",
+        "parent": {
+          "comp": "ground"
+        },
+        "child": {
+          "comp": "rocker"
+        },
+        "origin": {
+          "xyz": "0.30 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        }
+      },
+      {
+        "name": "j_close",
+        "type": "revolute",
+        "description": "Loop closure: the coupler's far end pins to the rocker tip.",
+        "parent": {
+          "comp": "coupler"
+        },
+        "child": {
+          "comp": "rocker"
+        },
+        "origin": {
+          "xyz": "0.25 0 0"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6
+        },
+        "loop": {
+          "predecessor": "coupler",
+          "successor": "rocker",
+          "constraint-axes": "1 1 1 1 1 0"
+        }
+      }
+    ]
+  }
+}

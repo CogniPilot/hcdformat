@@ -1,0 +1,1143 @@
+{
+  "hcdf": {
+    "name": "cps-comms-showcase",
+    "version": 1.0,
+    "comp": [
+      {
+        "name": "compute",
+        "role": "compute",
+        "description": "Central compute SoM (SerDes deserializer, CSI-2, EtherCAT master, radios, ESC + RC IO)",
+        "board": "jetson-orin-nx",
+        "port": [
+          {
+            "name": "gmsl_in",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "conducted-rf"
+              },
+              "rate": {
+                "min": 6000000000,
+                "max": 6000000000,
+                "nominal": 6000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "csi0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000000,
+                "max": 10000000000,
+                "nominal": 10000000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "ecat0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 100000000,
+                "max": 100000000,
+                "nominal": 100000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "dshot0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:dshot"
+              },
+              "rate": {
+                "min": 600000,
+                "max": 600000,
+                "nominal": 600000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "uart_sbus",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "profile": {
+                "id": "hcdf:uart"
+              },
+              "rate": {
+                "min": 100000,
+                "max": 100000,
+                "nominal": 100000,
+                "unit": "Bd"
+              }
+            }
+          },
+          {
+            "name": "led0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000,
+                "max": 10000000,
+                "nominal": 10000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "wifi0-feed",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "conducted-rf"
+              },
+              "frequency": {
+                "min": 5150000000,
+                "max": 5850000000,
+                "nominal": 5500000000,
+                "unit": "Hz"
+              }
+            }
+          },
+          {
+            "name": "wifi0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "radiated-rf"
+              },
+              "frequency": {
+                "min": 5150000000,
+                "max": 5850000000,
+                "nominal": 5500000000,
+                "unit": "Hz"
+              },
+              "bandwidth": {
+                "min": 20000000,
+                "max": 160000000,
+                "nominal": 80000000,
+                "unit": "Hz"
+              }
+            }
+          },
+          {
+            "name": "ble0",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "radiated-rf"
+              },
+              "frequency": {
+                "min": 2400000000,
+                "max": 2483500000,
+                "nominal": 2440000000,
+                "unit": "Hz"
+              }
+            }
+          }
+        ],
+        "connector": [
+          {
+            "name": "gmsl_in_connector",
+            "family": "hcdf:fakra-mini"
+          },
+          {
+            "name": "csi0_connector",
+            "family": "hcdf:flex-30"
+          },
+          {
+            "name": "wifi0_feed_connector",
+            "family": "hcdf:u-fl"
+          }
+        ],
+        "antenna": [
+          {
+            "name": "wifi0",
+            "conducted-port": {
+              "component": "compute",
+              "port": "wifi0-feed"
+            },
+            "radiated-port": {
+              "component": "compute",
+              "port": "wifi0"
+            }
+          },
+          {
+            "name": "ble0",
+            "radiated-port": {
+              "component": "compute",
+              "port": "ble0"
+            }
+          }
+        ]
+      },
+      {
+        "name": "camera",
+        "role": "sensor",
+        "description": "GMSL2 camera module (serializer + imager)",
+        "port": {
+          "name": "gmsl_out",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "conducted-rf"
+            },
+            "rate": {
+              "min": 6000000000,
+              "max": 6000000000,
+              "nominal": 6000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "connector": {
+          "name": "gmsl_out_connector",
+          "family": "hcdf:fakra-mini"
+        }
+      },
+      {
+        "name": "ap",
+        "role": "compute",
+        "description": "WiFi 6 access point",
+        "port": {
+          "name": "wifi0",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "radiated-rf"
+            },
+            "frequency": {
+              "min": 5150000000,
+              "max": 5850000000,
+              "nominal": 5500000000,
+              "unit": "Hz"
+            },
+            "bandwidth": {
+              "min": 20000000,
+              "max": 160000000,
+              "nominal": 80000000,
+              "unit": "Hz"
+            }
+          }
+        },
+        "antenna": {
+          "name": "wifi0",
+          "radiated-port": {
+            "component": "ap",
+            "port": "wifi0"
+          }
+        }
+      },
+      {
+        "name": "teleop",
+        "role": "compute",
+        "description": "BLE teleop pendant",
+        "port": {
+          "name": "ble0",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "radiated-rf"
+            },
+            "frequency": {
+              "min": 2400000000,
+              "max": 2483500000,
+              "nominal": 2440000000,
+              "unit": "Hz"
+            }
+          }
+        },
+        "antenna": {
+          "name": "ble0",
+          "radiated-port": {
+            "component": "teleop",
+            "port": "ble0"
+          }
+        }
+      },
+      {
+        "name": "safety_drive_1",
+        "role": "actuator",
+        "description": "FSoE safety servo drive 1 (STO)",
+        "port": [
+          {
+            "name": "ecat_in",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 100000000,
+                "max": 100000000,
+                "nominal": 100000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "ecat_out",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 100000000,
+                "max": 100000000,
+                "nominal": 100000000,
+                "unit": "bit/s"
+              }
+            }
+          }
+        ],
+        "bridge": {
+          "name": "ethercat_forwarder",
+          "input": {
+            "port-ref": {
+              "component": "safety_drive_1",
+              "port": "ecat_in"
+            }
+          },
+          "output": {
+            "port-ref": {
+              "component": "safety_drive_1",
+              "port": "ecat_out"
+            }
+          }
+        }
+      },
+      {
+        "name": "safety_drive_2",
+        "role": "actuator",
+        "description": "FSoE safety servo drive 2 (STO)",
+        "port": {
+          "name": "ecat_in",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "rate": {
+              "min": 100000000,
+              "max": 100000000,
+              "nominal": 100000000,
+              "unit": "bit/s"
+            }
+          }
+        }
+      },
+      {
+        "name": "esc",
+        "role": "actuator",
+        "description": "BLHeli_32 ESC (DShot600 input)",
+        "port": {
+          "name": "dshot_in",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "profile": {
+              "id": "hcdf:dshot"
+            },
+            "rate": {
+              "min": 600000,
+              "max": 600000,
+              "nominal": 600000,
+              "unit": "bit/s"
+            }
+          }
+        }
+      },
+      {
+        "name": "rc_rx",
+        "role": "sensor",
+        "description": "RC receiver (inverted-UART SBUS output)",
+        "port": {
+          "name": "sbus_out",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "profile": {
+              "id": "hcdf:uart"
+            },
+            "rate": {
+              "min": 100000,
+              "max": 100000,
+              "nominal": 100000,
+              "unit": "Bd"
+            }
+          }
+        }
+      },
+      {
+        "name": "led_0",
+        "description": "APA102C LED 0 (strip head)",
+        "port": [
+          {
+            "name": "in",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000,
+                "max": 10000000,
+                "nominal": 10000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "out",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000,
+                "max": 10000000,
+                "nominal": 10000000,
+                "unit": "bit/s"
+              }
+            }
+          }
+        ],
+        "bridge": {
+          "name": "shift_register",
+          "input": {
+            "port-ref": {
+              "component": "led_0",
+              "port": "in"
+            }
+          },
+          "output": {
+            "port-ref": {
+              "component": "led_0",
+              "port": "out"
+            }
+          }
+        }
+      },
+      {
+        "name": "led_1",
+        "description": "APA102C LED 1",
+        "port": [
+          {
+            "name": "in",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000,
+                "max": 10000000,
+                "nominal": 10000000,
+                "unit": "bit/s"
+              }
+            }
+          },
+          {
+            "name": "out",
+            "capabilities": {
+              "purpose": {
+                "value": "communication"
+              },
+              "carrier": {
+                "value": "electrical"
+              },
+              "rate": {
+                "min": 10000000,
+                "max": 10000000,
+                "nominal": 10000000,
+                "unit": "bit/s"
+              }
+            }
+          }
+        ],
+        "bridge": {
+          "name": "shift_register",
+          "input": {
+            "port-ref": {
+              "component": "led_1",
+              "port": "in"
+            }
+          },
+          "output": {
+            "port-ref": {
+              "component": "led_1",
+              "port": "out"
+            }
+          }
+        }
+      },
+      {
+        "name": "led_2",
+        "description": "APA102C LED 2 (strip tail)",
+        "port": {
+          "name": "in",
+          "capabilities": {
+            "purpose": {
+              "value": "communication"
+            },
+            "carrier": {
+              "value": "electrical"
+            },
+            "rate": {
+              "min": 10000000,
+              "max": 10000000,
+              "nominal": 10000000,
+              "unit": "bit/s"
+            }
+          }
+        }
+      }
+    ],
+    "binding": [
+      {
+        "name": "compute_gmsl_in_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "compute",
+            "port": "gmsl_in"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "gmsl_in_connector",
+            "component-ref": {
+              "component": "compute"
+            }
+          }
+        }
+      },
+      {
+        "name": "compute_csi0_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "compute",
+            "port": "csi0"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "csi0_connector",
+            "component-ref": {
+              "component": "compute"
+            }
+          }
+        }
+      },
+      {
+        "name": "compute_wifi0_feed_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "compute",
+            "port": "wifi0-feed"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "wifi0_feed_connector",
+            "component-ref": {
+              "component": "compute"
+            }
+          }
+        }
+      },
+      {
+        "name": "camera_gmsl_out_presented",
+        "fidelity": "presented",
+        "functional": {
+          "port-ref": {
+            "component": "camera",
+            "port": "gmsl_out"
+          }
+        },
+        "physical": {
+          "connector-ref": {
+            "connector": "gmsl_out_connector",
+            "component-ref": {
+              "component": "camera"
+            }
+          }
+        }
+      }
+    ],
+    "link": [
+      {
+        "name": "cam_serdes",
+        "description": "GMSL2 camera link with a 6 Gb/s downstream, 187.5 Mb/s back-channel, and power over coax.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "conducted-rf",
+          "rate": {
+            "nominal": {
+              "value": 6000000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "camera",
+            "endpoint": {
+              "port-ref": {
+                "component": "camera",
+                "port": "gmsl_out"
+              }
+            }
+          },
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "gmsl_in"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "esc_dshot",
+        "description": "DShot600 ESC control signal. DShot is a digital control link, not UART framing.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": {
+            "id": "hcdf:dshot"
+          },
+          "rate": {
+            "nominal": {
+              "value": 600000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "dshot0"
+              }
+            }
+          },
+          {
+            "name": "esc",
+            "endpoint": {
+              "port-ref": {
+                "component": "esc",
+                "port": "dshot_in"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "sbus_rx",
+        "description": "Futaba SBUS receiver link using inverted 100 kbaud UART signaling.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "profile": {
+            "id": "hcdf:uart"
+          },
+          "rate": {
+            "nominal": {
+              "value": 100000,
+              "unit": "Bd"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "rc_rx",
+            "endpoint": {
+              "port-ref": {
+                "component": "rc_rx",
+                "port": "sbus_out"
+              }
+            }
+          },
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "uart_sbus"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "ble_link",
+        "description": "Bluetooth Low Energy teleoperation link.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "radiated-rf",
+          "frequency": {
+            "range": {
+              "min": 2400000000,
+              "max": 2483500000,
+              "nominal": 2440000000,
+              "unit": "Hz"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "ble0"
+              }
+            }
+          },
+          {
+            "name": "teleop",
+            "endpoint": {
+              "port-ref": {
+                "component": "teleop",
+                "port": "ble0"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "chain": [
+      {
+        "name": "safety_ecat",
+        "description": "EtherCAT forwarding chain carrying the FSoE safety black channel.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 100000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "ecat0"
+              }
+            }
+          },
+          {
+            "name": "safety_drive_1_in",
+            "endpoint": {
+              "port-ref": {
+                "component": "safety_drive_1",
+                "port": "ecat_in"
+              }
+            }
+          },
+          {
+            "name": "safety_drive_1_out",
+            "endpoint": {
+              "port-ref": {
+                "component": "safety_drive_1",
+                "port": "ecat_out"
+              }
+            }
+          },
+          {
+            "name": "safety_drive_2",
+            "endpoint": {
+              "port-ref": {
+                "component": "safety_drive_2",
+                "port": "ecat_in"
+              }
+            }
+          }
+        ],
+        "hop": [
+          {
+            "name": "compute",
+            "owner": {
+              "component-ref": {
+                "component": "compute"
+              }
+            }
+          },
+          {
+            "name": "safety_drive_1",
+            "owner": {
+              "function-ref": {
+                "component": "safety_drive_1",
+                "function": "ethercat_forwarder"
+              }
+            }
+          },
+          {
+            "name": "safety_drive_2",
+            "owner": {
+              "component-ref": {
+                "component": "safety_drive_2"
+              }
+            }
+          }
+        ],
+        "leg": [
+          {
+            "name": "compute_to_drive_1",
+            "from": {
+              "hop-ref": {
+                "network": "safety_ecat",
+                "hop": "compute"
+              },
+              "participant-ref": {
+                "network": "safety_ecat",
+                "participant": "compute"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "safety_ecat",
+                "hop": "safety_drive_1"
+              },
+              "participant-ref": {
+                "network": "safety_ecat",
+                "participant": "safety_drive_1_in"
+              }
+            }
+          },
+          {
+            "name": "drive_1_to_drive_2",
+            "from": {
+              "hop-ref": {
+                "network": "safety_ecat",
+                "hop": "safety_drive_1"
+              },
+              "participant-ref": {
+                "network": "safety_ecat",
+                "participant": "safety_drive_1_out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "safety_ecat",
+                "hop": "safety_drive_2"
+              },
+              "participant-ref": {
+                "network": "safety_ecat",
+                "participant": "safety_drive_2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "status_leds",
+        "description": "APA102C clocked shift-register cascade driven by the compute module.",
+        "selected": {
+          "purpose": "communication",
+          "carrier": "electrical",
+          "rate": {
+            "nominal": {
+              "value": 10000000,
+              "unit": "bit/s"
+            }
+          }
+        },
+        "participant": [
+          {
+            "name": "compute",
+            "endpoint": {
+              "port-ref": {
+                "component": "compute",
+                "port": "led0"
+              }
+            }
+          },
+          {
+            "name": "led_0_in",
+            "endpoint": {
+              "port-ref": {
+                "component": "led_0",
+                "port": "in"
+              }
+            }
+          },
+          {
+            "name": "led_0_out",
+            "endpoint": {
+              "port-ref": {
+                "component": "led_0",
+                "port": "out"
+              }
+            }
+          },
+          {
+            "name": "led_1_in",
+            "endpoint": {
+              "port-ref": {
+                "component": "led_1",
+                "port": "in"
+              }
+            }
+          },
+          {
+            "name": "led_1_out",
+            "endpoint": {
+              "port-ref": {
+                "component": "led_1",
+                "port": "out"
+              }
+            }
+          },
+          {
+            "name": "led_2_in",
+            "endpoint": {
+              "port-ref": {
+                "component": "led_2",
+                "port": "in"
+              }
+            }
+          }
+        ],
+        "hop": [
+          {
+            "name": "compute",
+            "owner": {
+              "component-ref": {
+                "component": "compute"
+              }
+            }
+          },
+          {
+            "name": "led_0",
+            "owner": {
+              "function-ref": {
+                "component": "led_0",
+                "function": "shift_register"
+              }
+            }
+          },
+          {
+            "name": "led_1",
+            "owner": {
+              "function-ref": {
+                "component": "led_1",
+                "function": "shift_register"
+              }
+            }
+          },
+          {
+            "name": "led_2",
+            "owner": {
+              "component-ref": {
+                "component": "led_2"
+              }
+            }
+          }
+        ],
+        "leg": [
+          {
+            "name": "compute_to_led_0",
+            "from": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "compute"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "compute"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "led_0"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "led_0_in"
+              }
+            }
+          },
+          {
+            "name": "led_0_to_led_1",
+            "from": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "led_0"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "led_0_out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "led_1"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "led_1_in"
+              }
+            }
+          },
+          {
+            "name": "led_1_to_led_2",
+            "from": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "led_1"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "led_1_out"
+              }
+            },
+            "to": {
+              "hop-ref": {
+                "network": "status_leds",
+                "hop": "led_2"
+              },
+              "participant-ref": {
+                "network": "status_leds",
+                "participant": "led_2_in"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "star": {
+      "name": "wifi_infrastructure",
+      "description": "WiFi infrastructure network with the access point as coordinator.",
+      "selected": {
+        "purpose": "communication",
+        "carrier": "radiated-rf",
+        "rf": {
+          "channel": {
+            "numbered": {
+              "number": 36,
+              "center-frequency": {
+                "nominal": {
+                  "value": 5180000000,
+                  "unit": "Hz"
+                }
+              },
+              "bandwidth": {
+                "nominal": {
+                  "value": 20000000,
+                  "unit": "Hz"
+                }
+              }
+            }
+          }
+        }
+      },
+      "coordinator": {
+        "participant-ref": {
+          "network": "wifi_infrastructure",
+          "participant": "ap"
+        }
+      },
+      "participant": [
+        {
+          "name": "ap",
+          "endpoint": {
+            "port-ref": {
+              "component": "ap",
+              "port": "wifi0"
+            }
+          }
+        },
+        {
+          "name": "compute",
+          "endpoint": {
+            "port-ref": {
+              "component": "compute",
+              "port": "wifi0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

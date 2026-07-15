@@ -1,0 +1,197 @@
+<hcdf name="melm" body-frame="FLU" world-frame="ENU">
+  <comp name="base_link">
+    <inertial>
+      <mass>10.71</mass>
+      <inertia>0.6 0 0 0.6 0 0.6</inertia>
+    </inertial>
+    <visual name="BaseMetal">
+      <pose xyz="0 0 -.082" rpy="0 0 0"/>
+      <model uri="assets/MELM_0c8b8e5326a7.glb" sha="sha256:0c8b8e5326a7d7d0998a7123010bc06146268d5966446f23c6cefcd8796838f2"/>
+    </visual>
+    <collision name="Base_Collision">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box>
+          <size>0.44 0.3 0.16</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="Base_Top_Collision">
+      <pose xyz="0 0 .069" rpy="0 0 0"/>
+      <geometry>
+        <box>
+          <size>0.46 0.42 0.022</size>
+        </box>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="base_footprint"/>
+  <comp name="lidar_link">
+    <inertial>
+      <mass>0.17</mass>
+      <inertia_origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia>0.0001926666667 0 0 0.0001224141667 0 0.0002130808333</inertia>
+    </inertial>
+    <visual name="visual_box">
+      <pose xyz="0 0 -.017" rpy="0 0 0"/>
+      <geometry>
+        <box>
+          <size>0.039 0.039 0.022</size>
+        </box>
+      </geometry>
+      <color rgba="0.01 0.01 0.01"/>
+    </visual>
+    <visual name="visual_cylinder">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder>
+          <radius>0.018</radius>
+          <length>0.014</length>
+        </cylinder>
+      </geometry>
+      <color rgba="0.01 0.01 0.01"/>
+    </visual>
+  </comp>
+  <comp name="sensors">
+    <inertial>
+      <mass>0.0000001</mass>
+      <inertia>0.000000000001 0 0 0.000000000001 0 0.000000000001</inertia>
+    </inertial>
+  </comp>
+  <comp name="FrontLeftHubMotorWheel">
+    <inertial>
+      <mass>3.854</mass>
+      <inertia>0.009002 0.0006021 0 0.01313 0 0.009003</inertia>
+    </inertial>
+    <visual name="FrontLeftHubMotorWheelMetal_Visual">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <model uri="assets/HubMotor_c3e0d9e22e0f.glb" sha="sha256:c3e0d9e22e0f238fcb97b3f9c595b1f84d4ddc0697d959bfdecca4b59c858717"/>
+    </visual>
+    <visual name="FrontLeftHubMotorWheelRubber_Visual">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <model uri="assets/RubberWheel_31bab5d11b09.glb" sha="sha256:31bab5d11b09ca052d5a41b7692a240d97dd636e3a95fe3260cd1a9e87043922"/>
+    </visual>
+    <collision name="FrontLeftHubMotorWheel_Collision">
+      <pose xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder>
+          <radius>.108</radius>
+          <length>.06</length>
+        </cylinder>
+      </geometry>
+      <surface>
+        <friction static="1.0" dynamic="1.0"/>
+      </surface>
+    </collision>
+  </comp>
+  <comp name="BackRightOmniWheel">
+    <inertial>
+      <mass>3.854</mass>
+      <inertia>0.009002 0.0006021 0 0.01313 0 0.009003</inertia>
+    </inertial>
+    <visual name="BackRightOmniWheel_Visual">
+      <pose xyz="0 0 0" rpy="0 0 1.57079632679"/>
+      <model uri="assets/OmniWheel_24fdcd8f3035.glb" sha="sha256:24fdcd8f3035b8cea054e0724e99f57d3c241a3285a2c3690d7b9d8135ad9005"/>
+    </visual>
+    <collision name="BackRightOmniWheel_Collision">
+      <pose xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <sphere>
+          <radius>.0898</radius>
+        </sphere>
+      </geometry>
+      <surface>
+        <friction static="1.0" dynamic="0.1"/>
+      </surface>
+    </collision>
+  </comp>
+  <comp name="FrontRightHubMotorWheel">
+    <inertial>
+      <mass>3.854</mass>
+      <inertia>0.009002 0.0006021 0 0.01313 0 0.009003</inertia>
+    </inertial>
+    <visual name="FrontRightHubMotorWheelMetal_Visual">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <model uri="assets/HubMotor_c3e0d9e22e0f.glb" sha="sha256:c3e0d9e22e0f238fcb97b3f9c595b1f84d4ddc0697d959bfdecca4b59c858717"/>
+    </visual>
+    <visual name="FrontRightHubMotorWheelRubber_Visual">
+      <pose xyz="0 0 0" rpy="0 0 0"/>
+      <model uri="assets/RubberWheel_31bab5d11b09.glb" sha="sha256:31bab5d11b09ca052d5a41b7692a240d97dd636e3a95fe3260cd1a9e87043922"/>
+    </visual>
+    <collision name="FrontRightHubMotorWheel_Collision">
+      <pose xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder>
+          <radius>.108</radius>
+          <length>.06</length>
+        </cylinder>
+      </geometry>
+      <surface>
+        <friction static="1.0" dynamic="1.0"/>
+      </surface>
+    </collision>
+  </comp>
+  <comp name="BackLeftOmniWheel">
+    <inertial>
+      <mass>3.854</mass>
+      <inertia>0.009002 0.0006021 0 0.01313 0 0.009003</inertia>
+    </inertial>
+    <visual name="BackLeftOmniWheel_Visual">
+      <pose xyz="0 0 0" rpy="0 0 1.57079632679"/>
+      <model uri="assets/OmniWheel_24fdcd8f3035.glb" sha="sha256:24fdcd8f3035b8cea054e0724e99f57d3c241a3285a2c3690d7b9d8135ad9005"/>
+    </visual>
+    <collision name="BackLeftOmniWheel_Collision">
+      <pose xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <sphere>
+          <radius>.0898</radius>
+        </sphere>
+      </geometry>
+      <surface>
+        <friction static="1.0" dynamic="0.1"/>
+      </surface>
+    </collision>
+  </comp>
+  <joint name="lidar_joint" type="fixed">
+    <parent comp="base_link"/>
+    <child comp="lidar_link"/>
+  </joint>
+  <joint name="FrontLeftHubMotorWheelJoint" type="revolute">
+    <parent comp="base_link"/>
+    <child comp="FrontLeftHubMotorWheel"/>
+    <origin xyz=".14 .204 -0.04275" rpy="0 0 3.14159265359"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-1e+16" upper="1e+16"/>
+  </joint>
+  <joint name="BackRightOmniWheelJoint" type="revolute">
+    <parent comp="base_link"/>
+    <child comp="BackRightOmniWheel"/>
+    <origin xyz="-.14 -.183 -0.061" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1e+16" upper="1e+16"/>
+  </joint>
+  <joint name="FrontRightHubMotorWheelJoint" type="revolute">
+    <parent comp="base_link"/>
+    <child comp="FrontRightHubMotorWheel"/>
+    <origin xyz=".14 -.204 -0.04275" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1e+16" upper="1e+16"/>
+  </joint>
+  <joint name="BackLeftOmniWheelJoint" type="revolute">
+    <parent comp="base_link"/>
+    <child comp="BackLeftOmniWheel"/>
+    <origin xyz="-.14 .183 -.061" rpy="0 0 3.14159265359"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1e+16" upper="1e+16"/>
+  </joint>
+  <joint name="base_joint" type="fixed">
+    <parent comp="base_footprint"/>
+    <child comp="base_link"/>
+    <origin xyz="0.0 0.0 -.17" rpy="0 0 0"/>
+  </joint>
+  <joint name="SensorsJoint" type="fixed">
+    <parent comp="base_link"/>
+    <child comp="sensors"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  </joint>
+</hcdf>

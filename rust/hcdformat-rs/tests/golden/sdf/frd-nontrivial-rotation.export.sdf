@@ -1,0 +1,26 @@
+<sdf version="1.12">
+  <model name="frd">
+    <link name="a">
+      <inertial>
+        <mass>1</mass>
+      </inertial>
+    </link>
+    <link name="b">
+      <pose relative_to="j">0 0 0 0 0 0</pose>
+    </link>
+    <joint name="j" type="revolute">
+      <parent>a</parent>
+      <child>b</child>
+      <pose relative_to="a">0.1 -0.2 -0.3 0.49999999999999994 0.3 -0.7</pose>
+      <axis>
+        <xyz>0 -1 0</xyz>
+        <limit>
+          <lower>-1</lower>
+          <upper>1</upper>
+          <effort>1</effort>
+          <velocity>1</velocity>
+        </limit>
+      </axis>
+    </joint>
+  </model>
+</sdf>

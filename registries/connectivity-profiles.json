@@ -1,0 +1,150 @@
+{
+  "format": "hcdf-connectivity-profile-registry",
+  "format-version": 1,
+  "registry-version": "1.4.0",
+  "hcdf-schema": {
+    "major": 1,
+    "minimum-minor": 0
+  },
+  "rulesets": [
+    {
+      "profile": "feetech:sts",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/feetech-sts",
+      "citations": [
+        {
+          "key": "serial-bus-protocol",
+          "organization": "Shenzhen Feetech RC Model Co., Ltd.",
+          "document": "Serial Bus Smart Control Servo Communication Protocol Manual (V1.01)",
+          "locator": "Section 1.0"
+        },
+        {
+          "key": "sts3215-evaluation",
+          "organization": "Shenzhen Feetech RC Model Co., Ltd.",
+          "document": "Feetech 2020 New Product STS3215 Magnetic Encoder 360 Degree Serial Bus Servo Evaluation",
+          "locator": "Electronic Control Function, item 6"
+        },
+        {
+          "key": "sts3215-product",
+          "organization": "Shenzhen Feetech RC Model Co., Ltd.",
+          "document": "12V 30KG.CM Magnetic Encoding Servo STS3215",
+          "locator": "Protocol Type, ID Range, and Communication Speed"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:bidirectional-dshot",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/bidirectional-dshot",
+      "citations": [
+        {
+          "key": "same-line-telemetry",
+          "organization": "Betaflight",
+          "document": "DShot",
+          "locator": "Bidirectional DShot and Bidirectional DShot Frame"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:can",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/can",
+      "citations": [
+        {
+          "key": "can-lower-layers",
+          "organization": "International Organization for Standardization",
+          "document": "ISO 11898-1:2024, Road vehicles - Controller area network (CAN) - Part 1: Data link layer and physical coding sublayer",
+          "locator": "Scope"
+        },
+        {
+          "key": "high-speed-pma",
+          "organization": "International Organization for Standardization",
+          "document": "ISO 11898-2:2026, Road vehicles - Controller area network (CAN) - Part 2: High-speed physical medium attachment (PMA) sublayer",
+          "locator": "Scope"
+        },
+        {
+          "key": "network-topology",
+          "organization": "CAN in Automation (CiA) e.V.",
+          "document": "CANdictionary, 13th edition (2026)",
+          "locator": "Entries bus, CAN network, physical layer, topology, and transceiver"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:dshot",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/dshot",
+      "citations": [
+        {
+          "key": "digital-motor-link",
+          "organization": "Betaflight",
+          "document": "DShot",
+          "locator": "History and Frames"
+        },
+        {
+          "key": "frame-and-direction",
+          "organization": "Betaflight",
+          "document": "DSHOT",
+          "locator": "What is the difference to current protocols and What are the technical details"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:pwm",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/pwm",
+      "citations": [
+        {
+          "key": "point-to-point-control",
+          "organization": "NXP Semiconductors",
+          "document": "Advanced Applications for the Freescale USB_Lite by CMX (AN3523)",
+          "locator": "Section 3.1, Controlling an RC Servo using the PWM Controller"
+        },
+        {
+          "key": "signal-definition",
+          "organization": "Texas Instruments",
+          "document": "Timer PWM basics",
+          "locator": "PWM waveform and control-signal overview"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:rs-485",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/rs-485",
+      "citations": [
+        {
+          "key": "electrical-and-bus",
+          "organization": "Texas Instruments",
+          "document": "The RS-485 Design Guide (SLLA272D, revised May 2021)",
+          "locator": "Sections 2-3"
+        },
+        {
+          "key": "system-configurations",
+          "organization": "Texas Instruments",
+          "document": "RS-422 and RS-485 Standards Overview and System Configurations (SLLA070D, revised May 2010)",
+          "locator": "Sections 2 and 5.1-5.3"
+        }
+      ]
+    },
+    {
+      "profile": "hcdf:uart",
+      "ruleset-version": "1.0.0",
+      "validator": "hcdf:validator/uart",
+      "citations": [
+        {
+          "key": "link-interface",
+          "organization": "Texas Instruments",
+          "document": "How to Replace Optocouplers with Digital Isolators in Standard Interface Circuit (SLLA522)",
+          "locator": "Section 1, UART"
+        },
+        {
+          "key": "multiprocessor-bus",
+          "organization": "Texas Instruments",
+          "document": "MSP430 Family User's Guide, Chapter 12: USART Peripheral Interface, UART Mode",
+          "locator": "Sections 12.1.3 through 12.1.5"
+        }
+      ]
+    }
+  ]
+}

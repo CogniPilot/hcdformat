@@ -1,0 +1,15 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "metadata-test-robot",
+    "body-frame": "FLU",
+    "world-frame": "ENU",
+    "description": "Test robot exercising all root metadata elements",
+    "author": "HCDF Test Suite",
+    "license": "Apache-2.0",
+    "url": "https://github.com/CogniPilot/hcdformat",
+    "comp": {
+      "name": "body"
+    }
+  }
+}

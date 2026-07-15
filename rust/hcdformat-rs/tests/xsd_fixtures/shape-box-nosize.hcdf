@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hcdf name="shape-box-nosize" version="1.0">
+  <comp name="base">
+    <visual name="invalid-box">
+      <geometry>
+        <box>0.1 0.1 0.5</box>
+      </geometry>
+    </visual>
+  </comp>
+</hcdf>

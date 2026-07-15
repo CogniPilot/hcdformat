@@ -1,0 +1,57 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "sensor-module",
+    "body-frame": "FLU",
+    "comp": [
+      {
+        "name": "base",
+        "visual": {
+          "name": "housing",
+          "geometry": {
+            "box": {
+              "size": "0.05 0.05 0.02"
+            }
+          },
+          "color": {
+            "name": "shell"
+          }
+        },
+        "frame": {
+          "name": "mount",
+          "type": "attachment"
+        }
+      },
+      {
+        "name": "head"
+      }
+    ],
+    "joint": {
+      "name": "pan",
+      "type": "revolute",
+      "parent": {
+        "comp": "base"
+      },
+      "child": {
+        "comp": "head"
+      },
+      "origin": {
+        "xyz": "0 0 0.02"
+      },
+      "axis": {
+        "xyz": "0 0 1"
+      },
+      "limit": {
+        "lower": -1.57,
+        "upper": 1.57,
+        "effort": 2,
+        "velocity": 3
+      }
+    },
+    "color": {
+      "name": "shell",
+      "rgba": "0.2 0.2 0.2 1.0",
+      "description": "sensor housing"
+    }
+  }
+}

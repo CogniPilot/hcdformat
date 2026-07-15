@@ -1,0 +1,9 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "minimal-metadata-test",
+    "comp": {
+      "name": "x"
+    }
+  }
+}

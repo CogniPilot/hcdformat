@@ -1,0 +1,32 @@
+<hcdf name="m" body-frame="FLU" world-frame="ENU">
+  <comp name="l">
+    <visual name="l_visual" name-origin="synthesized">
+      <geometry>
+        <box>
+          <size>1 1 1</size>
+        </box>
+      </geometry>
+    </visual>
+    <visual name="l_visual" name-origin="synthesized">
+      <geometry>
+        <sphere>
+          <radius>0.5</radius>
+        </sphere>
+      </geometry>
+    </visual>
+    <collision name="l_collision" name-origin="synthesized">
+      <geometry>
+        <box>
+          <size>1 1 1</size>
+        </box>
+      </geometry>
+    </collision>
+    <collision name="l_collision" name-origin="synthesized">
+      <geometry>
+        <sphere>
+          <radius>0.5</radius>
+        </sphere>
+      </geometry>
+    </collision>
+  </comp>
+</hcdf>

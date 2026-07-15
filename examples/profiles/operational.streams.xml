@@ -1,56 +1,140 @@
-<?xml version="1.0"?>
-<stream-profile name="operational" version="1.0"
-                hcdf-ref="humanoid-mobile-base.hcdf">
-
-  <description>Normal operational mode: arm control, cameras, base mobility, perception.</description>
-
-  <stream-group name="left-arm-control" chain="left-arm">
-    <description>Left arm motor commands and status at 1kHz</description>
-    <stream name="cmd_mcn1l" talker="s32n79/xfi_left" listener="mcn1-l/sgmii0"
-            vlan="10" pcp="5" max-frame-size="192" interval-us="1000" max-latency-us="200"/>
-    <stream name="cmd_mcn2l" talker="s32n79/xfi_left" listener="mcn2-l/sgmii0"
-            vlan="10" pcp="5" max-frame-size="128" interval-us="1000" max-latency-us="200"/>
-    <stream name="status_mcn1l" talker="mcn1-l/sgmii0" listener="s32n79/xfi_left"
-            vlan="10" pcp="5" max-frame-size="384" interval-us="1000" max-latency-us="200"/>
-    <stream name="status_mcn2l" talker="mcn2-l/sgmii0" listener="s32n79/xfi_left"
-            vlan="10" pcp="5" max-frame-size="256" interval-us="1000" max-latency-us="200"/>
+<stream-profile name="operational" version="2.0">
+  <description>Normal arm control, base control, camera, lidar, radar, and head traffic.</description>
+  <stream-group name="arm-control">
+    <description>Deterministic command traffic for both arm chains.</description>
   </stream-group>
-
-  <stream-group name="perception-cameras">
-    <description>Wrist stereo cameras to AGX Thor</description>
-    <stream name="cam_left" talker="cam-l/eth0" listener="agx-thor/mgbe0"
-            vlan="20" pcp="3" max-frame-size="9000" interval-us="33" max-latency-us="10000"/>
-    <stream name="cam_right" talker="cam-r/eth0" listener="agx-thor/mgbe1"
-            vlan="21" pcp="3" max-frame-size="9000" interval-us="33" max-latency-us="10000"/>
+  <stream-group name="perception">
+    <description>Sensor traffic forwarded through declared component switches.</description>
   </stream-group>
-
   <stream-group name="base-mobility">
-    <description>Wheel control via 1722+CAN encapsulation</description>
-    <stream name="wheel_cmd" talker="s32n79/qxgmii_p0" listener="s32j100/eth_up0"
-            vlan="30" pcp="5" max-frame-size="128" interval-us="1000" max-latency-us="500"
-            protocol="ieee-1722-acf-can"/>
-    <stream name="wheel_status" talker="s32j100/eth_up0" listener="s32n79/qxgmii_p0"
-            vlan="30" pcp="5" max-frame-size="256" interval-us="1000" max-latency-us="500"
-            protocol="ieee-1722-acf-can"/>
+    <description>Command and status traffic between the central and base-zone controllers.</description>
   </stream-group>
 
-  <stream-group name="base-perception">
-    <stream name="lidar_front" talker="lidar-front/eth0" listener="agx-thor/mgbe0"
-            vlan="50" pcp="4" max-frame-size="1500" interval-us="1000" max-latency-us="5000"/>
-    <stream name="lidar_rear" talker="lidar-rear/eth0" listener="agx-thor/mgbe0"
-            vlan="50" pcp="4" max-frame-size="1500" interval-us="1000" max-latency-us="5000"/>
-    <stream name="radar_4d" talker="radar-4d/eth0" listener="agx-thor/mgbe0"
-            vlan="50" pcp="4" max-frame-size="4000" interval-us="10000" max-latency-us="10000"/>
-  </stream-group>
+  <stream name="left-arm-command" vlan-id="10" pcp="5" max-frame-size-bytes="256" interval-ns="1000000" max-latency-ns="200000">
+    <group-ref group="arm-control"/>
+    <path>
+      <network-ref network="left-arm-chain"/>
+    </path>
+    <talker><participant-ref network="left-arm-chain" participant="s32n79"/></talker>
+    <listener><participant-ref network="left-arm-chain" participant="mcn1-l-in"/></listener>
+    <listener><participant-ref network="left-arm-chain" participant="mcn2-l-in"/></listener>
+    <listener><participant-ref network="left-arm-chain" participant="mcn3-l-in"/></listener>
+    <listener><participant-ref network="left-arm-chain" participant="mcn4-l"/></listener>
+  </stream>
 
-  <stream-group name="safety">
-    <stream name="safety_arms" talker="s32n79/xfi_left" listener="mcn1-l/eth0"
-            vlan="1" pcp="6" max-frame-size="64" interval-us="10000" max-latency-us="500"/>
-    <stream name="safety_base" talker="s32n79/qxgmii_p0" listener="s32j100/eth_up0"
-            vlan="1" pcp="6" max-frame-size="64" interval-us="10000" max-latency-us="500"
-            protocol="ieee-1722-acf-can">
-      <description>Safety heartbeat to base — S32J100 converts to CAN e-stop</description>
-    </stream>
-  </stream-group>
+  <stream name="right-arm-command" vlan-id="11" pcp="5" max-frame-size-bytes="256" interval-ns="1000000" max-latency-ns="200000">
+    <group-ref group="arm-control"/>
+    <path>
+      <network-ref network="right-arm-chain"/>
+    </path>
+    <talker><participant-ref network="right-arm-chain" participant="s32n79"/></talker>
+    <listener><participant-ref network="right-arm-chain" participant="mcn1-r-in"/></listener>
+    <listener><participant-ref network="right-arm-chain" participant="mcn2-r-in"/></listener>
+    <listener><participant-ref network="right-arm-chain" participant="mcn3-r-in"/></listener>
+    <listener><participant-ref network="right-arm-chain" participant="mcn4-r"/></listener>
+  </stream>
 
+  <stream name="left-camera-ingest" vlan-id="20" pcp="3" max-frame-size-bytes="9000" interval-ns="33333333" max-latency-ns="10000000" protocol="vendor:camera">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="left-wrist-camera"/>
+      <network-ref network="left-arm-chain"/>
+      <forwarding>
+        <from><participant-ref network="left-wrist-camera" participant="mcn3-l"/></from>
+        <function-ref component="mcn3-l" function="integrated_switch"/>
+        <to><participant-ref network="left-arm-chain" participant="mcn3-l-in"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="left-wrist-camera" participant="cam-l"/></talker>
+    <listener><participant-ref network="left-arm-chain" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="right-camera-ingest" vlan-id="21" pcp="3" max-frame-size-bytes="9000" interval-ns="33333333" max-latency-ns="10000000" protocol="vendor:camera">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="right-wrist-camera"/>
+      <network-ref network="right-arm-chain"/>
+      <forwarding>
+        <from><participant-ref network="right-wrist-camera" participant="mcn3-r"/></from>
+        <function-ref component="mcn3-r" function="integrated_switch"/>
+        <to><participant-ref network="right-arm-chain" participant="mcn3-r-in"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="right-wrist-camera" participant="cam-r"/></talker>
+    <listener><participant-ref network="right-arm-chain" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="front-lidar-ingest" vlan-id="50" pcp="4" max-frame-size-bytes="1500" interval-ns="1000000" max-latency-ns="5000000" protocol="vendor:lidar">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="j100_to_lidar_f"/>
+      <network-ref network="n79_to_j100_p0"/>
+      <forwarding>
+        <from><participant-ref network="j100_to_lidar_f" participant="s32j100"/></from>
+        <function-ref component="s32j100" function="s32j100-integrated"/>
+        <to><participant-ref network="n79_to_j100_p0" participant="s32j100"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="j100_to_lidar_f" participant="lidar-front"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="rear-lidar-ingest" vlan-id="50" pcp="4" max-frame-size-bytes="1500" interval-ns="1000000" max-latency-ns="5000000" protocol="vendor:lidar">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="j100_to_lidar_r"/>
+      <network-ref network="n79_to_j100_p0"/>
+      <forwarding>
+        <from><participant-ref network="j100_to_lidar_r" participant="s32j100"/></from>
+        <function-ref component="s32j100" function="s32j100-integrated"/>
+        <to><participant-ref network="n79_to_j100_p0" participant="s32j100"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="j100_to_lidar_r" participant="lidar-rear"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="radar-ingest" vlan-id="51" pcp="4" max-frame-size-bytes="4000" interval-ns="10000000" max-latency-ns="10000000" protocol="vendor:radar">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="j100_to_radar"/>
+      <network-ref network="n79_to_j100_p0"/>
+      <forwarding>
+        <from><participant-ref network="j100_to_radar" participant="s32j100"/></from>
+        <function-ref component="s32j100" function="s32j100-integrated"/>
+        <to><participant-ref network="n79_to_j100_p0" participant="s32j100"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="j100_to_radar" participant="radar-4d"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="head-telemetry" vlan-id="52" pcp="3" max-frame-size-bytes="1500" interval-ns="10000000" max-latency-ns="10000000" protocol="vendor:telemetry">
+    <group-ref group="perception"/>
+    <path>
+      <network-ref network="j100_to_head"/>
+      <network-ref network="n79_to_j100_p0"/>
+      <forwarding>
+        <from><participant-ref network="j100_to_head" participant="s32j100"/></from>
+        <function-ref component="s32j100" function="s32j100-integrated"/>
+        <to><participant-ref network="n79_to_j100_p0" participant="s32j100"/></to>
+      </forwarding>
+    </path>
+    <talker><participant-ref network="j100_to_head" participant="head"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32n79"/></listener>
+  </stream>
+
+  <stream name="base-command" vlan-id="30" pcp="5" max-frame-size-bytes="128" interval-ns="1000000" max-latency-ns="500000" protocol="ieee:1722">
+    <group-ref group="base-mobility"/>
+    <path><network-ref network="n79_to_j100_p0"/></path>
+    <talker><participant-ref network="n79_to_j100_p0" participant="s32n79"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32j100"/></listener>
+  </stream>
+
+  <stream name="base-status" vlan-id="30" pcp="5" max-frame-size-bytes="256" interval-ns="1000000" max-latency-ns="500000" protocol="ieee:1722">
+    <group-ref group="base-mobility"/>
+    <path><network-ref network="n79_to_j100_p0"/></path>
+    <talker><participant-ref network="n79_to_j100_p0" participant="s32j100"/></talker>
+    <listener><participant-ref network="n79_to_j100_p0" participant="s32n79"/></listener>
+  </stream>
 </stream-profile>

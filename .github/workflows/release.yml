@@ -1,0 +1,123 @@
+name: Release (PyPI + crates.io)
+
+# On a version tag (e.g. v1.0.0) this publishes BOTH the Python package to PyPI and the Rust crate
+# (rust/hcdformat-rs) to crates.io, each via Trusted Publishing (OIDC), so no API tokens are stored.
+# Configure trusted publishers first:
+#   - PyPI:      project hcdformat, owner CogniPilot, repo hcdformat, workflow release.yml, env pypi
+#   - crates.io: crate   hcdformat, owner CogniPilot, repo hcdformat, workflow release.yml, env crates-io
+# Python package and Rust crate share the version (the schema/release version, e.g. 1.0.0): the tag
+# triggers both; the crate publishes at its Cargo.toml version and is skipped if it's already on
+# crates.io. crates.io/PyPI versions are immutable, so bump per release: rust/hcdformat-rs/Cargo.toml,
+# rust/hcdformat-py/{Cargo.toml,pyproject.toml} (the published wheel; the maturin project is THE build),
+# plus package.xml (the ROS/ament_cmake colcon packaging path, which builds the same binding from source).
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  # The PyPI artifact is the MATURIN wheel from rust/hcdformat-py: the native `hcdf` extension over the
+  # canonical Rust core, shipped as `hcdf/__init__.abi3.so` so the extension IS the package. The
+  # pure-Python implementation has been retired, so this is the ONLY build that yields a functional wheel;
+  # a binding-less wheel would have no implementation to fall back to. abi3-py310 (see the crate manifest)
+  # means ONE wheel covers CPython 3.10+; manylinux keeps it installable across distros.
+  # Linux x86_64 only for now; add a matrix (aarch64/mac/win) when there is demand. NO sdist is
+  # published: the maturin project builds against an out-of-tree path dependency (../hcdformat-rs;
+  # xacro-pure comes from crates.io), so an sdist would need a Rust toolchain and untested path-dep
+  # repackaging at `pip install` time, so deliberately wheels-only until that install path is proven.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # No `maturin-version` input: the action resolves it from the pyproject's build-system
+      # requirement (`maturin>=1.7,<2`, found via --manifest-path), so the pin lives in ONE place.
+      - name: Build the abi3 wheel (maturin, manylinux)
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --manifest-path rust/hcdformat-py/Cargo.toml --out dist
+          manylinux: auto
+
+      - name: Smoke test the built wheel (incl. the Rust binding + the JSON path that reads hcdf.xsd)
+        run: |
+          python -m venv /tmp/v
+          # The wheel has NO runtime deps (lxml/numpy/trimesh are gone; the core is Rust), so a bare
+          # install must import + run the Rust CLI with nothing else pulled.
+          /tmp/v/bin/pip install "$(ls dist/*.whl)"
+          cmp registries/connectivity-profiles.json /tmp/v/share/hcdformat/registries/connectivity-profiles.json
+          cmp registries/connectivity-profile-registry.schema.json /tmp/v/share/hcdformat/registries/connectivity-profile-registry.schema.json
+          # cd out of the checkout so `import hcdf` resolves to the INSTALLED wheel, not the repo tree:
+          # this is the gate that the wheel actually carries the native extension and routes through it.
+          (cd /tmp && /tmp/v/bin/python -c "import hcdf; assert hcdf.__version__ and hcdf.dom and hcdf.urdf, 'wheel is missing the Rust binding'")
+          /tmp/v/bin/hcdf --version
+          /tmp/v/bin/hcdf convert tests/urdf/example-arm.urdf /tmp/a.hcdf
+          /tmp/v/bin/hcdf convert /tmp/a.hcdf /tmp/a.json
+          /tmp/v/bin/hcdf convert /tmp/a.json /tmp/a2.hcdf
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write          # required for Trusted Publishing
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-crate:
+    runs-on: ubuntu-latest
+    environment: crates-io
+    permissions:
+      id-token: write          # required for crates.io Trusted Publishing
+    defaults:
+      run:
+        working-directory: rust/hcdformat-rs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Gate, the crate must pass its tests (round-trips the example corpus)
+        run: cargo test
+
+      - name: Skip if this crate version is already published
+        id: check
+        run: |
+          VER=$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"(.*)".*/\1/')
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' \
+            -A "hcdformat-release (bperseghetti@rudislabs.com)" \
+            "https://crates.io/api/v1/crates/hcdformat/$VER")
+          if [ "$CODE" = "200" ]; then
+            echo "hcdformat $VER already on crates.io, skipping publish"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate with crates.io (Trusted Publishing)
+        if: steps.check.outputs.publish == 'true'
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: Publish hcdformat to crates.io
+        if: steps.check.outputs.publish == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish

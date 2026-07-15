@@ -1,0 +1,40 @@
+assets/Arm_c54a617d09e4.GLB
+assets/Bracket_341e403abf0c.STL
+assets/chassis_69c28c6974dd.glb
+assets/rotor_a71b820512ce.stl
+robot.hcdf
+===ROOT===
+<hcdf name="robot" body-frame="FLU" world-frame="ENU">
+  <comp name="chassis">
+    <visual name="chassis_vis">
+      <model uri="assets/chassis_69c28c6974dd.glb" sha="sha256:69c28c6974dd6412bf04d033bdc7c3a97c8f43c0b32f1cf74c3f45f739c5fe95"/>
+    </visual>
+    <visual name="arm_vis">
+      <model uri="assets/Arm_c54a617d09e4.GLB" sha="sha256:c54a617d09e40532ecd90e31b178862e7026695414b354bdc540cb13e6fb4d99"/>
+    </visual>
+  </comp>
+  <comp name="left/rotor">
+    <collision name="rcol">
+      <geometry>
+        <mesh uri="assets/rotor_a71b820512ce.stl" sha="sha256:a71b820512ce1cdebff1f002c63a92e382c8afd91e6aa3a671afced03b2715fd"/>
+      </geometry>
+    </collision>
+    <collision name="bcol">
+      <geometry>
+        <mesh uri="assets/Bracket_341e403abf0c.STL" sha="sha256:341e403abf0c9f1195a402f58fbac01a23cb27c9bcbca1ad5b554e9c91c3f4b4"/>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="right/rotor">
+    <collision name="rcol">
+      <geometry>
+        <mesh uri="assets/rotor_a71b820512ce.stl" sha="sha256:a71b820512ce1cdebff1f002c63a92e382c8afd91e6aa3a671afced03b2715fd"/>
+      </geometry>
+    </collision>
+    <collision name="bcol">
+      <geometry>
+        <mesh uri="assets/Bracket_341e403abf0c.STL" sha="sha256:341e403abf0c9f1195a402f58fbac01a23cb27c9bcbca1ad5b554e9c91c3f4b4"/>
+      </geometry>
+    </collision>
+  </comp>
+</hcdf>

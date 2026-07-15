@@ -1,0 +1,1 @@
+<hcdf name="x" version="1.0"><comp name="a"/><comp name="b"/><joint name="j" type="bogus"><parent comp="a"/><child comp="b"/></joint></hcdf>

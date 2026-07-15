@@ -28,35 +28,48 @@
     <child comp="b"/>
   </joint>
 
+  <!-- Ball: 3-DOF spherical; swing_limit = elliptic cone (swing1 != swing2), twist_limit = twist range (rad); both optional -->
   <joint name="j_ball" type="ball">
     <parent comp="a"/>
     <child comp="b"/>
+    <swing_limit swing1="0.5" swing2="0.8"/>
+    <twist_limit lower="-1.57" upper="1.57"/>
   </joint>
 
+  <!-- Universal: 2-DOF; limit bounds the primary axis, limit2 bounds axis2 (both radians) -->
   <joint name="j_universal" type="universal">
     <parent comp="a"/>
     <child comp="b"/>
     <axis xyz="0 0 1"/>
     <axis2 xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57"/>
+    <limit2 lower="-0.78" upper="0.78"/>
   </joint>
 
+  <!-- Planar: 2-DOF translation in a plane; axis is the plane NORMAL, limit/limit2 are the two in-plane ranges (m) -->
   <joint name="j_planar" type="planar">
     <parent comp="a"/>
     <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.0" upper="1.0"/>
+    <limit2 lower="-0.5" upper="0.5"/>
   </joint>
 
-  <joint name="j_screw" type="screw" thread_pitch="0.002">
+  <!-- Screw: 1-DOF helical; limit bounds the ROTATIONAL DOF (radians), translation derives via thread_pitch (m/rev) -->
+  <joint name="j_screw" type="screw" thread_pitch="0.002" pitch_convention="m_per_rev" handedness="right">
     <parent comp="a"/>
     <child comp="b"/>
     <axis xyz="0 0 1"/>
+    <limit lower="-6.28" upper="6.28"/>
   </joint>
 
-  <!-- Cylindrical: rotation + translation on same axis (e.g., piston that can also rotate) -->
+  <!-- Cylindrical: rotation + translation on same axis (e.g., piston that can also rotate); limit = translation (m), limit2 = rotation (rad, optional) -->
   <joint name="j_cylindrical" type="cylindrical">
     <parent comp="a"/>
     <child comp="b"/>
     <axis xyz="0 0 1"/>
     <limit lower="0" upper="0.3" effort="50" velocity="0.2"/>
+    <limit2 lower="-3.14" upper="3.14"/>
   </joint>
 
   <!-- Free: 6-DOF unconstrained (mobile robot base, free-flying body) -->

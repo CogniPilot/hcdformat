@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: a self-collision-disable <pair> names a comp that does not exist
+     (comp2="ghost"), which no XSD keyref checks, tripping E_PAIR_REF. comp1 resolves; the two sides differ
+     (no self-pair) and the pair is listed once (no duplicate), so only the dangling reference is at
+     fault. A dangling ref is an error, like every other ref check in the validator family. -->
+<hcdf version="1.0" name="cov-bad-pair-ref">
+  <comp name="base"/>
+  <comp name="link1"/>
+  <self-collision-disable>
+    <pair comp1="base" comp2="ghost"/>
+  </self-collision-disable>
+</hcdf>

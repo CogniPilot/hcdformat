@@ -1,0 +1,35 @@
+[package]
+name = "hcdformat-py"
+version = "1.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "PyO3 binding exposing the canonical Rust hcdformat core to Python (Rust canonical, Python = binding)"
+repository = "https://github.com/CogniPilot/hcdformat"
+
+# The native extension module Python imports as `hcdf`. cdylib so it builds a .so/.pyd; maturin ships
+# it as `hcdf/__init__.abi3.so`, so the extension IS the `hcdf` package (see pyproject.toml). The `rlib`
+# is what the `gen_pyi` bin and the drift test link against to reach the pyo3-free stub-text builders.
+[lib]
+name = "hcdf"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# abi3-py310 -> one wheel covers CPython 3.10+ (matches the package's supported floor). The
+# `extension-module` feature keeps libpython out of the link line (manylinux/abi3 correctness).
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py310"] }
+
+# The canonical core. Enable every behavior the Python public API needs: URDF/SDF/xacro converters,
+# the asset baker, the hardened remote fetcher, and the `cli` module (so the wheel's `hcdf` console
+# script drives the SAME Rust CLI as the native binary, via the `run_cli` pyfunction). This crate is a
+# SEPARATE build root, so enabling these features here does NOT alter hcdformat-rs's own default/wasm
+# build (that crate stays default = []). `cli` pulls clap (native-only); the binding is native, so fine.
+hcdformat = { path = "../hcdformat-rs", features = ["urdf", "sdf", "xacro", "bake", "remote", "json", "xsd", "cli"] }
+
+# The pyderive proc-macro that GENERATES the write-through DOM handles below. A proc-macro crate links
+# no pyo3 into any target; the pyo3-referencing code it emits lands HERE (this binding crate), so
+# `hcdformat-rs` stays wasm-clean.
+hcdformat-pyderive = { path = "../hcdformat-pyderive" }
+
+# No `[patch.crates-io]` is needed: the `xacro` feature is backed by the fully-pure-Rust
+# `xacro-pure` crate (a crates.io dependency of hcdformat-rs), which replaced the former vendored
+# `xacro-rs`/`pyisheval` forks and their root-only patch plumbing; see hcdformat-rs/Cargo.toml.

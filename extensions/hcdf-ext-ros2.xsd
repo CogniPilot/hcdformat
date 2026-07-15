@@ -89,13 +89,13 @@ name, 'type' gives the message type, and 'qos' selects the QoS profile.</xs:docu
     <xs:attribute name="sensor" type="xs:string">
       <xs:annotation>
         <xs:documentation>Reference to an HCDF sensor name (e.g., "imu0", "camera0").
-Mutually exclusive with the 'motor' attribute — specify one or the other.</xs:documentation>
+Mutually exclusive with the 'motor' attribute: specify one or the other.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="motor" type="xs:string">
       <xs:annotation>
         <xs:documentation>Reference to an HCDF motor name (e.g., "prop_fl", "joint_motor_1").
-Mutually exclusive with the 'sensor' attribute — specify one or the other.</xs:documentation>
+Mutually exclusive with the 'sensor' attribute: specify one or the other.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -105,11 +105,14 @@ Should follow ROS 2 naming conventions: lowercase, forward-slash separated,
 no special characters except underscores.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type" type="xs:string" use="required">
+    <xs:attribute name="type" type="xs:string">
       <xs:annotation>
         <xs:documentation>ROS 2 message type in package/msg/Type format
 (e.g., "sensor_msgs/msg/Imu", "actuator_msgs/msg/MotorCommand").
-Must be a valid, installed ROS 2 message type.</xs:documentation>
+Should be a valid, installed ROS 2 message type. OPTIONAL: a topic mapping may name
+only the device and a topic name with no message type; this carries a raw/native
+runtime topic (e.g. an imported SDF contact-sensor &lt;topic&gt;) whose message type is
+not yet resolved. When a full ROS 2 binding is authored, set the message type.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="qos" type="QosPreset" default="system_default">

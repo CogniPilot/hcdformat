@@ -1,0 +1,11 @@
+<hcdf name="m" body-frame="FLU" world-frame="ENU">
+  <comp name="l">
+    <visual name="v">
+      <geometry>
+        <box>
+          <size>1 1 1</size>
+        </box>
+      </geometry>
+    </visual>
+  </comp>
+</hcdf>

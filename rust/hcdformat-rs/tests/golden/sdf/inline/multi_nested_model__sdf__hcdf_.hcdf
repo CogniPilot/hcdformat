@@ -1,0 +1,7 @@
+<hcdf name="first" body-frame="FLU" world-frame="ENU">
+  <comp name="a">
+    <inertial>
+      <mass>1</mass>
+    </inertial>
+  </comp>
+</hcdf>

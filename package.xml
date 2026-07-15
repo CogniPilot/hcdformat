@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>hcdformat</name>
+  <version>1.0.0</version>
+  <description>Convert and check HCDF, URDF, and SDF robot descriptions (Rust-backed: native binding + hcdf CLI)</description>
+  <maintainer email="bperseghetti@rudislabs.com">Benjamin Perseghetti</maintainer>
+  <license>Apache-2.0</license>
+  <url type="repository">https://github.com/CogniPilot/hcdformat</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Rust-canonical package: colcon builds the native `hcdf` binding (shipped as `hcdf/__init__.abi3.so`,
+       so `import hcdf` loads the extension) + the `hcdf` CLI FROM SOURCE (see CMakeLists.txt). This needs
+       a Rust toolchain (cargo + rustc) and maturin on the build machine; these are developer/CI tools with
+       no universal rosdep key, so they are documented in the README + CMakeLists rather than declared here.
+       Python 3 hosts the binding at runtime. There is NO lxml / numpy / xacro dependency any more: XML+JSON,
+       frame math, and xacro expansion are all in the Rust core (the pure-Rust xacro-pure engine replaces the
+       xacro subprocess). -->
+  <depend>python3</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

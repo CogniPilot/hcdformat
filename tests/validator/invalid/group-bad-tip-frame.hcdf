@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: group tip-frame is not a frame on the tip-comp (E_GROUP_TIP_FRAME) -->
+<hcdf version="1.0" name="group-bad-tip-frame">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+  <group name="g" tip-comp="b" tip-frame="nope">
+    <joint ref="j"/>
+  </group>
+</hcdf>

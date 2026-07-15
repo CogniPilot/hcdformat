@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- validator-loop: the loop <predecessor> resolves to a REAL comp (ground) that is
+     not the joint's own parent comp (coupler), tripping W_LOOP_BODY_MISMATCH. It is only a
+     warning: the schema permits it and a reader can still solve the joint's own edge,
+     but naming a different existing body is almost always an authoring slip. The
+     <successor> restates the joint's child, so only the predecessor disagrees. -->
+<hcdf version="1.0" name="loop-warn-body-mismatch">
+  <comp name="ground"/>
+  <comp name="coupler"/>
+  <comp name="rocker"/>
+  <joint name="j_close" type="revolute">
+    <parent comp="coupler"/>
+    <child comp="rocker"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>ground</predecessor>
+      <successor>rocker</successor>
+      <constraint-axes>1 1 1 1 1 0</constraint-axes>
+    </loop>
+  </joint>
+</hcdf>

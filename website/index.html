@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -54,50 +54,46 @@
   <div class="hero">
     <h1>HCDF</h1>
     <p class="tagline">Hardware Configuration Descriptive Format</p>
-    <p class="tagline">The first robot description format for cyber-physical systems</p>
-    <p class="version">Version 1.0.0</p>
+    <p class="tagline">One description for the physical and connected parts of a cyber-physical system</p>
+    <p class="version">Version 1.0</p>
   </div>
 
   <!-- Feature Cards -->
   <div class="cards">
     <div class="card">
       <h3>Physical Structure</h3>
-      <p>Joints, sensors, motors, geometry, kinematics, transmissions, materials, and collision models. Everything URDF does, plus inertial parameters, sensor noise models, motor curves, and propeller specs.</p>
+      <p>Components, joints, frames, visual and collision geometry, inertial properties, sensors, motors, transmissions, dynamic surfaces, power sources, named states, and closed-loop mechanisms.</p>
     </div>
     <div class="card">
-      <h3>Cyber Infrastructure</h3>
-      <p>TSN networking with gPTP, Qbv schedules, MACsec, 802.3dm daisy-chains, EtherCAT, CAN-FD buses, power distribution, and device discovery. Describe the network that controls the robot, not just the robot itself.</p>
+      <h3>Unified Connectivity</h3>
+      <p>Functional ports and channels, physical connectors and positions, antennas, bindings, mates, routed assemblies, and seven topology forms. The same vocabulary covers communication, power delivery, and material transfer over electrical, optical, RF, liquid, and gas carriers.</p>
     </div>
     <div class="card">
-      <h3>Agent-Ready</h3>
-      <p>Stream profiles for deterministic traffic, YANG integration for network management, XSD validation, extension mechanism for ROS 2, Gazebo, and vendor-specific data. Built for AI agents to read, reason about, and configure.</p>
+      <h3>Rust Toolchain</h3>
+      <p>Pure Rust schema and semantic validation, normalized connectivity projection, HCDF bundles, XML and JSON conversion, and URDF, Xacro, and SDF conversion. Python access is provided through compiled PyO3 bindings.</p>
     </div>
   </div>
 
   <hr class="section-divider"/>
 
-  <!-- Vendor Distribution & SHA Verification -->
+  <!-- Composition and content integrity -->
   <div class="quickstart">
-    <h3>Verified Hardware Distribution</h3>
-    <p>Hardware vendors publish HCDF components describing their boards, complete with ports, sensors, firmware identity, and 3D models. Every file is SHA256-verified for integrity.</p>
-    <pre class="language-xml"><code>&lt;!-- Vendor-provided component: describes the board's capabilities --&gt;
-&lt;comp name="optical-flow" role="sensor"&gt;
-  &lt;board&gt;mr_mcxn_t1&lt;/board&gt;
-  &lt;software name="cerebri"&gt;
-    &lt;version&gt;1.2.3&lt;/version&gt;
-    &lt;hash&gt;b50403f7f1bfe13c72a7ddc0467f81cfe8c11612...&lt;/hash&gt;
-    &lt;firmware-manifest-uri&gt;https://firmware.cognipilot.org/mr_mcxn_t1/optical-flow&lt;/firmware-manifest-uri&gt;
-  &lt;/software&gt;
-  &lt;visual name="board"&gt;
-    &lt;model uri="models/d9507e38-optical_flow.glb" sha="d9507e38a1c4..."/&gt;
-  &lt;/visual&gt;
-  ...
-&lt;/comp&gt;
-
-&lt;!-- System integrator composes vendor components with SHA pinning --&gt;
-&lt;include uri="https://hcdf.cognipilot.org/mr_mcxn_t1/optical-flow/optical-flow.hcdf"
-         sha="d9507e38..." name="optical-flow-1"/&gt;</code></pre>
-    <p>SHA hashes enable <strong>cache deduplication</strong> (same content stored once), <strong>integrity verification</strong> (detect corrupted downloads), <strong>version pinning</strong> (specific SHA = specific version), and <strong>firmware matching</strong> (MCUboot image hash matches HCDF software hash, so an agent verifies the running firmware matches the description).</p>
+    <h3>Composition and Content Integrity</h3>
+    <p>Reusable HCDF modules can be composed with <code>&lt;include&gt;</code>. Includes, model resources, and stream-profile resources may carry a SHA-256 digest, which lets loaders verify and cache pinned content. The digest is optional, so a document chooses whether each resource is pinned.</p>
+    <pre class="language-xml"><code>&lt;hcdf version="1.0" name="mobile-platform"&gt;
+  &lt;comp name="chassis"&gt;
+    &lt;visual name="housing"&gt;
+      &lt;model uri="models/housing.glb" sha="d9507e..."/&gt;
+    &lt;/visual&gt;
+  &lt;/comp&gt;
+  &lt;stream-profile uri="profiles/operational.streams.xml"
+                  sha="2db132..."
+                  selection-role="default"/&gt;
+  &lt;include uri="components/arm.hcdf"
+           sha="0f44b5..."
+           name="left-arm"/&gt;
+&lt;/hcdf&gt;</code></pre>
+    <p>The <code>&lt;software&gt;</code> element records software identity, version, hash text, and an optional firmware manifest URI. How those fields are matched to a running device is intentionally left to the consuming system.</p>
     <p>Learn more: <a href="/tools/">Tools &amp; Ecosystem</a></p>
   </div>
 
@@ -106,10 +102,12 @@
   <!-- Quick Start -->
   <div class="quickstart">
     <h3>Quick Start</h3>
-    <p>Validate an HCDF file against the schema:</p>
-    <pre class="language-bash"><code>python tools/validate.py examples/drone-quadrotor.hcdf</code></pre>
+    <p>Build the Rust CLI, then run schema-shape and semantic validation:</p>
+    <pre class="language-bash"><code>cargo build --release --manifest-path rust/hcdformat-rs/Cargo.toml --features cli --bin hcdf
+rust/hcdformat-rs/target/release/hcdf validate --xsd examples/openarm-thor.hcdf
+rust/hcdformat-rs/target/release/hcdf validate examples/openarm-thor.hcdf</code></pre>
     <p>Browse the specification: <a href="/spec/core.html">Core Schema Spec Browser</a></p>
-    <p>View examples: <a href="/examples/">Humanoid Mobile Base</a> (2297 lines, 19-device system with 5 networks) | <a href="/examples/#drone">Drone Quadrotor</a></p>
+    <p>View examples: <a href="/examples/#humanoid">Humanoid Mobile Base</a> | <a href="/examples/#four-bar">Four-Bar Linkage</a> | <a href="/examples/#openarm-thor">OpenArm + Jetson Thor</a> | <a href="/examples/#dm-j8009p">DM-J8009P OpenArm Joint</a></p>
   </div>
 
   <hr class="section-divider"/>
@@ -119,19 +117,19 @@
     <a class="card-link" href="/spec/">
       <div class="card">
         <h3>Specification</h3>
-        <p>147 types, 42 enums. Full schema reference with type hierarchy, attributes, and constraints.</p>
+        <p>Generated schema references with type hierarchy, attributes, cardinalities, enumerations, and documentation.</p>
       </div>
     </a>
     <a class="card-link" href="/examples/">
       <div class="card">
         <h3>Examples</h3>
-        <p>Complete HCDF files: humanoid mobile base, drone quadrotor, and minimal test. Real-world XML with syntax highlighting.</p>
+        <p>Complete system descriptions, focused kinematic examples, a component-level motor example, and an XSD syntax fixture.</p>
       </div>
     </a>
     <a class="card-link" href="https://github.com/CogniPilot/hcdformat">
       <div class="card">
         <h3>GitHub Repository</h3>
-        <p>Source code, schema, validator, examples, and design documents. Apache 2.0 license.</p>
+        <p>Schema sources, Rust implementation, compiled Python bindings, examples, tests, and design documentation. Apache 2.0 license.</p>
       </div>
     </a>
   </div>

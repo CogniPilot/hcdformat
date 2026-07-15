@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: revolute joint has no <limit> (E_JOINT_LIMIT_REQUIRED) -->
+<hcdf version="1.0" name="revolute-no-limit">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+</hcdf>

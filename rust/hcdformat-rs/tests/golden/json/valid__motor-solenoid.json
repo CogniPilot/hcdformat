@@ -1,0 +1,37 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "solenoid-test",
+    "comp": {
+      "name": "gripper",
+      "role": "actuator",
+      "motor": [
+        {
+          "name": "release_pin",
+          "type": "solenoid",
+          "voltage": {
+            "nominal": 12
+          },
+          "current": {
+            "continuous": 0.8,
+            "peak": 2.5
+          },
+          "stroke": {
+            "unit": "mm",
+            "$text": 10
+          }
+        },
+        {
+          "name": "air_valve",
+          "type": "solenoid",
+          "voltage": {
+            "nominal": 24
+          },
+          "current": {
+            "continuous": 0.3
+          }
+        }
+      ]
+    }
+  }
+}

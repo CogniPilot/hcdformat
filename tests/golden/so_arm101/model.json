@@ -1,0 +1,1051 @@
+{
+  "hcdf": {
+    "body-frame": "FLU",
+    "color": [
+      {
+        "name": "3d_printed",
+        "rgba": "0.2 0.7 0.85 1.0"
+      },
+      {
+        "name": "sts3215",
+        "rgba": "0.1 0.1 0.1 1.0"
+      }
+    ],
+    "comp": [
+      {
+        "name": "world"
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:8cd2f241037ea377af1191fffe0dd9d9006beea6dcc48543660ed41647072424",
+                "uri": "assets/base_motor_holder_so101_v1_8cd2f241037e.stl"
+              }
+            },
+            "name": "base_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.67685e-15 1.5708",
+              "xyz": "-0.00636471 -9.94414e-05 -0.0024"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:bb12b7026575e1f70ccc7240051f9d943553bf34e5128537de6cd86fae33924d",
+                "uri": "assets/base_so101_v2_bb12b7026575.stl"
+              }
+            },
+            "name": "base_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -2.78073e-29 1.5708",
+              "xyz": "-0.00636471 -8.97657e-09 -0.0024"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+                "uri": "assets/sts3215_03a_v1_a37c871fb502.stl"
+              }
+            },
+            "name": "base_link_collision_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-8.21148e-16 7.84513e-18 1.249e-15",
+              "xyz": "0.0263353 -8.97657e-09 0.0437"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:e197e24005a07d01bbc06a8c42311664eaeda415bf859f68fa247884d0f1a6e9",
+                "uri": "assets/waveshare_mounting_plate_so101_v2_e197e24005a0.stl"
+              }
+            },
+            "name": "base_link_collision_3",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.35493e-14 1.5708",
+              "xyz": "-0.0309827 -0.000199441 0.0474"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "0.000114686 -4.59787e-07 4.97151e-06 0.000136117 9.75275e-08 0.000130364",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "0.0137179 -5.19711e-05 0.0334843"
+          },
+          "mass": 0.147
+        },
+        "name": "base_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:28d803f896e8ce084af412950ef76b952bfbcefde14e7e82d744b34af129d494",
+              "uri": "assets/base_motor_holder_so101_v1_28d803f896e8.glb"
+            },
+            "name": "base_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.67685e-15 1.5708",
+              "xyz": "-0.00636471 -9.94414e-05 -0.0024"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:001ea2ce1735f5c8b1abcca803ef52e8371fc63060fc0e84b1d259f7eb0237d0",
+              "uri": "assets/base_so101_v2_001ea2ce1735.glb"
+            },
+            "name": "base_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -2.78073e-29 1.5708",
+              "xyz": "-0.00636471 -8.97657e-09 -0.0024"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227",
+              "uri": "assets/sts3215_03a_v1_d60a1ee2879a.glb"
+            },
+            "name": "base_link_visual_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-8.21148e-16 7.84513e-18 1.249e-15",
+              "xyz": "0.0263353 -8.97657e-09 0.0437"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:138bebfe5f77b6cbd24cd619ef26e413c697dc46c9016a97c9f988bc8d425dcb",
+              "uri": "assets/waveshare_mounting_plate_so101_v2_138bebfe5f77.glb"
+            },
+            "name": "base_link_visual_3",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.35493e-14 1.5708",
+              "xyz": "-0.0309827 -0.000199441 0.0474"
+            }
+          }
+        ]
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+                "uri": "assets/sts3215_03a_v1_a37c871fb502.stl"
+              }
+            },
+            "name": "shoulder_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 1.5708 0",
+              "xyz": "-0.0303992 0.000422241 -0.0417"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:31242ae6fb59d8b15c66617b88ad8e9bded62d57c35d11c0c43a70d2f4caa95b",
+                "uri": "assets/motor_holder_so101_base_v1_31242ae6fb59.stl"
+              }
+            },
+            "name": "shoulder_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.5708 0",
+              "xyz": "-0.0675992 -0.000177759 0.0158499"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:9be900cc2a2bf718102841ef82ef8d2873842427648092c8ed2ca1e2ef4ffa34",
+                "uri": "assets/rotation_pitch_so101_v1_9be900cc2a2b.stl"
+              }
+            },
+            "name": "shoulder_link_collision_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 2.35221e-33 0",
+              "xyz": "0.0122008 2.22413e-05 0.0464"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "8.3759e-05 7.55525e-08 -1.16342e-06 8.10403e-05 1.54663e-07 2.39783e-05",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "-0.0307604 -1.66727e-05 -0.0252713"
+          },
+          "mass": 0.100006
+        },
+        "name": "shoulder_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227",
+              "uri": "assets/sts3215_03a_v1_d60a1ee2879a.glb"
+            },
+            "name": "shoulder_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 1.5708 0",
+              "xyz": "-0.0303992 0.000422241 -0.0417"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:1f0e90b3bc21ee1584e7f40cea5e9ee8d42cc3c6784a848350fece348a3b3be2",
+              "uri": "assets/motor_holder_so101_base_v1_1f0e90b3bc21.glb"
+            },
+            "name": "shoulder_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 -1.5708 0",
+              "xyz": "-0.0675992 -0.000177759 0.0158499"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:b2037f0efab5580345cde63447ed21f9df440b4f5a673322eb1212ef0079a5f7",
+              "uri": "assets/rotation_pitch_so101_v1_b2037f0efab5.glb"
+            },
+            "name": "shoulder_link_visual_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 2.35221e-33 0",
+              "xyz": "0.0122008 2.22413e-05 0.0464"
+            }
+          }
+        ]
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+                "uri": "assets/sts3215_03a_v1_a37c871fb502.stl"
+              }
+            },
+            "name": "upper_arm_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -5.27356e-16 -1.5708",
+              "xyz": "-0.11257 -0.0155 0.0187"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:475056e03a17e71919b82fd88ab9a0b898ab50164f2a7943652a6b2941bb2d4f",
+                "uri": "assets/upper_arm_so101_v1_475056e03a17.stl"
+              }
+            },
+            "name": "upper_arm_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "3.14159 -0 -1.30911e-30",
+              "xyz": "-0.065085 0.012 0.0182"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "4.08002e-05 -1.97819e-05 -4.03016e-08 0.000147318 8.97326e-09 0.000142487",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "-0.0898471 -0.00838224 0.0184089"
+          },
+          "mass": 0.103
+        },
+        "name": "upper_arm_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227",
+              "uri": "assets/sts3215_03a_v1_d60a1ee2879a.glb"
+            },
+            "name": "upper_arm_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -5.27356e-16 -1.5708",
+              "xyz": "-0.11257 -0.0155 0.0187"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:541b9ae99efc39c01588b2f92cf29ca7d530ea7804518d08538b18ce3e2e0836",
+              "uri": "assets/upper_arm_so101_v1_541b9ae99efc.glb"
+            },
+            "name": "upper_arm_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "3.14159 -0 -1.30911e-30",
+              "xyz": "-0.065085 0.012 0.0182"
+            }
+          }
+        ]
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:d01d1f2de365651dcad9d6669e94ff87ff7652b5bb2d10752a66a456a86dbc71",
+                "uri": "assets/under_arm_so101_v1_d01d1f2de365.stl"
+              }
+            },
+            "name": "lower_arm_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "3.14159 -0 6.67202e-31",
+              "xyz": "-0.0648499 -0.032 0.0182"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:887f92e6013cb64ea3a1ab8675e92da1e0beacfd5e001f972523540545e08011",
+                "uri": "assets/motor_holder_so101_wrist_v1_887f92e6013c.stl"
+              }
+            },
+            "name": "lower_arm_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -2.55351e-15 -1.83387e-30",
+              "xyz": "-0.0648499 -0.032 0.018"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+                "uri": "assets/sts3215_03a_v1_a37c871fb502.stl"
+              }
+            },
+            "name": "lower_arm_link_collision_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -7.88861e-31 -3.14159",
+              "xyz": "-0.1224 0.0052 0.0187"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "2.87438e-05 7.41152e-06 1.26409e-06 0.000159844 -4.90188e-08 0.00014529",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "-0.0980701 0.00324376 0.0182831"
+          },
+          "mass": 0.104
+        },
+        "name": "lower_arm_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:c7b6d37313a507080eb944eeb3c888b76011782f48304861cc8e640aabd8d8ce",
+              "uri": "assets/under_arm_so101_v1_c7b6d37313a5.glb"
+            },
+            "name": "lower_arm_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "3.14159 -0 6.67202e-31",
+              "xyz": "-0.0648499 -0.032 0.0182"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:b350a062d4f5925a2f53146063087db760beb17d61e343ca07ff349c36c737c9",
+              "uri": "assets/motor_holder_so101_wrist_v1_b350a062d4f5.glb"
+            },
+            "name": "lower_arm_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -2.55351e-15 -1.83387e-30",
+              "xyz": "-0.0648499 -0.032 0.018"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227",
+              "uri": "assets/sts3215_03a_v1_d60a1ee2879a.glb"
+            },
+            "name": "lower_arm_link_visual_2",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -7.88861e-31 -3.14159",
+              "xyz": "-0.1224 0.0052 0.0187"
+            }
+          }
+        ]
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:75ef3781b752e4065891aea855e34dc161a38a549549cd0970cedd07eae6f887",
+                "uri": "assets/sts3215_03a_no_horn_v1_75ef3781b752.stl"
+              }
+            },
+            "name": "wrist_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 1.5708 0",
+              "xyz": "8.32667e-17 -0.0424 0.0306"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:6c7ec5525b4d8b9e397a30ab4bb0037156a5d5f38a4adf2c7d943d6c56eda5ae",
+                "uri": "assets/wrist_roll_pitch_so101_v2_6c7ec5525b4d.stl"
+              }
+            },
+            "name": "wrist_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 -1.5708 0",
+              "xyz": "0 -0.028 0.0181"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "3.68263e-05 1.7893e-08 -5.28128e-08 2.5391e-05 3.6412e-06 2.1e-05",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "-0.000103312 -0.0386143 0.0281156"
+          },
+          "mass": 0.079
+        },
+        "name": "wrist_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:682e2444d5443a6d3e8d7bdb18dde0885b71ff1e07a6bae1538b57a55749883e",
+              "uri": "assets/sts3215_03a_no_horn_v1_682e2444d544.glb"
+            },
+            "name": "wrist_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "1.5708 1.5708 0",
+              "xyz": "8.32667e-17 -0.0424 0.0306"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:a2081a52b54e2d1ae78a5e0208b4507e582ec5adfa1c5e557f0e9f3c05349f0a",
+              "uri": "assets/wrist_roll_pitch_so101_v2_a2081a52b54e.glb"
+            },
+            "name": "wrist_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 -1.5708 0",
+              "xyz": "0 -0.028 0.0181"
+            }
+          }
+        ]
+      },
+      {
+        "collision": [
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:a37c871fb502483ab96c256baf457d36f2e97afc9205313d9c5ab275ef941cd0",
+                "uri": "assets/sts3215_03a_v1_a37c871fb502.stl"
+              }
+            },
+            "name": "gripper_link_collision_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 -5.19179e-17 -1.66533e-16",
+              "xyz": "0.0077 0.0001 -0.0234"
+            }
+          },
+          {
+            "geometry": {
+              "mesh": {
+                "sha": "sha256:4b17b410a12d64ec39554abc3e8054d8a97384b2dc4a8d95a5ecb2a93670f5f4",
+                "uri": "assets/wrist_roll_follower_so101_v1_4b17b410a12d.stl"
+              }
+            },
+            "name": "gripper_link_collision_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -5.55112e-17 0",
+              "xyz": "8.32667e-17 -0.000218214 0.000949706"
+            }
+          }
+        ],
+        "inertial": {
+          "inertia": "2.75087e-05 -3.35241e-07 -5.7352e-06 4.33657e-05 -5.17847e-08 3.45059e-05",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "0.000213627 0.000245138 -0.025187"
+          },
+          "mass": 0.087
+        },
+        "name": "gripper_link",
+        "visual": [
+          {
+            "model": {
+              "sha": "sha256:d60a1ee2879a9de31fe3b5989ea4bbb32aee1f2763df5b318c4e9ca653168227",
+              "uri": "assets/sts3215_03a_v1_d60a1ee2879a.glb"
+            },
+            "name": "gripper_link_visual_0",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-1.5708 -5.19179e-17 -1.66533e-16",
+              "xyz": "0.0077 0.0001 -0.0234"
+            }
+          },
+          {
+            "model": {
+              "sha": "sha256:c75e3043d0371dd262b8eaa61aa3ab5ebee5536b759de2979ebbc3a6d8d5792f",
+              "uri": "assets/wrist_roll_follower_so101_v1_c75e3043d037.glb"
+            },
+            "name": "gripper_link_visual_1",
+            "name-origin": "synthesized",
+            "pose": {
+              "rpy": "-3.14159 -5.55112e-17 0",
+              "xyz": "8.32667e-17 -0.000218214 0.000949706"
+            }
+          }
+        ]
+      },
+      {
+        "inertial": {
+          "inertia": "0 0 0 0 0 0",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "0 0 0"
+          },
+          "mass": "1e-9"
+        },
+        "name": "gripper_frame_link"
+      },
+      {
+        "collision": {
+          "geometry": {
+            "mesh": {
+              "sha": "sha256:785a9dded2f474bc1d869e0d3dae398a3dcd9c0c345640040472210d2861fa9d",
+              "uri": "assets/moving_jaw_so101_v1_785a9dded2f4.stl"
+            }
+          },
+          "name": "jaw_link_collision_0",
+          "name-origin": "synthesized",
+          "pose": {
+            "rpy": "9.53145e-17 6.93889e-18 1.24077e-24",
+            "xyz": "-5.55112e-17 -5.55112e-17 0.0189"
+          }
+        },
+        "inertial": {
+          "inertia": "6.61427e-06 -3.19807e-07 -5.90717e-09 1.89032e-06 -1.09945e-07 5.28738e-06",
+          "inertia_origin": {
+            "rpy": "0 0 0",
+            "xyz": "-0.00157495 -0.0300244 0.0192755"
+          },
+          "mass": 0.012
+        },
+        "name": "jaw_link",
+        "visual": {
+          "model": {
+            "sha": "sha256:2483f6fb8fdd949b8714a96791b462dc2557da8c6e349ce5e9c7c2680bf6c74f",
+            "uri": "assets/moving_jaw_so101_v1_2483f6fb8fdd.glb"
+          },
+          "name": "jaw_link_visual_0",
+          "name-origin": "synthesized",
+          "pose": {
+            "rpy": "9.53145e-17 6.93889e-18 1.24077e-24",
+            "xyz": "-5.55112e-17 -5.55112e-17 0.0189"
+          }
+        }
+      }
+    ],
+    "extension": [
+      {
+        "domain": "org.gazebosim",
+        "gazebo": [
+          {
+            "reference": "world"
+          },
+          {
+            "plugin": {
+              "filename": "gz_ros2_control-system",
+              "name": "gz_ros2_control::GazeboSimROS2ControlPlugin",
+              "parameters": null,
+              "ros": {
+                "namespace": null
+              }
+            }
+          }
+        ]
+      },
+      {
+        "domain": "org.ros.control",
+        "transmission": [
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor1"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "shoulder_pan_joint"
+            },
+            "name": "shoulder_pan_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          },
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor2"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "shoulder_lift_joint"
+            },
+            "name": "shoulder_lift_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          },
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor3"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "elbow_flex_joint"
+            },
+            "name": "elbow_flex_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          },
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor4"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "wrist_flex_joint"
+            },
+            "name": "wrist_flex_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          },
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor5"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "wrist_roll_joint"
+            },
+            "name": "wrist_roll_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          },
+          {
+            "actuator": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "mechanicalReduction": 1,
+              "name": "motor6"
+            },
+            "joint": {
+              "hardwareInterface": "hardware_interface/PositionJointInterface",
+              "name": "gripper_joint"
+            },
+            "name": "gripper_trans",
+            "type": "transmission_interface/SimpleTransmission"
+          }
+        ]
+      },
+      {
+        "domain": "org.ros2.control",
+        "ros2_control": {
+          "hardware": {
+            "plugin": "mock_components/GenericSystem"
+          },
+          "joint": [
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "shoulder_pan_joint",
+              "param": [
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                },
+                {
+                  "$text": 1,
+                  "name": "id"
+                },
+                {
+                  "$text": 8,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 2048,
+                  "name": "offset"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            },
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "shoulder_lift_joint",
+              "param": [
+                {
+                  "$text": 2,
+                  "name": "id"
+                },
+                {
+                  "$text": 16,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 2125,
+                  "name": "offset"
+                },
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            },
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "elbow_flex_joint",
+              "param": [
+                {
+                  "$text": 3,
+                  "name": "id"
+                },
+                {
+                  "$text": 2080,
+                  "name": "offset"
+                },
+                {
+                  "$text": 16,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            },
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "wrist_flex_joint",
+              "param": [
+                {
+                  "$text": 4,
+                  "name": "id"
+                },
+                {
+                  "$text": 3110,
+                  "name": "offset"
+                },
+                {
+                  "$text": 16,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            },
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "wrist_roll_joint",
+              "param": [
+                {
+                  "$text": 5,
+                  "name": "id"
+                },
+                {
+                  "$text": 1024,
+                  "name": "offset"
+                },
+                {
+                  "$text": 16,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            },
+            {
+              "command_interface": {
+                "name": "position"
+              },
+              "name": "gripper_joint",
+              "param": [
+                {
+                  "$text": 6,
+                  "name": "id"
+                },
+                {
+                  "$text": 2070,
+                  "name": "offset"
+                },
+                {
+                  "$text": 16,
+                  "name": "p_cofficient"
+                },
+                {
+                  "$text": 0.0,
+                  "name": "initial_position"
+                }
+              ],
+              "state_interface": [
+                {
+                  "name": "position"
+                },
+                {
+                  "name": "velocity"
+                }
+              ]
+            }
+          ],
+          "name": "SO_ARM101",
+          "type": "system"
+        }
+      }
+    ],
+    "joint": [
+      {
+        "child": {
+          "comp": "base_link"
+        },
+        "name": "world_to_base_joint",
+        "origin": {
+          "rpy": "0.0 0.0 0.0",
+          "xyz": "0.0 0.0 0.0"
+        },
+        "parent": {
+          "comp": "world"
+        },
+        "type": "fixed"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "shoulder_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": -1.91986,
+          "upper": 1.91986,
+          "velocity": 10
+        },
+        "name": "shoulder_pan_joint",
+        "origin": {
+          "rpy": "3.14159 4.18253e-17 -3.14159",
+          "xyz": "0.0388353 -8.97657e-09 0.0624"
+        },
+        "parent": {
+          "comp": "base_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "upper_arm_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": -1.74533,
+          "upper": 1.74533,
+          "velocity": 10
+        },
+        "name": "shoulder_lift_joint",
+        "origin": {
+          "rpy": "-1.5708 -1.5708 0",
+          "xyz": "-0.0303992 -0.0182778 -0.0542"
+        },
+        "parent": {
+          "comp": "shoulder_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "lower_arm_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": -1.69,
+          "upper": 1.54,
+          "velocity": 10
+        },
+        "name": "elbow_flex_joint",
+        "origin": {
+          "rpy": "-3.63608e-16 8.74301e-16 1.5708",
+          "xyz": "-0.11257 -0.028 1.73763e-16"
+        },
+        "parent": {
+          "comp": "upper_arm_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "wrist_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": -1.6,
+          "upper": 1.6,
+          "velocity": 10
+        },
+        "name": "wrist_flex_joint",
+        "origin": {
+          "rpy": "-1.41553e-15 4.91611e-15 -1.57",
+          "xyz": "-0.1349 0.0052 3.62355e-17"
+        },
+        "parent": {
+          "comp": "lower_arm_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "gripper_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": -2.3,
+          "upper": 2.3,
+          "velocity": 10
+        },
+        "name": "wrist_roll_joint",
+        "origin": {
+          "rpy": "-1.57 3.14 0",
+          "xyz": "0.0 -0.0611  0.0181"
+        },
+        "parent": {
+          "comp": "wrist_link"
+        },
+        "type": "revolute"
+      },
+      {
+        "child": {
+          "comp": "gripper_frame_link"
+        },
+        "name": "gripper_frame_joint",
+        "origin": {
+          "rpy": "0 3.14159 0",
+          "xyz": "-0.0079 -0.000218121 -0.0981274"
+        },
+        "parent": {
+          "comp": "gripper_link"
+        },
+        "type": "fixed"
+      },
+      {
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "child": {
+          "comp": "jaw_link"
+        },
+        "limit": {
+          "effort": 10,
+          "lower": 0.0,
+          "upper": 1.7,
+          "velocity": 10
+        },
+        "name": "gripper_joint",
+        "origin": {
+          "rpy": "1.5708 0.18 -1.41553e-15",
+          "xyz": "0.0202 0.0188 -0.0234"
+        },
+        "parent": {
+          "comp": "gripper_link"
+        },
+        "type": "revolute"
+      }
+    ],
+    "name": "so_arm101",
+    "world-frame": "ENU"
+  }
+}

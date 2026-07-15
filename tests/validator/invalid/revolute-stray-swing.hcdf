@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: revolute carries a stray <swing_limit> (only ball has a swing-cone + twist) (E_JOINT_SWING_FORBIDDEN) -->
+<hcdf version="1.0" name="revolute-stray-swing">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+    <swing_limit swing1="0.5" swing2="0.8"/>
+  </joint>
+</hcdf>

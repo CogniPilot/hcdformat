@@ -1,0 +1,1 @@
+error	E_MULTI_PARENT	comp 'test-board' is the child of 2 joints (fixed_mount, shoulder_yaw); a kinematic tree allows one

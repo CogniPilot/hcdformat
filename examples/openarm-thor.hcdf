@@ -1,0 +1,670 @@
+<?xml version="1.0"?>
+<!--
+  OpenArm + Jetson Thor: the bimanual teleop target system.
+
+  An NVIDIA Jetson AGX Thor drives two 7-DOF OpenArm manipulators. Each arm is a chain of
+  seven Damiao-class CAN-FD motor drives on its OWN CAN-FD bus (right arm on the Thor's can0,
+  left arm on can1) plus a wrist-mounted Intel RealSense depth camera on USB3. The two arms
+  and the Thor share one 48 V power rail from the battery/PSU.
+
+  This example is about NETWORK fidelity, not mechanism: the comp geometry is deliberately
+  simplified to boxes/cylinders and there is no kinematic joint tree (like cps-comms-showcase,
+  the point is the buses and links). The two CAN-FD buses carry the interesting detail: split
+  1 Mbit arbitration / 5 Mbit data phase, 120r-split termination at exactly the two physical
+  ends, an FD transceiver, and per-drive node IDs 1..7 in physical position order. No FSoE /
+  functional-safety channel is modeled: this hardware has no black-channel safety layer, so
+  adding one would misrepresent this hardware rather than model it faithfully.
+-->
+<hcdf version="1.0" name="openarm-thor">
+
+  <!-- ===== Compute: NVIDIA Jetson AGX Thor ===== -->
+  <comp name="jetson_thor" role="compute">
+    <description>NVIDIA Jetson AGX Thor, the dual-arm host: 2x CAN-FD (one bus per arm), 2x USB3 (one RealSense per arm), a 25G-class uplink, and an onboard regulator off the 48 V rail</description>
+    <board>nvidia-agx-thor</board>
+    <collision name="thor_box">
+      <geometry><box><size>0.11 0.11 0.07</size></box></geometry>
+    </collision>
+    <!-- Ports laid out as a connector row across the +X face (box is 0.11 wide), so the glyphs
+         read as a real I/O panel and don't stack at the component origin. -->
+    <port name="can0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="can1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="usb0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="5000000000" max="5000000000" nominal="5000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="usb1">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="5000000000" max="5000000000" nominal="5000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="uplink">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="10000000000" max="10000000000" nominal="10000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="pwr_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+        <current max="6" nominal="3" unit="A"/>
+      </capabilities>
+    </port>
+    <connector name="can0_connector" family="legacy:jst-gh">
+      <representation><sphere radius="0.005"><placement xyz="0.056 -0.045 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <connector name="can1_connector" family="legacy:jst-gh">
+      <representation><sphere radius="0.005"><placement xyz="0.056 -0.027 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <connector name="usb0_connector" family="legacy:usb-c">
+      <representation><sphere radius="0.005"><placement xyz="0.056 -0.009 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <connector name="usb1_connector" family="legacy:usb-c">
+      <representation><sphere radius="0.005"><placement xyz="0.056 0.009 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <connector name="uplink_connector" family="legacy:m12-x">
+      <representation><sphere radius="0.005"><placement xyz="0.056 0.027 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <connector name="pwr_in_connector" family="legacy:xt30">
+      <representation><sphere radius="0.005"><placement xyz="0.056 0.045 0"><frame><component-origin component="jetson_thor"/></frame><rotation><rpy value="0 0 0"/></rotation></placement></sphere></representation>
+    </connector>
+    <termination name="can0_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment><connector-ref connector="can0_connector"><component-ref component="jetson_thor"/></connector-ref></attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+    <termination name="can1_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment><connector-ref connector="can1_connector"><component-ref component="jetson_thor"/></connector-ref></attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+  </comp>
+
+  <!-- ===== Right arm: 7 Damiao CAN-FD drives (node IDs 1..7) ===== -->
+  <comp name="r_drive_1" role="actuator">
+    <description>Right arm J1: Damiao DM-J8009 CAN-FD drive (shoulder)</description>
+    <board>damiao-dm-j8009</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.045</radius><length>0.06</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_2" role="actuator">
+    <description>Right arm J2: Damiao DM-J8009 CAN-FD drive (shoulder)</description>
+    <board>damiao-dm-j8009</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.045</radius><length>0.06</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_3" role="actuator">
+    <description>Right arm J3: Damiao DM-J4340 CAN-FD drive (upper arm)</description>
+    <board>damiao-dm-j4340</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.035</radius><length>0.05</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_4" role="actuator">
+    <description>Right arm J4: Damiao DM-J4340 CAN-FD drive (elbow)</description>
+    <board>damiao-dm-j4340</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.035</radius><length>0.05</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_5" role="actuator">
+    <description>Right arm J5: Damiao DM-J4310 CAN-FD drive (forearm)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_6" role="actuator">
+    <description>Right arm J6: Damiao DM-J4310 CAN-FD drive (wrist)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="r_drive_7" role="actuator">
+    <description>Right arm J7: Damiao DM-J4310 CAN-FD drive (wrist roll; physical bus end)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+    <termination name="can_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment><connector-ref connector="can_connector"><component-ref component="r_drive_7"/></connector-ref></attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+  </comp>
+
+  <!-- Right wrist RealSense (USB3 device end on the Thor's usb0) -->
+  <comp name="r_realsense" role="sensor">
+    <description>Right wrist Intel RealSense D435 depth camera (USB 3.1 gen1 device)</description>
+    <board>intel-realsense-d435</board>
+    <collision name="cam_box"><geometry><box><size>0.09 0.025 0.025</size></box></geometry></collision>
+    <port name="usb">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="5000000000" max="5000000000" nominal="5000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <connector name="usb_connector" family="legacy:usb-c"/>
+    <sensor name="wrist_cam" update-rate="30">
+      <optical type="camera">
+        <driver name="realsense-d435"/>
+        <geometry><box><size>0.09 0.025 0.025</size></box></geometry>
+        <fov name="rgb">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>10.0</far>
+              <hfov>1.211</hfov>
+              <vfov>0.742</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>1380.0</fx>
+            <fy>1380.0</fy>
+            <cx>960.0</cx>
+            <cy>540.0</cy>
+          </intrinsics>
+        </fov>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- ===== Left arm: 7 Damiao CAN-FD drives (node IDs 1..7) ===== -->
+  <comp name="l_drive_1" role="actuator">
+    <description>Left arm J1: Damiao DM-J8009 CAN-FD drive (shoulder)</description>
+    <board>damiao-dm-j8009</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.045</radius><length>0.06</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_2" role="actuator">
+    <description>Left arm J2: Damiao DM-J8009 CAN-FD drive (shoulder)</description>
+    <board>damiao-dm-j8009</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.045</radius><length>0.06</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_3" role="actuator">
+    <description>Left arm J3: Damiao DM-J4340 CAN-FD drive (upper arm)</description>
+    <board>damiao-dm-j4340</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.035</radius><length>0.05</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_4" role="actuator">
+    <description>Left arm J4: Damiao DM-J4340 CAN-FD drive (elbow)</description>
+    <board>damiao-dm-j4340</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.035</radius><length>0.05</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_5" role="actuator">
+    <description>Left arm J5: Damiao DM-J4310 CAN-FD drive (forearm)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_6" role="actuator">
+    <description>Left arm J6: Damiao DM-J4310 CAN-FD drive (wrist)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+  </comp>
+  <comp name="l_drive_7" role="actuator">
+    <description>Left arm J7: Damiao DM-J4310 CAN-FD drive (wrist roll; physical bus end)</description>
+    <board>damiao-dm-j4310</board>
+    <collision name="j_col"><geometry><cylinder><radius>0.03</radius><length>0.045</length></cylinder></geometry></collision>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bps"/>
+      </capabilities>
+    </port>
+    <port name="vin">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+      </capabilities>
+    </port>
+    <connector name="can_connector" family="legacy:jst-gh"/>
+    <termination name="can_termination" kind="hcdf:resistor" mounting="endpoint" fidelity="presented" profile="hcdf:can">
+      <attachment><connector-ref connector="can_connector"><component-ref component="l_drive_7"/></connector-ref></attachment>
+      <quantity property="hcdf:resistance" value="120" unit="ohm"/>
+    </termination>
+  </comp>
+
+  <!-- Left wrist RealSense (USB3 device end on the Thor's usb1) -->
+  <comp name="l_realsense" role="sensor">
+    <description>Left wrist Intel RealSense D435 depth camera (USB 3.1 gen1 device)</description>
+    <board>intel-realsense-d435</board>
+    <collision name="cam_box"><geometry><box><size>0.09 0.025 0.025</size></box></geometry></collision>
+    <port name="usb">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="5000000000" max="5000000000" nominal="5000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <connector name="usb_connector" family="legacy:usb-c"/>
+    <sensor name="wrist_cam" update-rate="30">
+      <optical type="camera">
+        <driver name="realsense-d435"/>
+        <geometry><box><size>0.09 0.025 0.025</size></box></geometry>
+        <fov name="rgb">
+          <geometry>
+            <frustum shape="pyramidal">
+              <near>0.1</near>
+              <far>10.0</far>
+              <hfov>1.211</hfov>
+              <vfov>0.742</vfov>
+            </frustum>
+          </geometry>
+          <intrinsics>
+            <width>1920</width>
+            <height>1080</height>
+            <format>RGB8</format>
+            <fx>1380.0</fx>
+            <fy>1380.0</fy>
+            <cx>960.0</cx>
+            <cy>540.0</cy>
+          </intrinsics>
+        </fov>
+      </optical>
+    </sensor>
+  </comp>
+
+  <!-- ===== Battery / PSU: the shared 48 V rail source ===== -->
+  <comp name="power_dist" role="parent">
+    <description>Battery + power-distribution board: the single 48 V rail feeding the Thor and both arms</description>
+    <collision name="psu_box"><geometry><box><size>0.16 0.12 0.08</size></box></geometry></collision>
+    <port name="vout">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="40" max="58" nominal="48" unit="V"/>
+        <current max="40" nominal="30" unit="A"/>
+        <power max="2000" nominal="1440" unit="W"/>
+      </capabilities>
+    </port>
+    <connector name="vout_connector" family="legacy:xt60"/>
+    <power-source name="main_battery">
+      <battery>
+        <chemistry>Li-ion</chemistry>
+        <cells-series>13</cells-series>
+        <nominal-voltage unit="V">48</nominal-voltage>
+        <capacity unit="Ah">10</capacity>
+        <energy unit="Wh">480</energy>
+        <min-voltage unit="V">39</min-voltage>
+        <max-voltage unit="V">54.6</max-voltage>
+      </battery>
+    </power-source>
+  </comp>
+
+  <!-- ===== Networks ===== -->
+  <binding name="jetson_thor_can0_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="can0"/></functional>
+    <physical><connector-ref connector="can0_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="jetson_thor_can1_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="can1"/></functional>
+    <physical><connector-ref connector="can1_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="jetson_thor_usb0_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="usb0"/></functional>
+    <physical><connector-ref connector="usb0_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="jetson_thor_usb1_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="usb1"/></functional>
+    <physical><connector-ref connector="usb1_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="jetson_thor_uplink_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="uplink"/></functional>
+    <physical><connector-ref connector="uplink_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="jetson_thor_pwr_in_presented" fidelity="presented">
+    <functional><port-ref component="jetson_thor" port="pwr_in"/></functional>
+    <physical><connector-ref connector="pwr_in_connector"><component-ref component="jetson_thor"/></connector-ref></physical>
+  </binding>
+  <binding name="r_realsense_usb_presented" fidelity="presented">
+    <functional><port-ref component="r_realsense" port="usb"/></functional>
+    <physical><connector-ref connector="usb_connector"><component-ref component="r_realsense"/></connector-ref></physical>
+  </binding>
+  <binding name="l_realsense_usb_presented" fidelity="presented">
+    <functional><port-ref component="l_realsense" port="usb"/></functional>
+    <physical><connector-ref connector="usb_connector"><component-ref component="l_realsense"/></connector-ref></physical>
+  </binding>
+  <binding name="power_dist_vout_presented" fidelity="presented">
+    <functional><port-ref component="power_dist" port="vout"/></functional>
+    <physical><connector-ref connector="vout_connector"><component-ref component="power_dist"/></connector-ref></physical>
+  </binding>
+
+  <binding name="r_drive_1_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_1" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_1"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_2_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_2" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_2"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_3_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_3" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_3"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_4_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_4" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_4"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_5_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_5" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_5"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_6_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_6" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_6"/></connector-ref></physical>
+  </binding>
+  <binding name="r_drive_7_can_presented" fidelity="presented">
+    <functional><port-ref component="r_drive_7" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="r_drive_7"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_1_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_1" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_1"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_2_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_2" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_2"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_3_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_3" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_3"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_4_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_4" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_4"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_5_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_5" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_5"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_6_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_6" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_6"/></connector-ref></physical>
+  </binding>
+  <binding name="l_drive_7_can_presented" fidelity="presented">
+    <functional><port-ref component="l_drive_7" port="can"/></functional>
+    <physical><connector-ref connector="can_connector"><component-ref component="l_drive_7"/></connector-ref></physical>
+  </binding>
+
+  <link name="usb_right">
+    <description>Right wrist RealSense on the Thor USB 3.2 Gen 1 host port.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="5000000000" unit="bit/s"/></rate></selected>
+    <participant name="jetson_thor"><endpoint><port-ref component="jetson_thor" port="usb0"/></endpoint></participant>
+    <participant name="r_realsense"><endpoint><port-ref component="r_realsense" port="usb"/></endpoint></participant>
+  </link>
+  <link name="usb_left">
+    <description>Left wrist RealSense on the Thor USB 3.2 Gen 1 host port.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="5000000000" unit="bit/s"/></rate></selected>
+    <participant name="jetson_thor"><endpoint><port-ref component="jetson_thor" port="usb1"/></endpoint></participant>
+    <participant name="l_realsense"><endpoint><port-ref component="l_realsense" port="usb"/></endpoint></participant>
+  </link>
+
+  <bus name="can_right">
+    <description>Right OpenArm CAN-FD bus: Thor can0 controller and seven Damiao drives.</description>
+    <selected purpose="communication" carrier="electrical"><profile id="hcdf:can"/><rate><nominal value="1000000" unit="bps"/></rate></selected>
+    <participant name="jetson_thor"><endpoint><port-ref component="jetson_thor" port="can0"/></endpoint></participant>
+    <participant name="r_drive_1"><endpoint><port-ref component="r_drive_1" port="can"/></endpoint></participant>
+    <participant name="r_drive_2"><endpoint><port-ref component="r_drive_2" port="can"/></endpoint></participant>
+    <participant name="r_drive_3"><endpoint><port-ref component="r_drive_3" port="can"/></endpoint></participant>
+    <participant name="r_drive_4"><endpoint><port-ref component="r_drive_4" port="can"/></endpoint></participant>
+    <participant name="r_drive_5"><endpoint><port-ref component="r_drive_5" port="can"/></endpoint></participant>
+    <participant name="r_drive_6"><endpoint><port-ref component="r_drive_6" port="can"/></endpoint></participant>
+    <participant name="r_drive_7"><endpoint><port-ref component="r_drive_7" port="can"/></endpoint></participant>
+  </bus>
+  <bus name="can_left">
+    <description>Left OpenArm CAN-FD bus: Thor can1 controller and seven Damiao drives.</description>
+    <selected purpose="communication" carrier="electrical"><profile id="hcdf:can"/><rate><nominal value="1000000" unit="bps"/></rate></selected>
+    <participant name="jetson_thor"><endpoint><port-ref component="jetson_thor" port="can1"/></endpoint></participant>
+    <participant name="l_drive_1"><endpoint><port-ref component="l_drive_1" port="can"/></endpoint></participant>
+    <participant name="l_drive_2"><endpoint><port-ref component="l_drive_2" port="can"/></endpoint></participant>
+    <participant name="l_drive_3"><endpoint><port-ref component="l_drive_3" port="can"/></endpoint></participant>
+    <participant name="l_drive_4"><endpoint><port-ref component="l_drive_4" port="can"/></endpoint></participant>
+    <participant name="l_drive_5"><endpoint><port-ref component="l_drive_5" port="can"/></endpoint></participant>
+    <participant name="l_drive_6"><endpoint><port-ref component="l_drive_6" port="can"/></endpoint></participant>
+    <participant name="l_drive_7"><endpoint><port-ref component="l_drive_7" port="can"/></endpoint></participant>
+  </bus>
+
+  <bus name="power_48v">
+    <description>Shared 48 V rail from the battery and distribution board to the Thor and both arms.</description>
+    <selected purpose="power-delivery" carrier="electrical"><voltage><nominal value="48" unit="V"/></voltage></selected>
+    <participant name="power_dist"><endpoint><port-ref component="power_dist" port="vout"/></endpoint></participant>
+    <participant name="jetson_thor"><endpoint><port-ref component="jetson_thor" port="pwr_in"/></endpoint></participant>
+    <participant name="r_drive_1"><endpoint><port-ref component="r_drive_1" port="vin"/></endpoint></participant>
+    <participant name="r_drive_2"><endpoint><port-ref component="r_drive_2" port="vin"/></endpoint></participant>
+    <participant name="r_drive_3"><endpoint><port-ref component="r_drive_3" port="vin"/></endpoint></participant>
+    <participant name="r_drive_4"><endpoint><port-ref component="r_drive_4" port="vin"/></endpoint></participant>
+    <participant name="r_drive_5"><endpoint><port-ref component="r_drive_5" port="vin"/></endpoint></participant>
+    <participant name="r_drive_6"><endpoint><port-ref component="r_drive_6" port="vin"/></endpoint></participant>
+    <participant name="r_drive_7"><endpoint><port-ref component="r_drive_7" port="vin"/></endpoint></participant>
+    <participant name="l_drive_1"><endpoint><port-ref component="l_drive_1" port="vin"/></endpoint></participant>
+    <participant name="l_drive_2"><endpoint><port-ref component="l_drive_2" port="vin"/></endpoint></participant>
+    <participant name="l_drive_3"><endpoint><port-ref component="l_drive_3" port="vin"/></endpoint></participant>
+    <participant name="l_drive_4"><endpoint><port-ref component="l_drive_4" port="vin"/></endpoint></participant>
+    <participant name="l_drive_5"><endpoint><port-ref component="l_drive_5" port="vin"/></endpoint></participant>
+    <participant name="l_drive_6"><endpoint><port-ref component="l_drive_6" port="vin"/></endpoint></participant>
+    <participant name="l_drive_7"><endpoint><port-ref component="l_drive_7" port="vin"/></endpoint></participant>
+  </bus>
+
+
+</hcdf>

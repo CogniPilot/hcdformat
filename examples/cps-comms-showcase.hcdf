@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<!--
+  CPS comms showcase: one small doc that exercises every comms/network surface end to
+  end: a camera SerDes link (GMSL2), wireless (WiFi star + BLE
+  link), a MIPI CSI-2 port capability, an APA102 clocked-shift-register LED chain, an FSoE
+  functional-safety black channel over an EtherCAT chain, and the two timer/pulse-vs-serial
+  carriers (a DShot SIGNAL link + an inverted-UART SBUS link). Kept intentionally compact:
+  the peripherals are electronic (no kinematic tree), so the comps are standalone.
+-->
+<hcdf version="1.0" name="cps-comms-showcase">
+
+  <!-- The compute hub: every link/bus/chain/star/safety endpoint hangs off it. -->
+  <comp name="compute" role="compute">
+    <description>Central compute SoM (SerDes deserializer, CSI-2, EtherCAT master, radios, ESC + RC IO)</description>
+    <board>jetson-orin-nx</board>
+    <port name="gmsl_in">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="conducted-rf"/>
+        <rate min="6000000000" max="6000000000" nominal="6000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="csi0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="10000000000" max="10000000000" nominal="10000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="ecat0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="100000000" max="100000000" nominal="100000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="dshot0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:dshot"/>
+        <rate min="600000" max="600000" nominal="600000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="uart_sbus">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:uart"/>
+        <rate min="100000" max="100000" nominal="100000" unit="Bd"/>
+      </capabilities>
+    </port>
+    <port name="led0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="wifi0-feed">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="conducted-rf"/>
+        <frequency min="5150000000" max="5850000000" nominal="5500000000" unit="Hz"/>
+      </capabilities>
+    </port>
+    <port name="wifi0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="radiated-rf"/>
+        <frequency min="5150000000" max="5850000000" nominal="5500000000" unit="Hz"/>
+        <bandwidth min="20000000" max="160000000" nominal="80000000" unit="Hz"/>
+      </capabilities>
+    </port>
+    <port name="ble0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="radiated-rf"/>
+        <frequency min="2400000000" max="2483500000" nominal="2440000000" unit="Hz"/>
+      </capabilities>
+    </port>
+    <connector name="gmsl_in_connector" family="hcdf:fakra-mini"/>
+    <connector name="csi0_connector" family="hcdf:flex-30"/>
+    <connector name="wifi0_feed_connector" family="hcdf:u-fl"/>
+    <antenna name="wifi0">
+      <conducted-port component="compute" port="wifi0-feed"/>
+      <radiated-port component="compute" port="wifi0"/>
+    </antenna>
+    <antenna name="ble0">
+      <radiated-port component="compute" port="ble0"/>
+    </antenna>
+  </comp>
+
+  <!-- GMSL2 camera (serializer side of the SerDes link) -->
+  <comp name="camera" role="sensor">
+    <description>GMSL2 camera module (serializer + imager)</description>
+    <port name="gmsl_out">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="conducted-rf"/>
+        <rate min="6000000000" max="6000000000" nominal="6000000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <connector name="gmsl_out_connector" family="hcdf:fakra-mini"/>
+  </comp>
+
+  <!-- WiFi access point (star coordinator) + BLE teleop pendant (BLE link peer) -->
+  <comp name="ap" role="compute">
+    <description>WiFi 6 access point</description>
+    <port name="wifi0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="radiated-rf"/>
+        <frequency min="5150000000" max="5850000000" nominal="5500000000" unit="Hz"/>
+        <bandwidth min="20000000" max="160000000" nominal="80000000" unit="Hz"/>
+      </capabilities>
+    </port>
+    <antenna name="wifi0">
+      <radiated-port component="ap" port="wifi0"/>
+    </antenna>
+  </comp>
+  <comp name="teleop" role="compute">
+    <description>BLE teleop pendant</description>
+    <port name="ble0">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="radiated-rf"/>
+        <frequency min="2400000000" max="2483500000" nominal="2440000000" unit="Hz"/>
+      </capabilities>
+    </port>
+    <antenna name="ble0">
+      <radiated-port component="teleop" port="ble0"/>
+    </antenna>
+  </comp>
+
+  <!-- Safety drives on the EtherCAT / FSoE chain -->
+  <comp name="safety_drive_1" role="actuator">
+    <description>FSoE safety servo drive 1 (STO)</description>
+    <port name="ecat_in">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="100000000" max="100000000" nominal="100000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <port name="ecat_out">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="100000000" max="100000000" nominal="100000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+    <bridge name="ethercat_forwarder">
+      <input><port-ref component="safety_drive_1" port="ecat_in"/></input>
+      <output><port-ref component="safety_drive_1" port="ecat_out"/></output>
+    </bridge>
+  </comp>
+  <comp name="safety_drive_2" role="actuator">
+    <description>FSoE safety servo drive 2 (STO)</description>
+    <port name="ecat_in">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <rate min="100000000" max="100000000" nominal="100000000" unit="bit/s"/>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- DShot ESC + SBUS RC receiver -->
+  <comp name="esc" role="actuator">
+    <description>BLHeli_32 ESC (DShot600 input)</description>
+    <port name="dshot_in">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:dshot"/>
+        <rate min="600000" max="600000" nominal="600000" unit="bit/s"/>
+      </capabilities>
+    </port>
+  </comp>
+  <comp name="rc_rx" role="sensor">
+    <description>RC receiver (inverted-UART SBUS output)</description>
+    <port name="sbus_out">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:uart"/>
+        <rate min="100000" max="100000" nominal="100000" unit="Bd"/>
+      </capabilities>
+    </port>
+  </comp>
+
+  <!-- APA102C DotStar strip: three discrete LED comps as chain hops (positional addressing) -->
+  <comp name="led_0">
+    <description>APA102C LED 0 (strip head)</description>
+    <port name="in"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/></capabilities></port>
+    <port name="out"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/></capabilities></port>
+    <bridge name="shift_register"><input><port-ref component="led_0" port="in"/></input><output><port-ref component="led_0" port="out"/></output></bridge>
+  </comp>
+  <comp name="led_1">
+    <description>APA102C LED 1</description>
+    <port name="in"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/></capabilities></port>
+    <port name="out"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/></capabilities></port>
+    <bridge name="shift_register"><input><port-ref component="led_1" port="in"/></input><output><port-ref component="led_1" port="out"/></output></bridge>
+  </comp>
+  <comp name="led_2">
+    <description>APA102C LED 2 (strip tail)</description>
+    <port name="in"><capabilities><purpose value="communication"/><carrier value="electrical"/><rate min="10000000" max="10000000" nominal="10000000" unit="bit/s"/></capabilities></port>
+  </comp>
+
+  <binding name="compute_gmsl_in_presented" fidelity="presented">
+    <functional><port-ref component="compute" port="gmsl_in"/></functional>
+    <physical><connector-ref connector="gmsl_in_connector"><component-ref component="compute"/></connector-ref></physical>
+  </binding>
+  <binding name="compute_csi0_presented" fidelity="presented">
+    <functional><port-ref component="compute" port="csi0"/></functional>
+    <physical><connector-ref connector="csi0_connector"><component-ref component="compute"/></connector-ref></physical>
+  </binding>
+  <binding name="compute_wifi0_feed_presented" fidelity="presented">
+    <functional><port-ref component="compute" port="wifi0-feed"/></functional>
+    <physical><connector-ref connector="wifi0_feed_connector"><component-ref component="compute"/></connector-ref></physical>
+  </binding>
+  <binding name="camera_gmsl_out_presented" fidelity="presented">
+    <functional><port-ref component="camera" port="gmsl_out"/></functional>
+    <physical><connector-ref connector="gmsl_out_connector"><component-ref component="camera"/></connector-ref></physical>
+  </binding>
+
+  <link name="cam_serdes">
+    <description>GMSL2 camera link with a 6 Gb/s downstream, 187.5 Mb/s back-channel, and power over coax.</description>
+    <selected purpose="communication" carrier="conducted-rf"><rate><nominal value="6000000000" unit="bit/s"/></rate></selected>
+    <participant name="camera"><endpoint><port-ref component="camera" port="gmsl_out"/></endpoint></participant>
+    <participant name="compute"><endpoint><port-ref component="compute" port="gmsl_in"/></endpoint></participant>
+  </link>
+  <link name="esc_dshot">
+    <description>DShot600 ESC control signal. DShot is a digital control link, not UART framing.</description>
+    <selected purpose="communication" carrier="electrical"><profile id="hcdf:dshot"/><rate><nominal value="600000" unit="bit/s"/></rate></selected>
+    <participant name="compute"><endpoint><port-ref component="compute" port="dshot0"/></endpoint></participant>
+    <participant name="esc"><endpoint><port-ref component="esc" port="dshot_in"/></endpoint></participant>
+  </link>
+  <link name="sbus_rx">
+    <description>Futaba SBUS receiver link using inverted 100 kbaud UART signaling.</description>
+    <selected purpose="communication" carrier="electrical"><profile id="hcdf:uart"/><rate><nominal value="100000" unit="Bd"/></rate></selected>
+    <participant name="rc_rx"><endpoint><port-ref component="rc_rx" port="sbus_out"/></endpoint></participant>
+    <participant name="compute"><endpoint><port-ref component="compute" port="uart_sbus"/></endpoint></participant>
+  </link>
+  <link name="ble_link">
+    <description>Bluetooth Low Energy teleoperation link.</description>
+    <selected purpose="communication" carrier="radiated-rf"><frequency><range min="2400000000" max="2483500000" nominal="2440000000" unit="Hz"/></frequency></selected>
+    <participant name="compute"><endpoint><port-ref component="compute" port="ble0"/></endpoint></participant>
+    <participant name="teleop"><endpoint><port-ref component="teleop" port="ble0"/></endpoint></participant>
+  </link>
+
+  <chain name="safety_ecat">
+    <description>EtherCAT forwarding chain carrying the FSoE safety black channel.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="100000000" unit="bit/s"/></rate></selected>
+    <participant name="compute"><endpoint><port-ref component="compute" port="ecat0"/></endpoint></participant>
+    <participant name="safety_drive_1_in"><endpoint><port-ref component="safety_drive_1" port="ecat_in"/></endpoint></participant>
+    <participant name="safety_drive_1_out"><endpoint><port-ref component="safety_drive_1" port="ecat_out"/></endpoint></participant>
+    <participant name="safety_drive_2"><endpoint><port-ref component="safety_drive_2" port="ecat_in"/></endpoint></participant>
+    <hop name="compute"><owner><component-ref component="compute"/></owner></hop>
+    <hop name="safety_drive_1"><owner><function-ref component="safety_drive_1" function="ethercat_forwarder"/></owner></hop>
+    <hop name="safety_drive_2"><owner><component-ref component="safety_drive_2"/></owner></hop>
+    <leg name="compute_to_drive_1"><from><hop-ref network="safety_ecat" hop="compute"/><participant-ref network="safety_ecat" participant="compute"/></from><to><hop-ref network="safety_ecat" hop="safety_drive_1"/><participant-ref network="safety_ecat" participant="safety_drive_1_in"/></to></leg>
+    <leg name="drive_1_to_drive_2"><from><hop-ref network="safety_ecat" hop="safety_drive_1"/><participant-ref network="safety_ecat" participant="safety_drive_1_out"/></from><to><hop-ref network="safety_ecat" hop="safety_drive_2"/><participant-ref network="safety_ecat" participant="safety_drive_2"/></to></leg>
+  </chain>
+
+  <chain name="status_leds">
+    <description>APA102C clocked shift-register cascade driven by the compute module.</description>
+    <selected purpose="communication" carrier="electrical"><rate><nominal value="10000000" unit="bit/s"/></rate></selected>
+    <participant name="compute"><endpoint><port-ref component="compute" port="led0"/></endpoint></participant>
+    <participant name="led_0_in"><endpoint><port-ref component="led_0" port="in"/></endpoint></participant>
+    <participant name="led_0_out"><endpoint><port-ref component="led_0" port="out"/></endpoint></participant>
+    <participant name="led_1_in"><endpoint><port-ref component="led_1" port="in"/></endpoint></participant>
+    <participant name="led_1_out"><endpoint><port-ref component="led_1" port="out"/></endpoint></participant>
+    <participant name="led_2_in"><endpoint><port-ref component="led_2" port="in"/></endpoint></participant>
+    <hop name="compute"><owner><component-ref component="compute"/></owner></hop>
+    <hop name="led_0"><owner><function-ref component="led_0" function="shift_register"/></owner></hop>
+    <hop name="led_1"><owner><function-ref component="led_1" function="shift_register"/></owner></hop>
+    <hop name="led_2"><owner><component-ref component="led_2"/></owner></hop>
+    <leg name="compute_to_led_0"><from><hop-ref network="status_leds" hop="compute"/><participant-ref network="status_leds" participant="compute"/></from><to><hop-ref network="status_leds" hop="led_0"/><participant-ref network="status_leds" participant="led_0_in"/></to></leg>
+    <leg name="led_0_to_led_1"><from><hop-ref network="status_leds" hop="led_0"/><participant-ref network="status_leds" participant="led_0_out"/></from><to><hop-ref network="status_leds" hop="led_1"/><participant-ref network="status_leds" participant="led_1_in"/></to></leg>
+    <leg name="led_1_to_led_2"><from><hop-ref network="status_leds" hop="led_1"/><participant-ref network="status_leds" participant="led_1_out"/></from><to><hop-ref network="status_leds" hop="led_2"/><participant-ref network="status_leds" participant="led_2_in"/></to></leg>
+  </chain>
+
+  <star name="wifi_infrastructure">
+    <description>WiFi infrastructure network with the access point as coordinator.</description>
+    <selected purpose="communication" carrier="radiated-rf">
+      <rf><channel><numbered number="36"><center-frequency><nominal value="5180000000" unit="Hz"/></center-frequency><bandwidth><nominal value="20000000" unit="Hz"/></bandwidth></numbered></channel></rf>
+    </selected>
+    <coordinator><participant-ref network="wifi_infrastructure" participant="ap"/></coordinator>
+    <participant name="ap"><endpoint><port-ref component="ap" port="wifi0"/></endpoint></participant>
+    <participant name="compute"><endpoint><port-ref component="compute" port="wifi0"/></endpoint></participant>
+  </star>
+
+
+</hcdf>

@@ -1,0 +1,233 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "articulated-arm",
+    "body-frame": "FLU",
+    "comp": [
+      {
+        "name": "base",
+        "role": "parent",
+        "description": "Fixed mounting base (kinematic root)."
+      },
+      {
+        "name": "shoulder",
+        "role": "actuator"
+      },
+      {
+        "name": "forearm",
+        "role": "actuator",
+        "visual": {
+          "name": "forearm_vis",
+          "geometry": {
+            "cylinder": {
+              "radius": 0.03,
+              "length": 0.3
+            }
+          },
+          "color": {
+            "name": "anodized"
+          }
+        }
+      },
+      {
+        "name": "wrist",
+        "role": "actuator",
+        "frame": [
+          {
+            "name": "mount",
+            "type": "attachment"
+          },
+          {
+            "name": "tcp",
+            "type": "tcp",
+            "relative-to": "mount"
+          },
+          {
+            "name": "wrt_forearm",
+            "relative-to": "forearm"
+          },
+          {
+            "name": "wrt_j2",
+            "relative-to": "j2"
+          }
+        ]
+      },
+      {
+        "name": "finger_left",
+        "role": "actuator"
+      },
+      {
+        "name": "finger_right",
+        "role": "actuator"
+      }
+    ],
+    "joint": [
+      {
+        "name": "j1",
+        "type": "revolute",
+        "description": "Shoulder pitch.",
+        "parent": {
+          "comp": "base"
+        },
+        "child": {
+          "comp": "shoulder"
+        },
+        "axis": {
+          "xyz": "0 0 1"
+        },
+        "limit": {
+          "lower": -1.57,
+          "upper": 1.57,
+          "effort": 40,
+          "velocity": 2.0
+        }
+      },
+      {
+        "name": "j2",
+        "type": "revolute",
+        "parent": {
+          "comp": "shoulder"
+        },
+        "child": {
+          "comp": "forearm"
+        },
+        "origin": {
+          "xyz": "0 0 0.05"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": -2.6,
+          "upper": 2.6,
+          "effort": 30,
+          "velocity": 2.5
+        }
+      },
+      {
+        "name": "j_wrist",
+        "type": "continuous",
+        "parent": {
+          "comp": "forearm"
+        },
+        "child": {
+          "comp": "wrist"
+        },
+        "origin": {
+          "xyz": "0 0 0.30"
+        },
+        "axis": {
+          "xyz": "1 0 0"
+        }
+      },
+      {
+        "name": "j_finger_l",
+        "type": "prismatic",
+        "parent": {
+          "comp": "wrist"
+        },
+        "child": {
+          "comp": "finger_left"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": 0,
+          "upper": 0.04,
+          "effort": 60,
+          "velocity": 0.1
+        }
+      },
+      {
+        "name": "j_finger_r",
+        "type": "prismatic",
+        "parent": {
+          "comp": "wrist"
+        },
+        "child": {
+          "comp": "finger_right"
+        },
+        "axis": {
+          "xyz": "0 1 0"
+        },
+        "limit": {
+          "lower": 0,
+          "upper": 0.04,
+          "effort": 60,
+          "velocity": 0.1
+        },
+        "mimic": {
+          "joint": "j_finger_l",
+          "multiplier": -1
+        }
+      }
+    ],
+    "group": [
+      {
+        "name": "arm",
+        "type": "kinematic-chain",
+        "tip-comp": "wrist",
+        "tip-frame": "tcp",
+        "joint": [
+          {
+            "ref": "j1"
+          },
+          {
+            "ref": "j2"
+          },
+          {
+            "ref": "j_wrist"
+          }
+        ]
+      },
+      {
+        "name": "hand",
+        "type": "end-effector",
+        "tip-comp": "finger_left",
+        "joint": [
+          {
+            "ref": "j_finger_l"
+          },
+          {
+            "ref": "j_finger_r"
+          }
+        ]
+      },
+      {
+        "name": "whole",
+        "group": [
+          {
+            "ref": "arm"
+          },
+          {
+            "ref": "hand"
+          }
+        ]
+      }
+    ],
+    "state": {
+      "name": "home",
+      "default": true,
+      "joint-position": [
+        {
+          "joint": "j1",
+          "value": 0
+        },
+        {
+          "joint": "j2",
+          "value": 0
+        },
+        {
+          "joint": "j_finger_l",
+          "value": 0.02
+        }
+      ]
+    },
+    "color": {
+      "name": "anodized",
+      "rgba": "0.6 0.6 0.65 1.0",
+      "description": "anodized aluminum"
+    }
+  }
+}

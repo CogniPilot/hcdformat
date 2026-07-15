@@ -1,0 +1,21 @@
+# Frozen baker-output content-address golden for tests/assets/cube.stl.
+#
+# WHY: hcdf.assets.to_glb / to_lean route through the canonical Rust baker (the PyO3 binding). The
+# Rust baker is at SEMANTIC parity with the legacy trimesh+pygltflib path, NOT byte
+# parity, so it emits different GLB/STL bytes (and therefore different @sha content addresses). The
+# asset pipeline is content-addressed, so this is a one-time, documented asset-SHA rebake: a fresh
+# `hcdf convert --bake` produces different asset filenames/@sha pins than the legacy Python baker did.
+# (No in-repo bundle or HCDF pins a Python-baked SHA, so nothing in this repo breaks; external .hcdfz
+# bundles built with the old baker must be re-baked; see the migration note.)
+#
+# These lines pin the CANONICAL (binding) output so the divergence is no longer silent: a future change
+# to the Rust baker that alters the bytes turns this golden RED. The Rust baker output depends only on
+# the input mesh bytes (pure Rust, no trimesh), so the SHA is reproducible across machines/versions.
+#
+# Format: <case>\t<sha256:hex>\t<len-bytes>. Regenerate ONLY on a deliberate, reviewed baker change:
+#   python3 tests/test_assets.py --regen-baker-golden
+glb_plain	sha256:1e9a48000e3e4dcaf645f95b8f8c678a26f3c6d7c7ad9ebb8bade53df5b231b8	840
+glb_scaled	sha256:44f2bc079c493b3b172db7d705794606b048db0b07abdc497f14f738f9d08ad9	840
+glb_scaled_colored	sha256:3e555fead7cbc3e78457e3471b5b278509b176246fd38af8ec056aa59ecf4d70	1008
+lean_plain	sha256:9d2990361ad0a6c3c05af767bfbdb6559a1146f534a1bf1e6a50e27d1a38e33c	684
+lean_scaled	sha256:3bd7f462af04642e3f4aed241b62b1f4e6ea84305c15256213853ea63cf6d075	684

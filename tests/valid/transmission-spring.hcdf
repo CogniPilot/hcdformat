@@ -56,7 +56,7 @@
 
   <!-- SEA: Series Elastic Actuator (e.g., HEBI X8-9) -->
   <transmission name="shoulder_sea" type="harmonic" encoder="output_enc">
-    <motor ref="arm.main_bldc"/>
+    <motor ref="arm/main_bldc"/>
     <joint ref="shoulder"/>
     <reduction>272</reduction>
     <efficiency>0.60</efficiency>
@@ -69,7 +69,7 @@
 
   <!-- PEA: Parallel Elastic Actuator (gravity compensation) -->
   <transmission name="elbow_pea" type="cycloidal">
-    <motor ref="arm.main_bldc"/>
+    <motor ref="arm/main_bldc"/>
     <joint ref="elbow"/>
     <reduction>80</reduction>
     <efficiency>0.85</efficiency>
@@ -81,7 +81,7 @@
 
   <!-- CPEA: Clutchable Parallel Elastic Actuator -->
   <transmission name="knee_cpea" type="planetary">
-    <motor ref="arm.main_bldc"/>
+    <motor ref="arm/main_bldc"/>
     <joint ref="knee"/>
     <reduction>100</reduction>
     <efficiency>0.90</efficiency>
@@ -95,7 +95,7 @@
 
   <!-- AE-PEA: Adjustable Equilibrium Parallel Elastic Actuator -->
   <transmission name="hip_aepea" type="harmonic">
-    <motor ref="arm.main_bldc"/>
+    <motor ref="arm/main_bldc"/>
     <joint ref="hip"/>
     <reduction>120</reduction>
     <efficiency>0.70</efficiency>
@@ -107,7 +107,7 @@
 
   <!-- SEA + PEA combined (series for force sensing, parallel for gravity comp) -->
   <transmission name="ankle_combo" type="cycloidal">
-    <motor ref="arm.main_bldc"/>
+    <motor ref="arm/main_bldc"/>
     <joint ref="ankle"/>
     <reduction>50</reduction>
     <efficiency>0.88</efficiency>

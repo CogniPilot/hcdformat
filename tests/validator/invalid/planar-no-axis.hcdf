@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: planar joint omits <axis> (the plane normal is required) (E_JOINT_AXIS_REQUIRED) -->
+<hcdf version="1.0" name="planar-no-axis">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="planar">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+</hcdf>

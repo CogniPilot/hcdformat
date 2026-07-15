@@ -1,0 +1,60 @@
+<hcdf name="example_arm" body-frame="FLU" world-frame="ENU">
+  <comp name="base">
+    <inertial>
+      <mass>2.0</mass>
+      <inertia_origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <inertia>0.02 0 0 0.02 0 0.03</inertia>
+    </inertial>
+    <visual name="base_visual_0" name-origin="synthesized">
+      <geometry>
+        <box>
+          <size>0.2 0.2 0.1</size>
+        </box>
+      </geometry>
+      <color name="grey"/>
+    </visual>
+    <collision name="base_collision_0" name-origin="synthesized">
+      <geometry>
+        <box>
+          <size>0.2 0.2 0.1</size>
+        </box>
+      </geometry>
+    </collision>
+  </comp>
+  <comp name="upper_arm">
+    <inertial>
+      <mass>0.8</mass>
+      <inertia_origin xyz="0 0 0.15" rpy="0 0 0"/>
+      <inertia>0.01 0 0 0.01 0 0.002</inertia>
+    </inertial>
+    <visual name="upper_arm_visual_0" name-origin="synthesized">
+      <pose xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder>
+          <radius>0.03</radius>
+          <length>0.3</length>
+        </cylinder>
+      </geometry>
+      <color name="blue"/>
+    </visual>
+    <collision name="upper_arm_collision_0" name-origin="synthesized">
+      <pose xyz="0 0 0.15" rpy="0 0 0"/>
+      <geometry>
+        <cylinder>
+          <radius>0.03</radius>
+          <length>0.3</length>
+        </cylinder>
+      </geometry>
+    </collision>
+  </comp>
+  <joint name="shoulder" type="revolute">
+    <parent comp="base"/>
+    <child comp="upper_arm"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.57" upper="1.57" effort="40" velocity="2.0"/>
+    <dynamics damping="0.1" friction="0.0"/>
+  </joint>
+  <color name="grey" rgba="0.6 0.6 0.6 1"/>
+  <color name="blue" rgba="0.1 0.3 0.8 1"/>
+</hcdf>

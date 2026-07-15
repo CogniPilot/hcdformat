@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<!--
+  Four-bar linkage: a PARALLELOGRAM, the canonical closed-loop mechanism (the loop-closure demo).
+
+  A four-bar is a CLOSED kinematic loop: URDF's tree-only structure cannot express it, but HCDF marks
+  the loop-closing joint with <loop> so a viewer/editor keeps a single spanning tree AND enforces the
+  closure constraint (SDF supports loops too). This is the minimal, exactly-solvable model behind
+  "proper loop-closure solving": drive the crank and the mechanism ASSEMBLES rather than pulling apart.
+
+  Topology (four bars = ground + crank + coupler + rocker, plus a massless rocker_tip reference):
+    spanning tree : ground -> crank -> coupler   and   ground -> rocker -> rocker_tip
+    closure joint : j_close pins the coupler's far end to the rocker's TIP (coupler <-> rocker_tip)
+
+  WHY rocker_tip EXISTS (the crux of a correct loop model): a solver measures the closure residual at
+  the closure joint's CHILD frame, and by the tree convention a revolute link's frame sits at its
+  PROXIMAL PIN, so the rocker's own frame is at its ground pivot B, NOT at the moving pin where the
+  coupler actually attaches. Closing onto `rocker` directly would therefore pin the coupler to the
+  FIXED pivot (unsatisfiable once the crank turns, and the rocker angle would not even enter the
+  residual, it would sit limp). rocker_tip is a zero-DOF frame fixed to the rocker at its far end, so
+  the closure's child frame IS the physical pin and tracks the rocker's swing. This is the standard way
+  to express a pin-at-the-far-end closure when link frames live at the proximal joint.
+
+  j_close carries <loop>, so it is a CONSTRAINT, not a tree edge; rocker_tip keeps its single tree
+  parent (j_tip). Without the <loop> marker the validator would (rightly) reject this as
+  E_MULTI_PARENT / E_CYCLE.
+
+  GEOMETRY: a parallelogram, authored CLOSED at the zero pose (all joint angles 0). Two length
+  equalities make it a parallelogram (so the loop closes for ALL crank angles):
+    crank length  == rocker length  = 0.20 m   (the two grounded bars)
+    ground pivots == coupler length = 0.30 m   (the fixed base span and the floating bar)
+  At q=0 the pin joints sit at world:
+    A  = (0,    0,    0)  crank pivot on ground     C1 = (0,    0.20, 0)  crank tip  (coupler pivot)
+    B  = (0.30, 0,    0)  rocker pivot on ground    C2 = (0.30, 0.20, 0)  coupler far end == rocker tip
+  Each link's local frame is at its PROXIMAL pin (the revolute location), so:
+    j_crank   origin (0 0 0)       rotate crank about A
+    j_coupler origin (0 0.20 0)    coupler hinges at the crank tip C1 (in crank frame)
+    j_rocker  origin (0.30 0 0)    rotate rocker about B
+    j_tip     origin (0 0.20 0)    rocker_tip rides at the rocker's far end C2 (in rocker frame)
+    j_close   origin (0.30 0 0)    reaches C2 from the coupler's frame at C1 (coupler frame): at q=0
+              T_world(coupler)*origin == T_world(rocker_tip) == (0.30 0.20 0), so the closure residual
+              is IDENTICALLY zero (the tree convention, child frame == joint frame, on the closure edge).
+  All revolute axes are +Z, so the mechanism moves in the XY plane; <constraint-axes> "1 1 1 1 1 0"
+  frees exactly that in-plane rotation (rz) and constrains the other five DOF in the joint (child) frame.
+
+  Closed form (the solver's test oracle): theta_rocker = theta_crank, theta_coupler = -theta_crank; the
+  coupler stays parallel to the ground for every crank angle. Validates 0 errors / 0 warnings.
+-->
+<hcdf version="1.0" name="four-bar">
+
+  <!-- ===== Links (four bars). Each is a thin box along its own long axis, distinct colour. ===== -->
+
+  <comp name="ground" role="parent">
+    <description>Fixed link (frame 0), the kinematic root; spans the two grounded pivots A and B.</description>
+    <visual name="ground_bar">
+      <pose xyz="0.15 0 0"/>
+      <geometry>
+        <box><size>0.30 0.03 0.03</size></box>
+      </geometry>
+      <color name="ground_gray"/>
+    </visual>
+  </comp>
+
+  <comp name="crank" role="actuator">
+    <description>Driven input bar, pivots on the ground at A; length 0.20 m along +Y at zero.</description>
+    <visual name="crank_bar">
+      <pose xyz="0 0.10 0"/>
+      <geometry>
+        <box><size>0.03 0.20 0.03</size></box>
+      </geometry>
+      <color name="crank_red"/>
+    </visual>
+  </comp>
+
+  <comp name="coupler">
+    <description>Floating coupler bar, spans crank tip C1 to rocker tip C2; length 0.30 m along +X.</description>
+    <visual name="coupler_bar">
+      <pose xyz="0.15 0 0"/>
+      <geometry>
+        <box><size>0.30 0.03 0.03</size></box>
+      </geometry>
+      <color name="coupler_green"/>
+    </visual>
+  </comp>
+
+  <comp name="rocker">
+    <description>Output bar, pivots on the ground at B; length 0.20 m along +Y at zero (== crank).</description>
+    <visual name="rocker_bar">
+      <pose xyz="0 0.10 0"/>
+      <geometry>
+        <box><size>0.03 0.20 0.03</size></box>
+      </geometry>
+      <color name="rocker_blue"/>
+    </visual>
+  </comp>
+
+  <comp name="rocker_tip">
+    <description>Massless reference frame fixed to the rocker's far end C2, the physical pin the coupler
+                closes onto. Zero DOF (j_tip is fixed); it exists so the closure's child frame sits at
+                the moving pin rather than the rocker's ground pivot. No geometry (a kinematic marker).</description>
+  </comp>
+
+  <!-- ===== Joints. Tree edges first, then the loop-closing constraint. All revolute about +Z. ===== -->
+
+  <joint name="j_crank" type="revolute">
+    <description>Driven crank pivot on the ground link (the input; drive this to move the mechanism).</description>
+    <parent comp="ground"/>
+    <child comp="crank"/>
+    <origin xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.0472" upper="1.0472" effort="20" velocity="3"/>
+  </joint>
+
+  <joint name="j_coupler" type="revolute">
+    <description>Coupler hinge at the crank tip C1.</description>
+    <parent comp="crank"/>
+    <child comp="coupler"/>
+    <origin xyz="0 0.20 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+  </joint>
+
+  <joint name="j_rocker" type="revolute">
+    <description>Rocker pivot on the ground link at B.</description>
+    <parent comp="ground"/>
+    <child comp="rocker"/>
+    <origin xyz="0.30 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+  </joint>
+
+  <joint name="j_tip" type="fixed">
+    <description>Rigidly fixes the rocker_tip reference frame to the rocker's far end C2.</description>
+    <parent comp="rocker"/>
+    <child comp="rocker_tip"/>
+    <origin xyz="0 0.20 0"/>
+  </joint>
+
+  <joint name="j_close" type="revolute">
+    <description>Loop closure: the coupler's far end pins to the rocker's tip. Constrained in every DOF
+                 but the shared +Z rotation; residual is identically zero at the authored zero pose.</description>
+    <parent comp="coupler"/>
+    <child comp="rocker_tip"/>
+    <origin xyz="0.30 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-2.6" upper="2.6"/>
+    <loop>
+      <predecessor>coupler</predecessor>
+      <successor>rocker_tip</successor>
+      <constraint-axes>1 1 1 1 1 0</constraint-axes>
+    </loop>
+  </joint>
+
+  <!-- ===== Colours (distinct per bar). ===== -->
+
+  <color name="ground_gray" rgba="0.6 0.6 0.6 1.0" description="Fixed base link"/>
+  <color name="crank_red" rgba="0.85 0.2 0.2 1.0" description="Driven crank"/>
+  <color name="coupler_green" rgba="0.2 0.7 0.3 1.0" description="Floating coupler"/>
+  <color name="rocker_blue" rgba="0.2 0.4 0.85 1.0" description="Output rocker"/>
+
+</hcdf>

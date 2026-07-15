@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- validator-coverage: the same UNORDERED comp pair is listed twice, (base, link1) and
+     (link1, base), tripping W_PAIR_DUP. Collision disabling is symmetric, so the two entries are the same
+     exclusion; the second is redundant. Only a warning: both comps resolve and the meaning is
+     unchanged, but the repeat is dead authoring. -->
+<hcdf version="1.0" name="cov-warn-pair-dup">
+  <comp name="base"/>
+  <comp name="link1"/>
+  <self-collision-disable>
+    <pair comp1="base" comp2="link1"/>
+    <pair comp1="link1" comp2="base"/>
+  </self-collision-disable>
+</hcdf>

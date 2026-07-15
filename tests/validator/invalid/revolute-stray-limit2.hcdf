@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: revolute carries a stray <limit2> (only universal/cylindrical/planar bound a second DOF) (E_JOINT_LIMIT2_FORBIDDEN) -->
+<hcdf version="1.0" name="revolute-stray-limit2">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="revolute">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1" upper="1"/>
+    <limit2 lower="-1" upper="1"/>
+  </joint>
+</hcdf>

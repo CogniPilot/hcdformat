@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<hcdf version="1.0" name="dm-j8009p-openarm-j1">
+  <description>
+    DM-J8009P-2EC integrated geared actuator installed as OpenArm v2 joint 1. The example combines the
+    motor datasheet interfaces and ratings, the unreflected OpenArm J1 kinematic configuration, and the
+    exact named geometry in base_j1.glb. The fixed mount, external hard-stop sector, motor casing,
+    driver, and connectors form one rigid stator component. The output rotor is the moving component.
+    The included base_j1.glb is a modified derivative of Enactic's OpenArm description and is
+    redistributed under Apache-2.0.
+  </description>
+  <license>Apache-2.0</license>
+  <url>https://github.com/enactic/openarm_description</url>
+
+  <comp name="base_j1_stator" role="actuator">
+    <description>
+      Fixed OpenArm J1 assembly containing the base mount, physical stop ring, DM-J8009P-2EC casing,
+      integrated driver, crossed-roller-bearing output, and all external connectors. The motor manual
+      specifies a 98 mm outside diameter, 61.7 mm height, approximately 930 g motor mass, 20 Nm rated
+      torque, 40 Nm peak torque, 100 rpm rated speed, and maximum no-load speeds of 160 rpm at 24 V and
+      320 rpm at 48 V. It also specifies 20 A rated and 50 A peak phase current, 0.145 ohm phase
+      resistance, 80 uH phase inductance, and 21 pole pairs. Mount and stop-ring geometry comes from
+      base_j1.glb, not the motor manual.
+    </description>
+
+    <!-- Separate visuals retain their common GLB root coordinates and remain independently selectable. -->
+    <visual name="base_mount">
+      <model uri="models/base_j1.glb" sha="sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476">
+        <submesh name="base_mount"/>
+      </model>
+    </visual>
+    <visual name="physical_stop_ring">
+      <model uri="models/base_j1.glb" sha="sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476">
+        <submesh name="j1_stop"/>
+      </model>
+    </visual>
+    <visual name="motor_case_connectors">
+      <model uri="models/base_j1.glb" sha="sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476">
+        <submesh name="dm8009p_casing"/>
+        <submesh name="xt30"/>
+        <submesh name="jst_gh_2"/>
+        <submesh name="jst_gh_3"/>
+      </model>
+    </visual>
+
+    <port name="power_in">
+      <capabilities>
+        <purpose value="power-delivery"/>
+        <carrier value="electrical"/>
+        <voltage min="24" max="48" nominal="24" unit="V"/>
+      </capabilities>
+      <channel name="ground" role="hcdf:supply-return"/>
+      <channel name="positive" role="hcdf:supply-positive"/>
+    </port>
+    <port name="can">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:can"/>
+        <rate min="1000000" max="1000000" nominal="1000000" unit="bit/s"/>
+      </capabilities>
+      <channel name="can_h" role="hcdf:can-high"/>
+      <channel name="can_l" role="hcdf:can-low"/>
+    </port>
+    <port name="debug_uart">
+      <capabilities>
+        <purpose value="communication"/>
+        <carrier value="electrical"/>
+        <profile id="hcdf:uart"/>
+        <rate min="921600" max="921600" nominal="921600" unit="bit/s"/>
+      </capabilities>
+      <!-- RX and TX are named from the motor's perspective. -->
+      <channel name="gnd" role="hcdf:signal-ground"/>
+      <channel name="rx" role="hcdf:receive"/>
+      <channel name="tx" role="hcdf:transmit"/>
+    </port>
+
+    <!--
+      Connector shells and individual pins point to the exact named GLB nodes. The GLB stores spatial
+      offsets in mesh vertices while its node transforms are identity, so the model-part identity is
+      exact but consumers must not infer a contact-center anchor from the node transform alone.
+    -->
+    <connector name="power_connector" family="hcdf:xt30">
+      <pin name="-" role="hcdf:supply-return">
+        <representation>
+          <model-part node-path="dm8009p/xt30/xt30_gnd" submesh-fallback="xt30_gnd">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <pin name="+" role="hcdf:supply-positive">
+        <representation>
+          <model-part node-path="dm8009p/xt30/xt30_vcc" submesh-fallback="xt30_vcc">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <representation>
+        <model-part node-path="dm8009p/xt30/xt30_shell" submesh-fallback="xt30_shell">
+          <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+        </model-part>
+      </representation>
+    </connector>
+
+    <connector name="can_connector" family="hcdf:jst-gh-2">
+      <pin name="1" role="hcdf:can-high">
+        <representation>
+          <model-part node-path="dm8009p/jst_gh_2/jst_gh_2_p1" submesh-fallback="jst_gh_2_p1">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <pin name="2" role="hcdf:can-low">
+        <representation>
+          <model-part node-path="dm8009p/jst_gh_2/jst_gh_2_p2" submesh-fallback="jst_gh_2_p2">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <representation>
+        <model-part node-path="dm8009p/jst_gh_2/jst_gh_2_shell" submesh-fallback="jst_gh_2_shell">
+          <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+        </model-part>
+      </representation>
+    </connector>
+
+    <connector name="debug_uart_connector" family="hcdf:jst-gh-3">
+      <pin name="1" role="hcdf:signal-ground">
+        <representation>
+          <model-part node-path="dm8009p/jst_gh_3/jst_gh_3_p1" submesh-fallback="jst_gh_3_p1">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <pin name="2" role="hcdf:receive">
+        <representation>
+          <model-part node-path="dm8009p/jst_gh_3/jst_gh_3_p2" submesh-fallback="jst_gh_3_p2">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <pin name="3" role="hcdf:transmit">
+        <representation>
+          <model-part node-path="dm8009p/jst_gh_3/jst_gh_3_p3" submesh-fallback="jst_gh_3_p3">
+            <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+          </model-part>
+        </representation>
+      </pin>
+      <representation>
+        <model-part node-path="dm8009p/jst_gh_3/jst_gh_3_shell" submesh-fallback="jst_gh_3_shell">
+          <model-root><component-visual component="base_j1_stator" visual="motor_case_connectors"/></model-root>
+        </model-part>
+      </representation>
+    </connector>
+
+    <!--
+      The manual states two 14-bit magnetic encoders and single-turn absolute output-shaft position,
+      but does not assign an individual role or shaft location to each encoder.
+    -->
+    <sensor name="dual_absolute_encoders">
+      <encoder type="absolute" principle="magnetic">
+        <resolution unit="counts">16384</resolution>
+      </encoder>
+      <encoder type="absolute" principle="magnetic">
+        <resolution unit="counts">16384</resolution>
+      </encoder>
+    </sensor>
+
+    <motor name="dm_j8009p_drive">
+      <!-- The supported 24-48 V operating range is carried by power_in; 48 V is not a stated absolute maximum. -->
+      <voltage unit="V" nominal="24"/>
+      <!-- The manual identifies 20 A as rated phase current, not an indefinite continuous or DC input limit. -->
+      <current unit="A" nominal="20" peak="50"/>
+      <inductance unit="uH">80</inductance>
+      <pole-pairs>21</pole-pairs>
+      <control-modes>
+        <mode>mit</mode>
+        <mode>position-velocity</mode>
+        <mode>velocity</mode>
+      </control-modes>
+    </motor>
+  </comp>
+
+  <comp name="base_j1_output">
+    <description>
+      Moving DM-J8009P-2EC output rotor. In a complete OpenArm assembly this component is the J1 output
+      frame to which the first moving arm link is attached.
+    </description>
+    <visual name="output_rotor">
+      <!-- Inverse of joint1 origin, required because the selected subtree retains GLB-root coordinates. -->
+      <pose xyz="0 0.0625 0" rpy="0 0 0"/>
+      <model uri="models/base_j1.glb" sha="sha256:ab5e34474e64f58bfe57b8a6a960cb2ebf911786b3a920e0b38bd371f22f3476">
+        <submesh name="dm8009p_rotor"/>
+      </model>
+    </visual>
+  </comp>
+
+  <joint name="joint1" type="revolute">
+    <description>
+      Unreflected OpenArm v2 J1 configuration, used directly by the right arm and mirrored by the left
+      arm. The parent visual named physical_stop_ring is the fixed external hard-stop sector. The
+      supplied GLB does not separately identify the moving arm-side feature that contacts it. The
+      limits below are OpenArm configured limits, not motor-datasheet or measured stop-contact limits.
+    </description>
+    <parent comp="base_j1_stator"/>
+    <child comp="base_j1_output"/>
+    <origin xyz="0 -0.0625 0" rpy="0 0 0"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-1.3963" upper="3.4907" effort="40" velocity="16.755"/>
+  </joint>
+
+  <!-- Exact bindings combine the manual signal labels, confirmed numeric pin assignment, and GLB identity. -->
+  <binding name="power_ground_to_xt30_negative" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="power_in" channel="ground"/></functional>
+    <physical><position-ref connector="power_connector" position="-"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="power_positive_to_xt30_positive" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="power_in" channel="positive"/></functional>
+    <physical><position-ref connector="power_connector" position="+"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="can_h_to_jst_gh_2_pin_1" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="can" channel="can_h"/></functional>
+    <physical><position-ref connector="can_connector" position="1"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="can_l_to_jst_gh_2_pin_2" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="can" channel="can_l"/></functional>
+    <physical><position-ref connector="can_connector" position="2"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="uart_gnd_to_jst_gh_3_pin_1" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="debug_uart" channel="gnd"/></functional>
+    <physical><position-ref connector="debug_uart_connector" position="1"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="uart_rx_to_jst_gh_3_pin_2" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="debug_uart" channel="rx"/></functional>
+    <physical><position-ref connector="debug_uart_connector" position="2"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+  <binding name="uart_tx_to_jst_gh_3_pin_3" fidelity="exact">
+    <functional><channel-ref component="base_j1_stator" port="debug_uart" channel="tx"/></functional>
+    <physical><position-ref connector="debug_uart_connector" position="3"><component-ref component="base_j1_stator"/></position-ref></physical>
+  </binding>
+
+  <!-- A parent OpenArm document supplies the CAN bus, power network, and optional UART debug link. -->
+  <transmission name="dm_j8009p_reduction">
+    <motor ref="dm_j8009p_drive"/>
+    <joint ref="joint1"/>
+    <reduction>9</reduction>
+  </transmission>
+</hcdf>

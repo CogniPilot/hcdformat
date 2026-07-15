@@ -1,0 +1,197 @@
+[package]
+name = "hcdformat"
+version = "1.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Typed Rust model, parser, and sha-pinned official schema for HCDF (Hardware Configuration Descriptive Format)"
+repository = "https://github.com/CogniPilot/hcdformat"
+readme = "README.md"
+keywords = ["hcdf", "robotics", "urdf", "hardware", "schema"]
+categories = ["parsing", "science::robotics"]
+# Version tracks the HCDF schema/release (1.0). crates.io versions are immutable, so breaking changes
+# to the public model follow semver (major bump). The model is data structs (only VisualAppearance is
+# an enum, a closed schema choice); revisit construction ergonomics when dendrite_build builds HCDF.
+exclude = ["/tests"]
+
+# WASM-clean by default (hcdviz targets Bevy 0.19 wasm): every feature below is OPT-IN, and each layer a
+# browser build wants (xsd/urdf/sdf/xacro/bake) is pure-Rust and compiles to wasm32. Only official HCDF
+# is read; there is NO legacy-dendrite dialect reader (pre-standard fragments get regenerated, not
+# migrated).
+#
+# Feature gating (bundling/remote, see src/bundle.rs / src/assets_vendor.rs / src/remote.rs):
+#   * The vendor + bundle (pack/open/verify) layer is NATIVE-ONLY but adds NO new deps: the ZIP
+#     reader/writer is a tiny hand-rolled `ZIP_STORED`-only codec (src/zip_store.rs, pure-Rust, no
+#     compression backends) so a wasm build never pulls a heavy `zip`/flate dependency. It is gated by
+#     `cfg(not(target_arch = "wasm32"))` because it walks the local filesystem, not by a cargo feature.
+#   * The hardened REMOTE FETCHER (ureq + rustls) is the ONLY thing that adds heavy native deps, so it
+#     lives behind the OPT-IN `remote` feature. With `default = []`, neither `ureq` nor `rustls` is in
+#     the dependency tree at all, so hcdviz's default/wasm build stays clean (proven by `cargo tree`).
+[features]
+default = []
+# Opt-in hardened http(s) fetcher for --vendor-remote bundles. Native-only (ureq+rustls). NOT default,
+# so a plain `cargo build`/`cargo build --target wasm32-unknown-unknown` pulls neither ureq nor rustls.
+remote = ["dep:ureq"]
+# Opt-in asset BAKER (src/bake.rs): mesh -> canonical GLB (visual) / lean STL
+# (collision) with scale/mirror baked into the vertices, content-addressed. PURE-RUST and WASM-CLEAN
+# (the in-browser-bake payoff): `mesh-loader` (STL/OBJ, zero transitive deps; DAE is `dae-parser`
+# under `bake-dae`) + `glam` (the scale/mirror matrix, determinant, winding/normal flip) compile to
+# wasm32 with no `*-sys`/cc/native backend. NOT default so the bare model crate stays dependency-lean;
+# enable with `--features bake` (works on native AND wasm32). The DAE bake is itself behind the
+# `bake-dae` sub-feature because mesh-loader's COLLADA up-axis handling diverges from trimesh (see
+# src/bake.rs docs); without it a `.dae` input returns a clear `DaeUnsupported` error rather than a
+# silently-wrong bake. Enable `bake-dae` on native or wasm32 when COLLADA input must be baked.
+bake = ["dep:mesh-loader", "dep:glam"]
+# Full-Rust COLLADA (.dae) bake. OPT-IN sub-feature of `bake`. The DAE path is driven by `dae-parser`
+# (NOT mesh-loader, which is kept for STL/OBJ only): dae-parser exposes the full per-geometry material
+# binding chain (triangle-set symbol -> bind_material -> Material -> Effect -> Phong/Lambert/Blinn
+# shader), so a Rust-baked `.dae` carries FAITHFUL per-mesh materials (mesh-loader merged all sub-meshes
+# and never populated a per-mesh material on the DAE path, so its bake came out gray). VERIFIED
+# orientation-correct for ANY COLLADA `<up_axis>`: like trimesh (the Python authority, whose
+# `exchange/dae.py` has no up_axis handling) the loader IGNORES `<up_axis>` and instead bakes the
+# `<visual_scene>` NODE transforms into the vertices, which is where a well-formed asset's orientation
+# actually lives, so it produces IDENTICAL world-space geometry. Proven against the openarm.hcdfz
+# reference: the Z-up `body_link0.dae` and Y-up `link3.dae` reproduce the trimesh GLBs' world AABBs
+# exactly with NO coordinate rotation. `dae-parser` is pure-Rust + WASM-CLEAN (deps minidom->quick-xml,
+# percent-encoding, chrono, ref-cast; NO `*-sys`/cc/native backend), so the DAE bake compiles to wasm32
+# too. Without the feature a `.dae` returns DaeUnsupported; enable `bake-dae` on either target to bake it.
+# See src/bake.rs "DAE orientation" + "DAE materials" docs.
+bake-dae = ["bake", "dep:dae-parser"]
+# Opt-in URDF<->HCDF converter (src/from_urdf.rs / src/to_urdf.rs / src/profile.rs).
+# `urdf-rs` is the validated URDF parser: pure-Rust and WASM-CLEAN (it pulls only serde/quick-xml/
+# regex, no `*-sys`/cc/native backend), so `from_urdf` compiles to wasm32 too (the in-browser-import
+# payoff). NOT default, so a bare model build pulls neither urdf-rs nor its transitive XML crates.
+urdf = ["dep:urdf-rs"]
+# Opt-in SDF<->HCDF converter (src/from_sdf.rs / src/to_sdf.rs). The importer is PURE quick-xml
+# (the crate's existing XML dep): it mirrors `from_sdf.py`'s tolerant lxml `recover=True` walk, mapping
+# the mechanical overlap with NO strict structural gate (an earlier version gated on the open-rmf
+# `sdformat` crate, but that crate is a SEMANTIC validator far stricter than lxml-recover: it rejected
+# valid SDF the Python authority imports, so it was dropped; the importer needs no parser beyond
+# quick-xml, which keeps the `sdf` feature dependency-lean and wasm-clean for in-browser SDF import).
+# There is NO `gz` subprocess anywhere in the crate (mirroring `from_sdf.py`, which never invokes gz on
+# the import path): a caller that wants `<include>`/`model://`/Fuel resolution or spec-default fill runs
+# `gz sdf --print` externally and feeds the output to `from_sdf_str`. NOT default. The `sdf` feature adds
+# no extra crate deps over the bare model build.
+sdf = []
+# Opt-in xacro -> URDF expander (src/xacro.rs), backed by the `xacro-pure` crate (CogniPilot/xacro-pure on crates.io): a FAITHFUL,
+# FULLY PURE-RUST port of canonical ROS `xacro` that expands BOTH the declarative SO-ARM class AND the
+# programmatic OpenArm class BYTE-IDENTICALLY to `/opt/ros/*/bin/xacro`: no Python, no subprocess, no
+# `xacro`/`xacro-rs`/`pyisheval` fork, on ANY target. xacro-pure uses `rustpython-vm` (a pure-Rust,
+# wasm-clean CPython-grade interpreter) as its `${...}` expression engine, so `expand_xacro` compiles to
+# wasm32 too (the in-browser-xacro payoff: a tablet/phone expands a .xacro with no server). It expands to a
+# URDF string, which then chains into `from_urdf` for .xacro import, mirroring `xacro.py` -> `from_urdf.py`.
+# NOT default, so a bare model build (and hcdviz, `hcdformat = "1"` with no features) pulls neither
+# xacro-pure nor its rustpython dependency tree. For local xacro-pure development, patch it to a sibling checkout via the gitignored .cargo/config.toml (see .cargo/config.toml.example); otherwise it resolves from crates.io,
+# so a DOWNSTREAM root that enables `xacro` gets the full OpenArm-class coverage with
+# zero extra Cargo plumbing.
+xacro = ["dep:xacro-pure", "urdf"]
+# The clap CLI binary `hcdf` (src/bin/hcdf.rs). NATIVE-ONLY: the bin target is
+# `required-features`-gated on `cli`, and `cli` turns on `urdf` + `sdf` + `bake` + `xacro` + `xsd` so
+# convert/bundle/bake/expand all wire the existing library functions and `validate --xsd` runs the real
+# uppsala schema gate over the RAW input bytes (parity with Python's lxml path; the typed parse silently
+# swallows shape errors like text-content poses, so re-serialization-only validation would launder them).
+# clap is an OPT-IN native dep; a default/wasm build pulls none.
+cli = ["dep:clap", "urdf", "sdf", "bake", "xacro", "xsd", "json"]
+# Opt-in XSD-driven HCDF XML<->JSON converter (src/json.rs, `hcdf_xml_to_json`/`json_to_hcdf_xml`): a
+# byte-for-byte port of the Python authority `hcdf/convert.py` so existing `.json` files stay compatible
+# (JSON is a DERIVED view of the sha-pinned XSD, not a second schema). Adds NO new dependency: it is
+# built on `quick-xml` + `serde_json` (already unconditional base deps) and the embedded frozen schema
+# (reused from `schema`, never re-embedded), so the `json` feature is pure-Rust and compiles to wasm32.
+# NOT default; the `cli` feature and the PyO3 binding enable it.
+json = []
+# Opt-in PURE-RUST XSD validation of HCDF docs against the embedded frozen `hcdf.xsd` (src/xsd.rs,
+# `validate_xsd`). Backed by `uppsala` (proven 16/16 parity with lxml `hcdf validate --xsd`,
+# INCLUDING the schema-SHAPE bugs the typed parse silently swallows: `<box>` without a `<size>` child
+# and `<color>` with an `<rgba>` CHILD instead of the `rgba=` attribute). uppsala is the leanest possible
+# dep: ZERO transitive crates (`cargo tree` = just `uppsala`), pure-Rust, and builds to wasm32 with no
+# `*-sys`/cc/native backend, so the `xsd` feature compiles to wasm too (the in-browser schema-gate
+# payoff that lets dendrite_build catch shape errors with NO Python/CLI). NOT default, so the read-only
+# hcdviz viewer (and a bare model build) does NOT pull uppsala unless it asks for it; dendrite enables it.
+xsd = ["dep:uppsala"]
+
+[dependencies]
+quick-xml = { version = "0.37", features = ["serialize"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1" # glTF JSON for the .gltf→GLB packer (src/gltf_pack.rs); see the note below
+thiserror = "2"
+sha2 = "0.10"   # pure-Rust, wasm-clean; runtime re-verify of the embedded schema
+ryu = "1"       # shortest-round-trip f64 digits matching CPython's dtoa; powers exact str(float) parity in validate
+
+# serde_json is UNCONDITIONAL (not feature-gated) because the .gltf→GLB packer must exist on EVERY
+# vendor/bake path: the native asset-vendor layer (src/assets_vendor.rs) is compiled whenever the target
+# is non-wasm regardless of features, and the browser importer (dendrite_build's MemFs) calls
+# `pack_gltf_to_glb` from wasm. Budget: pure-Rust, wasm-clean, and near-free; serde/ryu are already in
+# the base tree, so it adds only serde_json + itoa + memchr (tiny, no `*-sys`/cc/native backend); both
+# downstream consumers (dendrite_build, hcdviz via Bevy) already carry serde_json in their trees anyway.
+
+# Asset baker (feature = "bake", pure-Rust, WASM-CLEAN; see [features].bake). `mesh-loader` (STL/OBJ)
+# pulls nothing; `glam` pulls nothing. No `*-sys`/cc/native backend, so the `bake` feature compiles to
+# wasm32 (verified); this is the in-browser-bake payoff. default-features off keeps the dep surface
+# minimal (mesh-loader: just the two mesh parsers actually used, its `collada` parser and the roxmltree
+# it would pull stay OUT of the tree, the DAE path being `dae-parser` under `bake-dae`; glam: std + f32).
+mesh-loader = { version = "0.1", optional = true, default-features = false, features = ["stl", "obj"] }
+glam = { version = "0.33", optional = true, default-features = false, features = ["std"] }
+
+# Full-Rust COLLADA (.dae) bake (feature = "bake-dae"). `dae-parser` REPLACES mesh-loader on the DAE path
+# (STL/OBJ stay on mesh-loader): it exposes the full per-geometry material binding chain + Phong/Lambert/
+# Blinn shaders, so a baked `.dae` carries faithful per-mesh materials. Pure-Rust + WASM-CLEAN (deps
+# minidom->quick-xml, percent-encoding, chrono, ref-cast; NO `*-sys`/cc/native backend), so the DAE bake
+# compiles to wasm32. `default-features` left ON (no extra heavy deps); the `nalgebra` feature is NOT
+# enabled (the node-transform math is done with `glam`, already pulled by `bake`). Optional/opt-in.
+dae-parser = { version = "0.11", optional = true }
+
+# URDF<->HCDF converter (feature = "urdf"). `urdf-rs` 0.9 (openrr) is the validated parser: it is
+# the structural-validation gate for the import (the mapping itself is driven from a parallel quick-xml
+# tree for exact text/presence parity with the Python oracle). Pure-Rust and wasm-clean (serde/quick-xml/
+# regex only), so the `urdf` feature compiles to wasm32. NOT default.
+urdf-rs = { version = "0.9", optional = true }
+
+# xacro -> URDF expander (feature = "xacro"). `xacro-pure` is the FULLY PURE-RUST port of canonical
+# ROS `xacro`: it expands BOTH the declarative SO-ARM class AND the programmatic OpenArm class byte-identically
+# to canonical `xacro`, using `rustpython-vm` (pure-Rust, wasm-clean CPython-grade interpreter) for `${...}`.
+# WASM-CLEAN (no `*-sys`/cc/native backend in its tree), so the `xacro` feature compiles to wasm32, the
+# in-browser-xacro payoff. NOT default. (Replaces the former `xacro-rs` + vendored-patched-`pyisheval`/`xacro-rs`
+# hybrid and the canonical-`xacro` subprocess fallback; see the CHANGELOG/src/xacro.rs.)
+xacro-pure = { version = "0.1", optional = true }
+
+# NB: the `sdf` feature (SDF<->HCDF converter) pulls NO dedicated parser crate; its importer is pure
+# quick-xml (already a base dep), mirroring `from_sdf.py`'s tolerant lxml `recover=True` walk. (An earlier
+# revision used the open-rmf `sdformat` crate as a structural-validation gate, but that crate is a SEMANTIC
+# validator far stricter than lxml-recover and rejected valid SDF Python imports, so it was removed.)
+
+# clap CLI (feature = "cli", native-only). derive for the subcommand structs. Pulled only by `cli`.
+clap = { version = "4", optional = true, default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
+
+# Pure-Rust XSD validator (feature = "xsd", src/xsd.rs). `uppsala` is PINNED EXACT (=0.4.0): it is an early,
+# single-maintainer crate, so the frozen schema + lockfile keep its verdicts from drifting (16/16
+# parity with lxml, identity-constraint/keyref enforcement ON by default). It is the leanest possible dep:
+# ZERO transitive crates and pure-Rust with no `*-sys`/cc/native backend, so it compiles to wasm32 too.
+# Pulled ONLY by the `xsd` feature, so a default/wasm/hcdviz build never sees it.
+uppsala = { version = "=0.4.0", optional = true }
+
+# Hardened remote fetcher (feature = "remote", native-only). rustls (no native-tls/OpenSSL) so the
+# build is self-contained; redirects are handled MANUALLY (redirects = 0) so the http(s) allow-list is
+# re-asserted per hop in our code, never silently followed to ftp://file://data: by the client.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ureq = { version = "3", optional = true, default-features = false, features = ["rustls"] }
+
+# The `hcdf` CLI binary builds ONLY under `--features cli` (native). `required-features` keeps it out
+# of the default/wasm build entirely, so `cargo build` and `cargo build --target wasm32-unknown-unknown`
+# never compile clap or the native bin.
+[[bin]]
+name = "hcdf"
+path = "src/bin/hcdf.rs"
+required-features = ["cli"]
+
+[build-dependencies]
+sha2 = "0.10"   # build-time sha-pin verification, single-sourced from vendored HASHES
+
+[dev-dependencies]
+jsonschema = { version = "0.47", default-features = false }
+quick-xml = { version = "0.37", features = ["serialize"] }
+serde_json = "1"   # tests/gltf_pack.rs parses packed GLB JSON chunks (already a base dep, no new crate)
+
+# No `[patch.crates-io]` is needed any more. The former xacro path redirected stock `xacro-rs`/`pyisheval` to
+# vendored PATCHED forks via `[patch.crates-io]` (a root-only mechanism that every downstream root enabling
+# `xacro` had to replicate). The fully-pure-Rust `xacro-pure` crate (a crates.io dependency under the
+# `xacro` feature) makes BOTH forks AND both patch entries obsolete: it expands the OpenArm "programmatic"
+# class in pure Rust with no patch, so a downstream root just enables `xacro` and gets the full coverage.

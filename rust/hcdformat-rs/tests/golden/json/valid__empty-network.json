@@ -1,0 +1,12 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "empty-network-test",
+    "comp": {
+      "name": "board"
+    },
+    "network": {
+      "name": "backbone"
+    }
+  }
+}

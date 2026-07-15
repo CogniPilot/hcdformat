@@ -1,0 +1,96 @@
+<stream-profile name="operational" version="1.0">
+  <description>Operational traffic</description>
+  <dependency uri="profiles/common.streams.xml" sha="sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"/>
+  <dependency uri="profiles/optional.streams.xml" required="false"/>
+  <stream-group name="arm-control">
+    <description>Arm command and status traffic</description>
+  </stream-group>
+  <stream name="arm-command" vlan-id="10" pcp="5" max-frame-size-bytes="192" interval-ns="1000000" max-latency-ns="200000" protocol="ieee:1722">
+    <description>Command stream</description>
+    <group-ref group="arm-control">
+      <instance>
+        <segment name="arm-module" occurrence="1"/>
+      </instance>
+    </group-ref>
+    <path>
+      <network-ref network="left-arm">
+        <instance>
+          <segment name="arm-module" occurrence="1"/>
+        </instance>
+      </network-ref>
+      <network-ref network="safety-backbone">
+        <instance>
+          <segment name="arm-module" occurrence="1"/>
+        </instance>
+      </network-ref>
+      <forwarding>
+        <from>
+          <participant-ref network="left-arm" participant="gateway-arm">
+            <instance>
+              <segment name="arm-module" occurrence="1"/>
+            </instance>
+          </participant-ref>
+        </from>
+        <function-ref component="gateway" function="arm-bridge">
+          <instance>
+            <segment name="arm-module" occurrence="1"/>
+          </instance>
+        </function-ref>
+        <to>
+          <participant-ref network="safety-backbone" participant="gateway-backbone">
+            <instance>
+              <segment name="arm-module" occurrence="1"/>
+            </instance>
+          </participant-ref>
+        </to>
+      </forwarding>
+    </path>
+    <talker>
+      <participant-ref network="left-arm" participant="controller">
+        <instance>
+          <segment name="arm-module" occurrence="1"/>
+        </instance>
+      </participant-ref>
+    </talker>
+    <listener>
+      <participant-ref network="left-arm" participant="joint-1">
+        <instance>
+          <segment name="arm-module" occurrence="1"/>
+        </instance>
+      </participant-ref>
+    </listener>
+    <listener>
+      <participant-ref network="safety-backbone" participant="supervisor">
+        <instance>
+          <segment name="arm-module" occurrence="1"/>
+        </instance>
+      </participant-ref>
+    </listener>
+    <traffic-class-ref network="left-arm" traffic-class="control">
+      <instance>
+        <segment name="arm-module" occurrence="1"/>
+      </instance>
+    </traffic-class-ref>
+    <schedule-ref network="left-arm" schedule="fast-cycle">
+      <instance>
+        <segment name="arm-module" occurrence="1"/>
+      </instance>
+    </schedule-ref>
+    <frer seamless-trees="2" sequence-encoding="r-tag"/>
+  </stream>
+  <stream name="telemetry" max-frame-size-bytes="512" interval-ns="10000000" protocol="vendor:telemetry">
+    <path>
+      <network-ref network="telemetry-net">
+        <instance>
+          <segment name="sensor-pack" occurrence="2"/>
+        </instance>
+      </network-ref>
+    </path>
+    <talker>
+      <participant-ref network="telemetry-net" participant="sensor"/>
+    </talker>
+    <listener>
+      <participant-ref network="telemetry-net" participant="computer"/>
+    </listener>
+  </stream>
+</stream-profile>

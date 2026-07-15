@@ -1,5 +1,8 @@
 name: Deploy Website to GitHub Pages
 
+# Publish the HCDF documentation, generated schema references, and downloadable example corpus.
+# HCDViz and Dendrite Build are deployed independently from their own repositories.
+
 on:
   push:
     branches: [main]
@@ -8,7 +11,11 @@ on:
       - 'hcdf.xsd'
       - 'hcdf-stream-profile.xsd'
       - 'extensions/*.xsd'
-      - 'generate_spec_html.py'
+      - 'rust/hcdformat-rs/**'
+      - 'examples/*.hcdf'
+      - 'examples/models/**'
+      - 'examples/profiles/**'
+      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 env:
@@ -27,29 +34,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo builds
+        uses: Swatinem/rust-cache@v2
         with:
-          python-version: '3.12'
+          workspaces: rust/hcdformat-rs
 
-      - name: Install lxml
-        run: pip install lxml
+      # Build the native `hcdf` CLI from THIS checkout, then regenerate the six spec pages with its
+      # pure-Rust `regen spec` (no Python/lxml). Ordered after the Rust toolchain install above and
+      # before the pages are assembled/uploaded below.
+      - name: Build the hcdf CLI
+        run: cargo build --locked --release --manifest-path rust/hcdformat-rs/Cargo.toml --features cli --bin hcdf
 
       - name: Regenerate spec pages from XSD
         run: |
-          python3 generate_spec_html.py hcdf.xsd website/spec/core.html
-          python3 generate_spec_html.py hcdf-stream-profile.xsd website/spec/stream-profile.html
-          python3 generate_spec_html.py extensions/hcdf-ext-ros2.xsd website/spec/extensions/ros2.html
-          python3 generate_spec_html.py extensions/hcdf-ext-gazebo.xsd website/spec/extensions/gazebo.html
-          python3 generate_spec_html.py extensions/hcdf-ext-1722.xsd website/spec/extensions/1722.html
+          HCDF=rust/hcdformat-rs/target/release/hcdf
+          "$HCDF" regen spec hcdf.xsd website/spec/core.html
+          "$HCDF" regen spec hcdf-stream-profile.xsd website/spec/stream-profile.html
+          "$HCDF" regen spec extensions/hcdf-ext-ros2.xsd website/spec/extensions/ros2.html
+          "$HCDF" regen spec extensions/hcdf-ext-ros2-control.xsd website/spec/extensions/ros2-control.html
+          "$HCDF" regen spec extensions/hcdf-ext-gazebo.xsd website/spec/extensions/gazebo.html
+          "$HCDF" regen spec extensions/hcdf-ext-1722.xsd website/spec/extensions/1722.html
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Assemble the site
+        run: |
+          mkdir -p website/examples/files
+          cp examples/*.hcdf website/examples/files/
+          cp -r examples/models website/examples/files/
+          cp -r examples/profiles website/examples/files/
+          HCDF=rust/hcdformat-rs/target/release/hcdf
+          "$HCDF" bundle examples/dm-j8009p-openarm-j1.hcdf website/examples/files/dm-j8009p-openarm-j1.hcdfz
+          "$HCDF" bundle-verify website/examples/files/dm-j8009p-openarm-j1.hcdfz
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: website
 
@@ -62,4 +87,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

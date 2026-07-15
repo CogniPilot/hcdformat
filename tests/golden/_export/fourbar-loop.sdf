@@ -1,0 +1,65 @@
+<sdf version="1.12">
+  <model name="fourbar-loop">
+    <link name="ground">
+    </link>
+    <link name="crank">
+      <pose relative_to="j_crank">0 0 0 0 0 0</pose>
+    </link>
+    <link name="coupler">
+      <pose relative_to="j_coupler">0 0 0 0 0 0</pose>
+    </link>
+    <link name="rocker">
+      <pose relative_to="j_rocker">0 0 0 0 0 0</pose>
+    </link>
+    <joint name="j_crank" type="revolute">
+      <parent>ground</parent>
+      <child>crank</child>
+      <pose relative_to="ground">0 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>20</effort>
+          <velocity>3</velocity>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="j_coupler" type="revolute">
+      <parent>crank</parent>
+      <child>coupler</child>
+      <pose relative_to="crank">0.1 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.6</lower>
+          <upper>2.6</upper>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="j_rocker" type="revolute">
+      <parent>ground</parent>
+      <child>rocker</child>
+      <pose relative_to="ground">0.3 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.6</lower>
+          <upper>2.6</upper>
+        </limit>
+      </axis>
+    </joint>
+    <joint name="j_close" type="revolute">
+      <parent>coupler</parent>
+      <child>rocker</child>
+      <pose relative_to="coupler">0.25 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-2.6</lower>
+          <upper>2.6</upper>
+        </limit>
+      </axis>
+    </joint>
+  </model>
+</sdf>

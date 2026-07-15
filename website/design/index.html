@@ -22,6 +22,7 @@
         <a href="/spec/core.html">Core Schema</a>
         <a href="/spec/stream-profile.html">Stream Profile</a>
         <a href="/spec/extensions/ros2.html">ROS 2 Extension</a>
+        <a href="/spec/extensions/ros2-control.html">ros2_control Extension</a>
         <a href="/spec/extensions/gazebo.html">Gazebo Extension</a>
         <a href="/spec/extensions/1722.html">IEEE 1722 Extension</a>
       </div>
@@ -31,7 +32,6 @@
       <div class="dropdown-content">
         <a href="/examples/">All Examples</a>
         <a href="/examples/#humanoid">Humanoid Mobile Base</a>
-        <a href="/examples/#drone">Drone Quadrotor</a>
       </div>
     </div>
     <a href="/design/">Design</a>
@@ -50,583 +50,583 @@
 
 <div class="content">
 
-  <h1>Design Decisions</h1>
+  <h1>Design</h1>
 
   <p>
-    HCDF was designed to fill a gap: existing robot description formats (URDF, SDF, MJCF) describe
-    the physical structure of robots but ignore the cyber infrastructure that controls them. A real
-    robot is more than joints and geometry. It has network topology, wired and wireless connectivity,
-    deterministic scheduling, link security, power distribution and energy storage, firmware identity,
-    device discovery, sensor hardware with noise characteristics and sampling configuration, motor
-    datasheets with load curves and thermal limits, dynamic surfaces like propellers and control
-    surfaces, human-machine interfaces, and the ability for an autonomous agent to read, reason about,
-    and configure the entire system. HCDF describes all of this in a single validated schema: the
-    physical structure, the cyber infrastructure, the sensor and actuator hardware, the energy
-    architecture, and the operational configuration.
+    HCDF describes a cyber-physical system as one coordinated model. Its structural layer covers
+    rigid components, kinematic joints, geometry, sensors, actuators, and planning metadata. Its
+    connectivity layer describes what each component can exchange, how that capability appears in
+    physical hardware, and which system-level networks use it. The same vocabulary covers data,
+    electrical power, guided and radiated signals, liquids, and gases.
+  </p>
+
+  <p>
+    These layers are related by explicit references rather than collapsed into one overloaded
+    connector or network object. That separation lets an early design state that two controllers
+    communicate without inventing a harness, while a manufacturing description can identify every
+    pin, conductor, mating connector, and visible model part.
   </p>
 
   <hr class="section-divider"/>
 
-  <!-- Why HCDF -->
-  <h2>Why HCDF?</h2>
-
-  <p>
-    URDF describes a kinematic tree of links and joints and is used broadly in ROS, not just for
-    simulation, but also for visualization (RViz), motion planning (MoveIt), control
-    (ros2_control), and real hardware drivers. SDF extends this with additional simulation features
-    such as sensors, plugins, and world models.
-    However, neither format describes the Ethernet switches, CAN buses, power buses, or network
-    schedules that a real robot needs. A humanoid with 19 devices and 5 networks has as much
-    complexity in its networking as in its kinematics. HCDF puts both in one file so that an agent
-    (human or AI) can reason about the complete system: "If I add a camera to the left wrist,
-    which switch port does it connect to, what bandwidth is available on that 802.3dm chain, and
-    does the Qbv schedule have room for the video stream?"
-  </p>
-
-  <p>
-    HCDF also addresses the "component" vs "link" problem. In URDF, a link is a rigid body in a
-    kinematic tree. In HCDF, a <code>&lt;comp&gt;</code> is a physical device: it has ports, sensors,
-    motors, switches, antennas, and firmware. A comp is more like a circuit board than a geometric
-    shape. Geometry (visual, collision) is optional; networking is first-class.
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- Topology Types -->
-  <h2>Topology Types</h2>
-
-  <p>
-    HCDF defines three network topology primitives that cover the wiring patterns found in real robots.
-    Each maps to different hardware and has different latency, bandwidth, and redundancy characteristics.
-  </p>
+  <h2>One model, four views</h2>
 
   <table>
     <thead>
-      <tr><th>Topology</th><th>Element</th><th>Use Case</th><th>Example</th></tr>
+      <tr><th>View</th><th>Primary elements</th><th>Question answered</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>Link</strong></td>
-        <td><code>&lt;link&gt;</code></td>
-        <td>Point-to-point connection between two ports</td>
-        <td>25G backbone between S32N79 and AGX Thor</td>
+        <td><strong>Structural</strong></td>
+        <td><code>comp</code>, <code>joint</code>, <code>frame</code>, <code>group</code>, <code>state</code></td>
+        <td>What are the rigid bodies, coordinate frames, and degrees of freedom?</td>
       </tr>
       <tr>
-        <td><strong>Bus</strong></td>
-        <td><code>&lt;bus&gt;</code></td>
-        <td>Shared medium with multiple participants</td>
-        <td>CAN-FD bus for wheel drives and BMS</td>
+        <td><strong>Functional</strong></td>
+        <td><code>port</code>, <code>channel</code>, component functions</td>
+        <td>What can a component send, receive, supply, or consume?</td>
       </tr>
       <tr>
-        <td><strong>Chain</strong></td>
-        <td><code>&lt;chain&gt;</code></td>
-        <td>Daisy-chain with switched hops (pass-through or bridged)</td>
-        <td>802.3dm arm chain with camera spurs</td>
+        <td><strong>Physical</strong></td>
+        <td>connectors, positions, assemblies, paths, junctions, terminations, antennas</td>
+        <td>What physical hardware carries the exchange?</td>
+      </tr>
+      <tr>
+        <td><strong>Connectivity</strong></td>
+        <td><code>binding</code>, <code>mate</code>, topologies, configurations, stream profiles</td>
+        <td>How do the functional and physical views form a connected system?</td>
       </tr>
     </tbody>
   </table>
 
   <p>
-    Chains are the most novel element. An 802.3dm chain carries 10G upstream and 100M downstream
-    on a single twisted pair, with each hop containing a bridging switch. This is how modern
-    automotive and robotics Ethernet works: you don't run a separate cable to every actuator.
-    Spurs branch off the chain (e.g., a camera at the wrist with a different VLAN and QoS class).
+    A reference may point through included component instances, so reusable modules keep their own
+    internal names while a larger system connects specific instances. Names remain local to the
+    objects that own them, and typed references make the relationship explicit.
   </p>
 
-<pre class="language-xml"><code>&lt;chain name="left-arm-chain" type="802.3dm" mode="switched"&gt;
-  &lt;vlan id="10" pcp="5"/&gt;
-  &lt;hop device="s32n79" port="xfi_left" role="root"/&gt;
-  &lt;hop device="mcn1-l" ingress="eth0" egress="eth1"/&gt;
-  &lt;hop device="mcn2-l" ingress="eth0" egress="eth1"/&gt;
-  &lt;hop device="mcn3-l" ingress="eth0" egress="eth1"&gt;
-    &lt;spur device="cam-l" port="eth0" via="eth2"&gt;
-      &lt;vlan id="20" pcp="3"/&gt;
-    &lt;/spur&gt;
-  &lt;/hop&gt;
-  &lt;hop device="mcn4-l" ingress="eth0" role="tail"/&gt;
+  <hr class="section-divider"/>
+
+  <h2>Structure and embodiment</h2>
+
+  <p>
+    A <code>&lt;comp&gt;</code> is a rigid body or hardware assembly. It can carry inertial
+    properties, visual and collision shapes, frames, ports, connectors, antennas, sensors, motors,
+    software identity, and other component-local details. A <code>&lt;joint&gt;</code> connects a
+    parent component to a child component and supplies the kinematic origin, axes, limits, dynamics,
+    mimic behavior, and optional loop-closure semantics.
+  </p>
+
+  <p>
+    The ten joint types are <code>revolute</code>, <code>continuous</code>,
+    <code>prismatic</code>, <code>fixed</code>, <code>ball</code>, <code>universal</code>,
+    <code>planar</code>, <code>screw</code>, <code>cylindrical</code>, and <code>free</code>.
+    Loop-closing joints represent parallel mechanisms without pretending that every joint is a tree
+    edge. Joint groups, named states, and self-collision exclusions provide planning and control
+    metadata in the same document.
+  </p>
+
+<pre class="language-xml"><code>&lt;joint name="j_crank" type="revolute"&gt;
+  &lt;description&gt;Driven crank pivot on the ground link (the input; drive this to move the mechanism).&lt;/description&gt;
+  &lt;parent comp="ground"/&gt;
+  &lt;child comp="crank"/&gt;
+  &lt;origin xyz="0 0 0"/&gt;
+  &lt;axis xyz="0 0 1"/&gt;
+  &lt;limit lower="-1.0472" upper="1.0472" effort="20" velocity="3"/&gt;
+&lt;/joint&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Functional ports and channels</h2>
+
+  <p>
+    A port is the functional boundary of a component. Its capabilities state the purposes,
+    carriers, profiles, and engineering ranges that the component supports. A channel subdivides a
+    port into named signal or flow roles, such as CAN high and CAN low, supply and return, UART
+    receive and transmit, or the individual phases of a power connection.
+  </p>
+
+  <p>
+    Purpose answers why an exchange exists. Carrier answers what physically conveys it. Capabilities
+    may advertise alternatives; a network's required <code>selected</code> element chooses one
+    purpose and one carrier for that network instance.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Dimension</th><th>Schema values</th><th>Examples</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Purpose</strong></td>
+        <td><code>communication</code>, <code>power-delivery</code>, <code>material-transfer</code></td>
+        <td>CAN data, a DC supply, hydraulic fluid, cooling gas, or fuel</td>
+      </tr>
+      <tr>
+        <td><strong>Carrier</strong></td>
+        <td><code>electrical</code>, <code>guided-optical</code>, <code>conducted-rf</code>, <code>radiated-rf</code>, <code>liquid</code>, <code>gas</code></td>
+        <td>Copper, fiber, coax, free-space RF, liquid lines, and gas lines</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Capability ranges can describe rate, voltage, current, power, impedance, frequency, bandwidth,
+    pressure, flow, and temperature. Profile identifiers remain extensible, so CAN, UART, PWM,
+    RS-485, Ethernet variants, BDSHOT, servo buses, and organization-specific protocols can share
+    the same core grammar without becoming hard-coded schema types.
+  </p>
+
+<pre class="language-xml"><code>&lt;port name="can"&gt;
+  &lt;capabilities&gt;
+    &lt;purpose value="communication"/&gt;
+    &lt;carrier value="electrical"/&gt;
+    &lt;profile id="hcdf:can"/&gt;
+    &lt;rate min="1000000" max="1000000" nominal="1000000" unit="bit/s"/&gt;
+  &lt;/capabilities&gt;
+  &lt;channel name="can_h" role="hcdf:can-high"/&gt;
+  &lt;channel name="can_l" role="hcdf:can-low"/&gt;
+&lt;/port&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Connectors and physical positions</h2>
+
+  <p>
+    A connector names a physical interface and may identify its family. Its positions use
+    vocabulary that matches the thing being represented. Each position can carry a role, a local
+    grouping label, and an optional visible representation.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Position</th><th>Use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>pin</code></td><td>A projecting electrical or signal contact.</td></tr>
+      <tr><td><code>socket</code></td><td>A receiving electrical or signal contact.</td></tr>
+      <tr><td><code>contact</code></td><td>A conductive contact that is not usefully classified as a pin or socket.</td></tr>
+      <tr><td><code>fiber</code></td><td>An optical fiber position or optical termination.</td></tr>
+      <tr><td><code>passage</code></td><td>A liquid or gas opening.</td></tr>
+      <tr><td><code>feed</code></td><td>A conducted feed into an antenna or RF structure.</td></tr>
+      <tr><td><code>waveguide-opening</code></td><td>The physical aperture of a waveguide connection.</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Connector shells and their positions can point at complete models or named model parts. This
+    makes a connector and its pins selectable in a viewer while preserving the existing visual
+    asset as the source of geometry.
+  </p>
+
+<pre class="language-xml"><code>&lt;connector name="can_connector" family="hcdf:jst-gh-2"&gt;
+  &lt;pin name="1" role="hcdf:can-high"&gt;
+    &lt;representation&gt;
+      &lt;model-part node-path="dm8009p/jst_gh_2/jst_gh_2_p1" submesh-fallback="jst_gh_2_p1"&gt;
+        &lt;model-root&gt;&lt;component-visual component="base_j1_stator" visual="motor_case_connectors"/&gt;&lt;/model-root&gt;
+      &lt;/model-part&gt;
+    &lt;/representation&gt;
+  &lt;/pin&gt;
+  &lt;pin name="2" role="hcdf:can-low"&gt;
+    &lt;representation&gt;
+      &lt;model-part node-path="dm8009p/jst_gh_2/jst_gh_2_p2" submesh-fallback="jst_gh_2_p2"&gt;
+        &lt;model-root&gt;&lt;component-visual component="base_j1_stator" visual="motor_case_connectors"/&gt;&lt;/model-root&gt;
+      &lt;/model-part&gt;
+    &lt;/representation&gt;
+  &lt;/pin&gt;
+  &lt;representation&gt;
+    &lt;model-part node-path="dm8009p/jst_gh_2/jst_gh_2_shell" submesh-fallback="jst_gh_2_shell"&gt;
+      &lt;model-root&gt;&lt;component-visual component="base_j1_stator" visual="motor_case_connectors"/&gt;&lt;/model-root&gt;
+    &lt;/model-part&gt;
+  &lt;/representation&gt;
+&lt;/connector&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Assemblies, paths, junctions, terminations, and mates</h2>
+
+  <p>
+    Root-level <code>harness</code>, <code>cable</code>, <code>plumbing</code>, and
+    <code>umbilical</code> elements group physical connectivity into manufactured or routed
+    assemblies. An assembly can own connectors, paths, junctions, terminations, and one
+    representation. The same physical primitives can also appear inside a component when they are
+    integral to that component.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Construct</th><th>Schema elements</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Two-ended paths</strong></td>
+        <td><code>wire</code>, <code>conductor</code>, <code>cable-member</code>, <code>fiber</code>, <code>coax</code>, <code>waveguide</code>, <code>feed</code>, <code>hose</code>, <code>pipe</code>, <code>passage</code></td>
+        <td>A physical carrier between exactly two physical endpoints.</td>
+      </tr>
+      <tr>
+        <td><strong>Junctions</strong></td>
+        <td><code>splice</code>, <code>tee</code>, <code>manifold</code>, <code>busbar</code>, <code>optical-splitter</code></td>
+        <td>A physical joining point with one or more attachments.</td>
+      </tr>
+      <tr>
+        <td><strong>Terminations</strong></td>
+        <td><code>termination</code></td>
+        <td>A typed endpoint, inline device, branch, or closure with optional engineering quantities and a profile.</td>
+      </tr>
+      <tr>
+        <td><strong>Mates</strong></td>
+        <td><code>mate</code></td>
+        <td>A connection between two connector references, with optional position-to-position mappings.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Termination mounting is one of <code>endpoint</code>, <code>inline</code>,
+    <code>branch</code>, or <code>closure</code>. A CAN termination resistor, an optical
+    termination, a hydraulic valve, and a sealed cap can therefore be described by the same
+    structural pattern without pretending they are the same kind of hardware.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>Bindings and fidelity</h2>
+
+  <p>
+    A binding connects one functional endpoint, a port or channel, to one physical endpoint, a
+    connector, position, or junction. It answers questions such as which connector pin carries CAN
+    high without forcing that pin assignment into the functional port definition.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Fidelity</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>functional</code></td><td>The relationship is known at the functional level; physical presentation may be absent.</td></tr>
+      <tr><td><code>presented</code></td><td>The physical boundary is shown, but exact internal positions or routing may not be known.</td></tr>
+      <tr><td><code>exact</code></td><td>The declared endpoint, position, route, or mapping is exact for the described design.</td></tr>
+      <tr><td><code>quantified</code></td><td>The physical statement includes the engineering detail needed for analysis.</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    The same fidelity values are used by bindings, paths, junctions, terminations, and mates. This
+    lets a document mix high-level declarations with manufacturing detail while stating the
+    precision of each claim.
+  </p>
+
+<pre class="language-xml"><code>&lt;binding name="can_h_to_jst_gh_2_pin_1" fidelity="exact"&gt;
+  &lt;functional&gt;&lt;channel-ref component="base_j1_stator" port="can" channel="can_h"/&gt;&lt;/functional&gt;
+  &lt;physical&gt;&lt;position-ref connector="can_connector" position="1"&gt;&lt;component-ref component="base_j1_stator"/&gt;&lt;/position-ref&gt;&lt;/physical&gt;
+&lt;/binding&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Physical representations and antennas</h2>
+
+  <p>
+    Connectivity objects use a focused representation vocabulary:
+    <code>box</code>, <code>cylinder</code>, <code>sphere</code>, <code>model</code>,
+    <code>model-part</code>, and <code>derived-route</code>. A model part selects a node path in an
+    existing component visual or assembly model. A derived route uses at least two waypoints and
+    may define a round or rectangular section, which allows a viewer to draw wires, hoses, pipes,
+    and waveguides without a separate mesh.
+  </p>
+
+  <p>
+    RF keeps conducted and radiated interfaces distinct. A port with
+    <code>conducted-rf</code> describes a feed, coax, waveguide, or PCB launch. A port with
+    <code>radiated-rf</code> describes the free-space boundary. An <code>antenna</code> requires a
+    radiated port, may reference a conducted port, and may carry a representation of the radiator.
+    Radiated ports can participate in links, buses, stars, meshes, or other topology objects just
+    like ports using a wired carrier. This also covers short-gap millimeter-wave links across a
+    moving joint.
+  </p>
+
+<pre class="language-xml"><code>&lt;port name="wifi0-feed"&gt;
+  &lt;capabilities&gt;
+    &lt;purpose value="communication"/&gt;
+    &lt;carrier value="conducted-rf"/&gt;
+    &lt;frequency min="5150000000" max="5850000000" nominal="5500000000" unit="Hz"/&gt;
+  &lt;/capabilities&gt;
+&lt;/port&gt;</code></pre>
+
+<pre class="language-xml"><code>&lt;antenna name="wifi0"&gt;
+  &lt;conducted-port component="compute" port="wifi0-feed"/&gt;
+  &lt;radiated-port component="compute" port="wifi0"/&gt;
+&lt;/antenna&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Network topologies</h2>
+
+  <p>
+    HCDF has seven root-level topology objects. Every topology owns its participants and selection,
+    and topology-specific objects add coordinators, hops, legs, or roots. They are direct children
+    of the HCDF document, not members of a separate container.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Topology</th><th>Required shape</th><th>Typical use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>link</code></td><td>Exactly 2 participants</td><td>Point-to-point wired, optical, RF, power, or fluid connection</td></tr>
+      <tr><td><code>bus</code></td><td>At least 2 participants</td><td>CAN, RS-485, multidrop serial, shared power, or a shared material line</td></tr>
+      <tr><td><code>chain</code></td><td>At least 2 participants, 2 hops, and 1 leg</td><td>Daisy chains and switched paths</td></tr>
+      <tr><td><code>star</code></td><td>A coordinator reference and at least 2 participants</td><td>Hub, switch, manifold, or coordinator-centered network</td></tr>
+      <tr><td><code>ring</code></td><td>At least 3 participants, 3 hops, and 3 legs</td><td>Closed paths and redundant rings</td></tr>
+      <tr><td><code>mesh</code></td><td>At least 2 participants</td><td>Wireless or logical mesh membership</td></tr>
+      <tr><td><code>tree</code></td><td>A root hop, at least 2 participants, 2 hops, and 1 leg</td><td>Branched switched, power, optical, or fluid distribution</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    A participant names a functional endpoint. A hop identifies a component or component function
+    that processes or forwards the carrier. A leg joins hop and participant references, so route
+    shape is explicit when the chosen topology needs it.
+  </p>
+
+  <h3>Selection, configuration, and stream profiles</h3>
+
+  <table>
+    <thead>
+      <tr><th>Construct</th><th>Scope</th><th>Contents</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>selected</code></td>
+        <td>Required on every topology</td>
+        <td>The active purpose and carrier, plus optional profile, rate, electrical, RF, pressure, flow, or temperature selections.</td>
+      </tr>
+      <tr>
+        <td><code>configuration</code></td>
+        <td>Optional and owned by one topology</td>
+        <td>gPTP domains, traffic classes, gate schedules, schedule assignments, PLCA, MACsec, and Energy Efficient Ethernet settings.</td>
+      </tr>
+      <tr>
+        <td><code>stream-profile</code></td>
+        <td>A separate root-level resource reference</td>
+        <td>A URI, optional SHA, optional required flag, and optional selection role for a stream-profile document containing streams, talkers, listeners, paths, traffic and schedule references, and optional FRER policy.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Selection describes what the physical network is operating as. Configuration describes how
+    that topology is controlled. A stream profile describes traffic demand and routing separately,
+    so multiple traffic plans can target the same network description.
+  </p>
+
+<pre class="language-xml"><code>&lt;chain name="test-chain"&gt;
+  &lt;description&gt;Two-hop switched communication chain with timing, scheduling, MACsec, and EEE configuration.&lt;/description&gt;
+  &lt;selected purpose="communication" carrier="electrical"&gt;&lt;rate&gt;&lt;nominal value="100000000" unit="bit/s"/&gt;&lt;/rate&gt;&lt;/selected&gt;
+  &lt;configuration&gt;
+    &lt;gptp-domain name="time" number="0"&gt;
+      &lt;clock name="parent-clock" kind="ordinary" gm-capable="true" priority1="128" priority2="128"&gt;&lt;participant-ref network="test-chain" participant="parent-body"/&gt;&lt;/clock&gt;
+      &lt;clock name="board-clock" kind="ordinary" gm-capable="false" priority1="255" priority2="255"&gt;&lt;participant-ref network="test-chain" participant="test-board"/&gt;&lt;/clock&gt;
+      &lt;port-defaults log-sync-interval="-3" neighbor-prop-delay-threshold-ns="800"/&gt;
+    &lt;/gptp-domain&gt;
+    &lt;traffic-class name="ptp" number="7" preemption="express"&gt;&lt;pcp value="7"/&gt;&lt;/traffic-class&gt;
+    &lt;traffic-class name="safety" number="6" preemption="express"&gt;&lt;pcp value="6"/&gt;&lt;/traffic-class&gt;
+    &lt;traffic-class name="motion" number="5" preemption="express"&gt;&lt;pcp value="5"/&gt;&lt;/traffic-class&gt;
+    &lt;traffic-class name="bulk" number="0" preemption="preemptable"&gt;&lt;pcp value="0"/&gt;&lt;/traffic-class&gt;
+    &lt;gate-schedule name="1ms-control" cycle-time-ns="1000000"&gt;
+      &lt;gate duration-ns="50000"&gt;&lt;open&gt;&lt;traffic-class-ref network="test-chain" traffic-class="ptp"/&gt;&lt;/open&gt;&lt;/gate&gt;
+      &lt;gate duration-ns="200000"&gt;&lt;open&gt;&lt;traffic-class-ref network="test-chain" traffic-class="safety"/&gt;&lt;traffic-class-ref network="test-chain" traffic-class="motion"/&gt;&lt;/open&gt;&lt;/gate&gt;
+      &lt;gate duration-ns="750000"&gt;&lt;open&gt;&lt;traffic-class-ref network="test-chain" traffic-class="bulk"/&gt;&lt;/open&gt;&lt;/gate&gt;
+    &lt;/gate-schedule&gt;
+    &lt;schedule-assignment name="chain-participants"&gt;&lt;schedule-ref network="test-chain" schedule="1ms-control"/&gt;&lt;target&gt;&lt;participant-ref network="test-chain" participant="parent-body"/&gt;&lt;/target&gt;&lt;target&gt;&lt;participant-ref network="test-chain" participant="test-board"/&gt;&lt;/target&gt;&lt;/schedule-assignment&gt;
+    &lt;macsec&gt;&lt;policy name="secure" enforcement="must-secure" cipher="ieee:gcm-aes-128" key-agreement="vendor:psk" credential-store-ref="se051"/&gt;&lt;default-policy&gt;&lt;macsec-policy-ref network="test-chain" policy="secure"/&gt;&lt;/default-policy&gt;&lt;/macsec&gt;
+    &lt;eee default-mode="disabled"/&gt;
+  &lt;/configuration&gt;
+  &lt;participant name="parent-body"&gt;&lt;endpoint&gt;&lt;port-ref component="parent-body" port="eth0"/&gt;&lt;/endpoint&gt;&lt;/participant&gt;
+  &lt;participant name="test-board"&gt;&lt;endpoint&gt;&lt;port-ref component="test-board" port="eth0"/&gt;&lt;/endpoint&gt;&lt;/participant&gt;
+  &lt;hop name="parent-body" role="root"&gt;&lt;owner&gt;&lt;component-ref component="parent-body"/&gt;&lt;/owner&gt;&lt;/hop&gt;
+  &lt;hop name="test-board" role="tail"&gt;&lt;owner&gt;&lt;function-ref component="test-board" function="test-switch"/&gt;&lt;/owner&gt;&lt;/hop&gt;
+  &lt;leg name="parent-to-board"&gt;&lt;from&gt;&lt;hop-ref network="test-chain" hop="parent-body"/&gt;&lt;participant-ref network="test-chain" participant="parent-body"/&gt;&lt;/from&gt;&lt;to&gt;&lt;hop-ref network="test-chain" hop="test-board"/&gt;&lt;participant-ref network="test-chain" participant="test-board"/&gt;&lt;/to&gt;&lt;/leg&gt;
 &lt;/chain&gt;</code></pre>
 
-  <hr class="section-divider"/>
-
-  <!-- Network Architecture -->
-  <h2>Network Architecture</h2>
-
-  <p>
-    A <code>&lt;network&gt;</code> is a self-contained networking domain. It groups the physical
-    topology (links, buses, chains) with the configuration that runs on that topology: gPTP time
-    synchronization, traffic class definitions, Qbv gate schedules, MACsec security policy, EEE
-    energy savings policy, and stream profile references. A robot typically has multiple networks
-    (backbone, arm chains, base peripherals, power distribution) that are configured independently.
-  </p>
-
-  <p>
-    This design matches how real network stacks work. Each network has its own gPTP domain, its own
-    set of schedules, its own MACsec key store. The S32N79 switch fabric bridges between networks
-    at the hardware level; HCDF describes the logical separation.
-  </p>
+<pre class="language-xml"><code>&lt;stream-profile uri="profiles/operational.streams.xml" selection-role="default"/&gt;</code></pre>
 
   <hr class="section-divider"/>
 
-  <!-- Sensor Model -->
-  <h2>Sensor Model</h2>
+  <h2>Visuals, color, collision, and contact</h2>
 
   <p>
-    HCDF sensors are categorized by measurement principle, not by product type. The sensor model
-    covers 11 categories: inertial (accelerometer, gyroscope), optical (camera, thermal, ToF, LiDAR,
-    optical flow), electromagnetic (magnetometer, Hall effect, fluxgate), RF (radar, GNSS, UWB,
-    radio altimeter), force (pressure, strain, torque, load cell), chemical (gas, pH, humidity),
-    encoder (incremental, absolute, linear: optical, magnetic, inductive), temperature (thermistor,
-    RTD, thermocouple, IR), radiation (Geiger, scintillation, neutron, dosimeter), audio
-    (microphone, ultrasonic, sonar, hydrophone), and tactile (capacitive, resistive, piezoelectric,
-    barometric, optical gel).
+    A visual has one of two appearance sources. A high-fidelity visual uses a GLB or glTF
+    <code>model</code>, with an optional SHA and optional <code>submesh</code> or
+    <code>exclude-submesh</code> selectors. It may include a primitive geometry fallback for load
+    failure. A primitive visual instead uses one of <code>box</code>, <code>cylinder</code>,
+    <code>sphere</code>, <code>capsule</code>, <code>cone</code>, or <code>ellipsoid</code>, with
+    an optional inline or named <code>color</code>.
   </p>
 
   <p>
-    Each sensor type carries its own parameters. An IMU has range, resolution, ODR, bandwidth,
-    FIFO depth, noise model (Gaussian with mean, stddev, bias), and driver info (chip name,
-    axis alignment). A camera has intrinsics (fx, fy, cx, cy), FOV geometry (frustum shape),
-    data output bandwidth, and camera-specific params (shutter type, HDR, compression, trigger mode).
-    These parameters are what navigation filters and perception pipelines actually need.
+    Collision geometry supports the same six primitives plus a lean external mesh. Contact physics
+    belongs directly under the collision's <code>surface</code>, which can hold friction,
+    restitution, and contact stiffness and damping. A frustum is general sensor field-of-view
+    geometry, not a visual or collision solid. There is no general material element: rich appearance
+    stays in GLB or glTF, flat appearance uses color, and contact behavior stays on collision.
+  </p>
+
+<pre class="language-xml"><code>&lt;visual name="board"&gt;
+  &lt;pose xyz="0 0 0" rpy="0 0 0"/&gt;
+  &lt;model uri="models/test-board.glb" sha="abc123def456"/&gt;
+&lt;/visual&gt;
+
+&lt;collision name="board_col"&gt;
+  &lt;pose xyz="0 0 -0.005" rpy="0 0 0"/&gt;
+  &lt;geometry&gt;
+    &lt;box&gt;&lt;size&gt;0.048 0.044 0.012&lt;/size&gt;&lt;/box&gt;
+  &lt;/geometry&gt;
+  &lt;surface&gt;
+    &lt;friction static="0.6" dynamic="0.4"/&gt;
+    &lt;restitution&gt;0.2&lt;/restitution&gt;
+  &lt;/surface&gt;
+&lt;/collision&gt;</code></pre>
+
+  <hr class="section-divider"/>
+
+  <h2>Sensors</h2>
+
+  <p>
+    A sensor is a named component-local container that can hold measurement blocks from twelve
+    categories. The categories describe measurement domains rather than product names.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Examples</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>inertial</code></td><td>Accelerometers, gyroscopes, and combined IMUs</td></tr>
+      <tr><td><code>em</code></td><td>Magnetometers, Hall-effect sensors, fluxgates, and other near-field electromagnetic sensing</td></tr>
+      <tr><td><code>optical</code></td><td>Cameras, thermal imagers, lidar, time-of-flight, and optical flow</td></tr>
+      <tr><td><code>rf</code></td><td>GNSS, UWB, radar, and radio altimeters</td></tr>
+      <tr><td><code>chemical</code></td><td>Gas, pH, humidity, and related chemical measurements</td></tr>
+      <tr><td><code>force</code></td><td>Pressure, strain, torque, and load cells</td></tr>
+      <tr><td><code>encoder</code></td><td>Incremental, absolute, and linear position encoders</td></tr>
+      <tr><td><code>temperature</code></td><td>Thermistors, RTDs, thermocouples, and infrared temperature sensing</td></tr>
+      <tr><td><code>radiation</code></td><td>Geiger, scintillation, neutron, and dosimetry sensors</td></tr>
+      <tr><td><code>audio</code></td><td>Microphones, ultrasonic sensors, sonar, and hydrophones</td></tr>
+      <tr><td><code>tactile</code></td><td>Capacitive, resistive, piezoelectric, barometric, and optical-gel touch sensors</td></tr>
+      <tr><td><code>fluid</code></td><td>Barometers, airspeed, depth, flow, level, and pressure-reference sensors</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    Sensor-specific blocks carry the parameters relevant to their domain, including poses, drivers,
+    ranges, resolution, noise, bandwidth, sampling, field of view, and output characteristics where
+    the corresponding type defines them.
   </p>
 
 <pre class="language-xml"><code>&lt;sensor name="imu0" update-rate="1000"&gt;
   &lt;inertial type="accel_gyro"&gt;
+    &lt;pose xyz="0.016 -0.001 -0.008" rpy="0 0 0"/&gt;
     &lt;driver name="icm45686"&gt;
       &lt;axis-align x="Y" y="-X" z="Z"/&gt;
     &lt;/driver&gt;
     &lt;accel&gt;
       &lt;range unit="g"&gt;16&lt;/range&gt;
+      &lt;resolution unit="mg"&gt;0.488&lt;/resolution&gt;
       &lt;noise type="gaussian"&gt;
+        &lt;mean&gt;0&lt;/mean&gt;
         &lt;stddev&gt;0.003&lt;/stddev&gt;
         &lt;bias-mean&gt;0.01&lt;/bias-mean&gt;
       &lt;/noise&gt;
     &lt;/accel&gt;
+    &lt;gyro&gt;
+      &lt;range unit="dps"&gt;2000&lt;/range&gt;
+      &lt;noise type="gaussian"&gt;
+        &lt;stddev&gt;0.01&lt;/stddev&gt;
+      &lt;/noise&gt;
+    &lt;/gyro&gt;
   &lt;/inertial&gt;
 &lt;/sensor&gt;</code></pre>
 
   <hr class="section-divider"/>
 
-  <!-- Visualization and Materials -->
-  <h2>Visualization and Materials</h2>
-
-  <p>
-    HCDF delegates visual rendering to glTF/GLB, the industry standard for 3D assets supported
-    by Bevy, Three.js, Godot, Blender, and USD. A <code>&lt;visual&gt;</code> element on a component
-    references a GLB file (with SHA verification) that carries the full rendering data: meshes,
-    PBR materials, textures, normal maps, and LOD. This avoids duplicating what glTF already does
-    well. HCDF does not define its own PBR material system, texture pipeline, or shader model.
-  </p>
-
-  <p>
-    The <code>&lt;material&gt;</code> element in HCDF serves a different purpose: it defines
-    <strong>physical surface properties</strong> (friction coefficients, restitution, contact stiffness)
-    and a basic color for fallback rendering. These are the properties that physics engines and
-    simulation exporters need, not what renderers need. When converting HCDF to SDF or USD for
-    simulation, the material's friction and color transfer to the simulator; the GLB's PBR textures
-    transfer separately through glTF import.
-  </p>
-
-  <p>
-    For components without a GLB model (early design, procedural geometry), HCDF provides
-    <code>&lt;geometry&gt;</code> primitives (box, cylinder, sphere, capsule, cone, ellipsoid, mesh,
-    frustum) that can be used for both collision bounds and fallback visualization. Geometry
-    primitives on <code>&lt;collision&gt;</code> define the physics boundary; on
-    <code>&lt;visual&gt;</code> they provide a placeholder shape until a proper 3D model is available.
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- Embodiment Description -->
-  <h2>Embodiment Description</h2>
-
-  <p>
-    Beyond the kinematic tree (joints connecting comps), HCDF provides three mechanisms for
-    describing how a robot is intended to be used. <strong>Groups</strong> name collections of
-    joints for planning: a "left_arm" kinematic chain, a "left_hand" end-effector, a "locomotion"
-    set. Groups can contain other groups for composition ("left_manipulation" = left_arm + left_hand).
-    <strong>States</strong> define named joint configurations (home, transport, inspection) that
-    agents can command. <strong>Self-collision disable</strong> lists pairs of components that
-    cannot collide, with reasons (adjacent, mounted, unreachable), so collision checkers skip
-    unnecessary tests.
-  </p>
-
-<pre class="language-xml"><code>&lt;group name="left_manipulation"&gt;
-  &lt;description&gt;Left arm + hand for manipulation tasks&lt;/description&gt;
-  &lt;group ref="left_arm"/&gt;
-  &lt;group ref="left_hand"/&gt;
-&lt;/group&gt;
-
-&lt;state name="transport"&gt;
-  &lt;description&gt;Compact transport position — arms folded tight&lt;/description&gt;
-  &lt;joint-position joint="l_shoulder_yaw" value="0"/&gt;
-  &lt;joint-position joint="l_elbow" value="2.4"/&gt;
-  &lt;joint-position joint="l_wrist_pitch" value="1.0"/&gt;
-&lt;/state&gt;
-
-&lt;self-collision-disable&gt;
-  &lt;pair comp1="torso" comp2="mcn1-l" reason="adjacent"/&gt;
-  &lt;pair comp1="mcn1-l" comp2="mcn1-r" reason="unreachable"/&gt;
-&lt;/self-collision-disable&gt;</code></pre>
-
-  <hr class="section-divider"/>
-
-  <!-- Extensions -->
   <h2>Extensions</h2>
 
   <p>
-    HCDF uses a reverse-DNS domain system for extensions: <code>&lt;extension domain="org.ros2" version="1.0"&gt;</code>.
-    The schema allows <code>xs:any</code> with <code>processContents="lax"</code> inside the
-    extension element, so any well-formed XML is valid. Versioning allows evolution without breaking
-    existing files. The domain identifier prevents conflicts between vendors.
-  </p>
-
-  <p>
-    Registered extensions include <code>org.ros2</code> (topic mapping), <code>org.gazebosim</code>
-    (simulation parameters), and <code>org.cognipilot.imu-stability</code> (Allan variance for
-    tactical IMUs). See the <a href="/extensions/">Extensions Guide</a> for details on writing and
-    registering new extensions.
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- Comparison Table -->
-  <h2>Comparison</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Capability</th>
-        <th>HCDF</th>
-        <th>OpenUSD</th>
-        <th>URDF</th>
-        <th>SDF</th>
-        <th>MJCF</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="6"><strong>Physical Structure</strong></td></tr>
-      <tr>
-        <td>Kinematic tree</td>
-        <td>Yes (tree + loops)</td>
-        <td>Yes</td>
-        <td>Yes (tree only)</td>
-        <td>Yes</td>
-        <td>Yes</td>
-      </tr>
-      <tr>
-        <td>Joint types</td>
-        <td>10 (revolute, cylindrical, ball, free, ...)</td>
-        <td>Via UsdPhysics</td>
-        <td>6</td>
-        <td>9</td>
-        <td>Many</td>
-      </tr>
-      <tr>
-        <td>Collision geometry</td>
-        <td>8 primitives + mesh</td>
-        <td>Full</td>
-        <td>5 primitives + mesh</td>
-        <td>9 primitives + mesh</td>
-        <td>Primitives + mesh</td>
-      </tr>
-      <tr>
-        <td>Visual / materials</td>
-        <td>GLB/glTF refs + color</td>
-        <td>Full PBR (native)</td>
-        <td>Color + texture</td>
-        <td>PBR</td>
-        <td>Basic</td>
-      </tr>
-      <tr>
-        <td>Named states / keyframes</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No (SRDF separate)</td>
-        <td>No</td>
-        <td>Yes</td>
-      </tr>
-      <tr>
-        <td>Joint groups</td>
-        <td>Yes (hierarchical)</td>
-        <td>No</td>
-        <td>No (SRDF separate)</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-
-      <tr><td colspan="6"><strong>Sensors &amp; Actuators</strong></td></tr>
-      <tr>
-        <td>Sensor categories</td>
-        <td>11 (inertial, optical, RF, tactile, audio, ...)</td>
-        <td>No</td>
-        <td>2 (camera, ray)</td>
-        <td>15+</td>
-        <td>Several</td>
-      </tr>
-      <tr>
-        <td>Sensor noise models</td>
-        <td>Yes (gaussian, bias, per-axis)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>Gaussian only</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Motor specifications</td>
-        <td>Full (curves, pole-pairs, thermal, control modes)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>Partial</td>
-      </tr>
-      <tr>
-        <td>HMI (displays, buttons, LEDs)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Dynamic surfaces (wings, wheels, props, grippers)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>Via plugins</td>
-        <td>No</td>
-      </tr>
-
-      <tr><td colspan="6"><strong>Networking &amp; Connectivity</strong></td></tr>
-      <tr>
-        <td>Network topology</td>
-        <td>Yes (link, bus, chain, mesh)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Bus protocols (CAN, I2C, SPI, EtherCAT)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Deterministic networking (TSN)</td>
-        <td>Yes (gPTP, Qbv, FRER, stream profiles)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Network security</td>
-        <td>Yes (MACsec, key management)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Wireless (WiFi, BLE, Thread mesh)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-
-      <tr><td colspan="6"><strong>Power &amp; Energy</strong></td></tr>
-      <tr>
-        <td>Power distribution</td>
-        <td>Yes (buses, voltage rails, budgeting)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Energy sources (battery, fuel cell, tank, solar, supercapacitor)</td>
-        <td>Yes (chemistry, capacity, charging, flow, MPPT, ESR)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-
-      <tr><td colspan="6"><strong>Cyber Infrastructure</strong></td></tr>
-      <tr>
-        <td>Device identity &amp; discovery</td>
-        <td>Yes (hwid, IP, firmware hash)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Firmware versioning</td>
-        <td>Yes (SHA, MCUboot, OTA manifests)</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Agent configuration (YANG)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Verified distribution (SHA)</td>
-        <td>Yes</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-        <td>No</td>
-      </tr>
-
-      <tr><td colspan="6"><strong>Format &amp; Tooling</strong></td></tr>
-      <tr>
-        <td>Schema validation</td>
-        <td>XSD + JSON Schema</td>
-        <td>USD Schema</td>
-        <td>XSD</td>
-        <td>Embedded schema</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Formats</td>
-        <td>XML + JSON (bidirectional)</td>
-        <td>USD binary + ASCII</td>
-        <td>XML</td>
-        <td>XML</td>
-        <td>XML</td>
-      </tr>
-      <tr>
-        <td>Extension mechanism</td>
-        <td>Reverse-DNS domains + XSD</td>
-        <td>Vendor schemas</td>
-        <td>Gazebo tag (lax)</td>
-        <td>Plugins</td>
-        <td>No</td>
-      </tr>
-      <tr>
-        <td>Composition</td>
-        <td>Include + SHA verification</td>
-        <td>Layers + Payloads</td>
-        <td>xacro (preprocessor)</td>
-        <td>Include</td>
-        <td>Include</td>
-      </tr>
-      <tr>
-        <td>Simulation export</td>
-        <td>Planned (converters)</td>
-        <td>Native</td>
-        <td>Native</td>
-        <td>Native</td>
-        <td>Native</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <p>
-    HCDF is not anti-simulation; it is a superset that also covers the cyber infrastructure
-    that URDF, SDF, MJCF, and OpenUSD cannot describe. Converters from HCDF to URDF, SDF, and USD
-    will enable HCDF-described robots to be simulated in Gazebo, MuJoCo, Isaac Sim, and other tools.
-    The Gazebo extension (<code>org.gazebosim</code>) carries simulation-specific parameters that
-    survive the round trip. HCDF is designed to be the single source of truth for both the real
-    hardware and its simulation counterpart.
-  </p>
-
-  <p>
-    For full design rationale, see the design documents in
-    <a href="https://github.com/CogniPilot/hcdformat/tree/main/docs/design">docs/design/</a>.
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- OpenUSD Relationship -->
-  <h2>Relationship with OpenUSD</h2>
-
-  <p>
-    OpenUSD is gaining traction in robotics simulation (Isaac Sim, Gazebo). USD excels at scene
-    composition, visual fidelity (PBR), physics (UsdPhysics), and multi-tool interoperability. But
-    as the <a href="https://github.com/RobotecAI/wip-openusd-interoperability-rep">RobotecAI REP</a>
-    acknowledges: <em>"OpenUSD lacks native schemas for domain-specific data (e.g., URDF transmission,
-    MJCF actuator), conversions are inherently lossy."</em>
-  </p>
-
-  <p>
-    HCDF and USD are complementary (see the comparison table above). USD handles visual/simulation;
-    HCDF handles everything else (networking, power, firmware, device identity, agent configuration).
-    An HCDF-to-USD converter extracts visual meshes, collision geometry, joints, and physics
-    properties for simulation. The cyber infrastructure stays in HCDF where it belongs.
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- Simulation Interoperability -->
-  <h2>Simulation Interoperability (Planned)</h2>
-
-  <p>
-    HCDF files will be convertible to simulation formats:
-  </p>
-
-  <ul>
-    <li><strong>HCDF → URDF</strong>: Extract kinematic tree, inertial properties, visual/collision
-      geometry, joint limits</li>
-    <li><strong>HCDF → SDF</strong>: Same plus sensors, plugins, materials, closed loops</li>
-    <li><strong>HCDF → USD</strong>: Visual meshes, physics joints, collision geometry via
-      UsdPhysics</li>
-    <li><strong>URDF → HCDF</strong>: Import existing URDF models, add networking and cyber
-      infrastructure</li>
-  </ul>
-
-  <p>
-    These converters enable using HCDF as the single source of truth while still supporting
-    existing simulation tools (Gazebo, Isaac Sim, MuJoCo, Drake).
-  </p>
-
-  <hr class="section-divider"/>
-
-  <!-- Versioning -->
-  <h2>Versioning</h2>
-
-  <p>
-    HCDF uses semantic versioning (MAJOR.MINOR) for the schema. Minor versions add optional
-    elements, attributes, or enumeration values and are always backward compatible. Major
-    versions may remove, rename, or change existing elements.
+    Extensions use a reverse-DNS domain and may declare their own version. Extension payloads are deliberately
+    open to domain schemas while the HCDF core remains typed. The repository ships schemas for
+    these four extension domains:
   </p>
 
   <table>
     <thead>
-      <tr><th>Change</th><th>Version bump</th><th>Backward compatible?</th></tr>
+      <tr><th>Domain</th><th>Purpose</th></tr>
     </thead>
     <tbody>
-      <tr><td>New optional element or attribute</td><td>Minor (1.0 &rarr; 1.1)</td><td>Yes</td></tr>
-      <tr><td>New enumeration value</td><td>Minor</td><td>Yes</td></tr>
-      <tr><td>New extension XSD</td><td>None</td><td>Yes</td></tr>
-      <tr><td>Change optional to required</td><td><strong>Major</strong> (1.x &rarr; 2.0)</td><td>No</td></tr>
-      <tr><td>Remove or rename element</td><td><strong>Major</strong></td><td>No</td></tr>
-      <tr><td>Change element type</td><td><strong>Major</strong></td><td>No</td></tr>
+      <tr><td><code>org.ros2</code></td><td>ROS 2 sensor and motor topic mappings with message types and QoS presets</td></tr>
+      <tr><td><code>org.ros2.control</code></td><td>ROS 2 control hardware, joint, sensor, and command/state interface mapping</td></tr>
+      <tr><td><code>org.gazebosim</code></td><td>Gazebo-specific simulation settings and plugins</td></tr>
+      <tr><td><code>org.ieee.1722</code></td><td>IEEE 1722 stream and transport details</td></tr>
     </tbody>
   </table>
 
   <p>
-    Parsers should ignore unknown elements and attributes so that an HCDF 1.0 parser can
-    read a 1.3 file without rejecting it. The <code>&lt;hcdf version="1.0"&gt;</code> root
-    attribute declares which schema version the file was authored against.
+    Other domains may be used without changing the core schema. The IMU Stability page is an
+    illustrative extension design, not one of the shipped typed extension schemas.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>Conversion and interoperability</h2>
+
+  <p>
+    The current Rust implementation imports and exports both URDF and SDF. It reports losses where
+    a target format cannot represent HCDF content, and its URDF profile distinguishes clean
+    round-trip cases from transformed or lossy projections. Xacro input is expanded by the
+    pure-Rust xacro engine and then imported through the URDF path. These paths are available to
+    native and WebAssembly consumers; Python access is provided through the Rust bindings.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Path</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>URDF &rarr; HCDF</td><td>Implemented</td></tr>
+      <tr><td>HCDF &rarr; URDF</td><td>Implemented, with profile classification and a loss manifest</td></tr>
+      <tr><td>SDF &rarr; HCDF</td><td>Implemented for the mapped mechanical and simulation overlap</td></tr>
+      <tr><td>HCDF &rarr; SDF</td><td>Implemented, with a loss manifest for unsupported HCDF content</td></tr>
+      <tr><td>Xacro &rarr; HCDF</td><td>Implemented through pure-Rust expansion and URDF import</td></tr>
+      <tr><td>HCDF and OpenUSD</td><td>Planned, not currently implemented</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    HCDF is the richer source model in these conversions. A successful export does not imply that
+    networking, power, firmware, or every simulation-specific field exists in the destination
+    format; the reported losses are part of the conversion result.
+  </p>
+
+  <hr class="section-divider"/>
+
+  <h2>Versioning and content integrity</h2>
+
+  <p>
+    The current core schema is HCDF 1.0. The root <code>name</code> is required. The
+    <code>version</code> value follows a <code>MAJOR.MINOR</code> pattern and defaults to
+    <code>1.0</code> when omitted. The version string identifies the document grammar; it is not a
+    cryptographic identity for the schema bytes.
   </p>
 
   <p>
-    Each released version is archived in the <code>versions/</code> directory. Extensions
-    and stream profiles are versioned independently. For the full policy, see
-    <a href="https://github.com/CogniPilot/hcdformat/blob/main/docs/design/versioning.md">docs/design/versioning.md</a>.
+    Strict XSD validation rejects unknown elements and attributes in the typed core. Extension
+    payloads are the intentional open area and use lax processing. Tooling can bind the canonical
+    XSD by its SHA-256 content hash, independently of the document's version string.
+  </p>
+
+  <p>
+    Hash attributes on referenced resources, including models, includes, connectivity models, and
+    stream profiles, are optional. When present they provide integrity for that reference. They do
+    not imply that every external resource in an HCDF document is hashed or that the entire
+    document has been verified.
   </p>
 
 </div>

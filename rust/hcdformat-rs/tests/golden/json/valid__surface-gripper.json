@@ -1,0 +1,106 @@
+{
+  "hcdf": {
+    "version": 1.0,
+    "name": "gripper-surface-test",
+    "comp": [
+      {
+        "name": "finger-left",
+        "role": "actuator",
+        "dynamic-surface": {
+          "name": "finger_pad",
+          "gripper": {
+            "type": "mechanical",
+            "grip-force": {
+              "unit": "N",
+              "$text": 40
+            },
+            "contact-area": {
+              "unit": "mm2",
+              "$text": 400
+            },
+            "payload": {
+              "unit": "kg",
+              "$text": 5
+            },
+            "shore-hardness": "A30",
+            "friction": {
+              "static": 0.9,
+              "dynamic": 0.7
+            }
+          }
+        }
+      },
+      {
+        "name": "vacuum-gripper",
+        "role": "actuator",
+        "dynamic-surface": {
+          "name": "suction_array",
+          "gripper": {
+            "type": "suction",
+            "grip-force": {
+              "unit": "N",
+              "$text": 150
+            },
+            "contact-area": {
+              "unit": "cm2",
+              "$text": 50
+            },
+            "payload": {
+              "unit": "kg",
+              "$text": 15
+            },
+            "shore-hardness": "A50",
+            "vacuum-level": {
+              "unit": "kPa",
+              "$text": -65
+            }
+          }
+        }
+      },
+      {
+        "name": "mag-gripper",
+        "role": "actuator",
+        "dynamic-surface": {
+          "name": "magnet_face",
+          "gripper": {
+            "type": "magnetic",
+            "magnetic-force": {
+              "unit": "N",
+              "$text": 500
+            },
+            "contact-area": {
+              "unit": "cm2",
+              "$text": 100
+            },
+            "payload": {
+              "unit": "kg",
+              "$text": 25
+            }
+          }
+        }
+      },
+      {
+        "name": "climbing-foot",
+        "role": "actuator",
+        "dynamic-surface": {
+          "name": "gecko_pad",
+          "gripper": {
+            "type": "adhesive",
+            "grip-force": {
+              "unit": "N",
+              "$text": 10
+            },
+            "contact-area": {
+              "unit": "cm2",
+              "$text": 25
+            },
+            "payload": {
+              "unit": "kg",
+              "$text": 2
+            }
+          }
+        }
+      }
+    ]
+  }
+}

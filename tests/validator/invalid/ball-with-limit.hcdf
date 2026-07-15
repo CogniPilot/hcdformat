@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- validator-invalid: ball (3-DOF spherical) carries a scalar <limit> (E_JOINT_LIMIT_FORBIDDEN) -->
+<hcdf version="1.0" name="ball-with-limit">
+  <comp name="a"/>
+  <comp name="b"/>
+  <joint name="j" type="ball">
+    <parent comp="a"/>
+    <child comp="b"/>
+    <limit lower="-1" upper="1"/>
+  </joint>
+</hcdf>
